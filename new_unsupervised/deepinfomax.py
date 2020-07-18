@@ -106,7 +106,7 @@ class GcnInfomax(nn.Module):
               x, edge_index, batch = data.x, data.edge_index, data.batch
               if x is None:
                   x = torch.ones((batch.shape[0],1)).to(device)
-              _, __, class_mu, class_logvar = self.encoder(x, edge_index, batch)
+              node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index, batch)
 
               grouped_mu, grouped_logvar = accumulate_group_evidence(
                   class_mu.data, class_logvar.data, batch, True
@@ -115,7 +115,10 @@ class GcnInfomax(nn.Module):
               accumulated_class_latent_embeddings = group_wise_reparameterize(
                   training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
               )
-              class_emb = global_mean_pool(accumulated_class_latent_embeddings, batch)
+
+              node_latent_embeddings = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
+
+              class_emb = global_mean_pool(accumulated_class_latent_embeddings, batch) + global_mean_pool(node_latent_embeddings, batch)
               ret.append(class_emb.cpu().numpy())
               y.append(data.y.cpu().numpy())
       ret = np.concatenate(ret, 0)
