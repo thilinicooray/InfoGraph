@@ -5,6 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 import json
+import random
 # from core.encoders import *
 
 from torch_geometric.datasets import TUDataset
@@ -124,6 +125,10 @@ class GcnInfomax(nn.Module):
 if __name__ == '__main__':
     
     args = arg_parse()
+    seed = 42
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
     accuracies = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
     epochs = 20
     log_interval = 1

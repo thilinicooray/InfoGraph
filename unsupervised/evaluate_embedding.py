@@ -133,7 +133,7 @@ def linearsvc_classify(x, y, search):
         y_train, y_test = y[train_index], y[test_index]
         if search:
             params = {'C':[0.001, 0.01,0.1,1,10,100,1000]}
-            classifier = GridSearchCV(LinearSVC(max_iter=20000), params, cv=5, scoring='accuracy', verbose=0)
+            classifier = GridSearchCV(LinearSVC(max_iter=1000), params, cv=5, scoring='accuracy', verbose=0)
         else:
             classifier = LinearSVC(C=10)
         classifier.fit(x_train, y_train)
@@ -154,15 +154,15 @@ def evaluate_embedding(embeddings, labels, search=True):
     # print(svc_accuracies)
     print('svc', np.mean(svc_accuracies))
 
-    linearsvc_accuracies = [linearsvc_classify(x, y, search) for _ in range(1)]
+    #linearsvc_accuracies = [linearsvc_classify(x, y, search) for _ in range(1)]
     # print(linearsvc_accuracies)
-    print('LinearSvc', np.mean(linearsvc_accuracies))
+    print('LinearSvc', 0.0)
 
     randomforest_accuracies = [randomforest_classify(x, y, search) for _ in range(1)]
     # print(randomforest_accuracies)
     print('randomforest', np.mean(randomforest_accuracies))
 
-    return np.mean(logreg_accuracies), np.mean(svc_accuracies), np.mean(linearsvc_accuracies), np.mean(randomforest_accuracies)
+    return np.mean(logreg_accuracies), np.mean(svc_accuracies), 0.0, np.mean(randomforest_accuracies)
 
 if __name__ == '__main__':
     evaluate_embedding('./data', 'ENZYMES', np.load('tmp/emb.npy'))
