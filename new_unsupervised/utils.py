@@ -3,11 +3,6 @@ import torch.nn as nn
 import matplotlib.pyplot as plt
 from torch.autograd import Variable
 from mpl_toolkits.axes_grid1 import ImageGrid
-from torchvision.transforms import Compose, ToTensor
-
-
-# compose a transform configuration
-transform_config = Compose([ToTensor()])
 
 
 def accumulate_group_evidence(class_mu, class_logvar, batch, is_cuda):
