@@ -133,7 +133,7 @@ def linearsvc_classify(x, y, search):
         y_train, y_test = y[train_index], y[test_index]
         if search:
             params = {'C':[0.001, 0.01,0.1,1,10,100,1000]}
-            classifier = GridSearchCV(LinearSVC(), params, cv=5, scoring='accuracy', verbose=0)
+            classifier = GridSearchCV(LinearSVC(max_iter=20000), params, cv=5, scoring='accuracy', verbose=0)
         else:
             classifier = LinearSVC(C=10)
         classifier.fit(x_train, y_train)
