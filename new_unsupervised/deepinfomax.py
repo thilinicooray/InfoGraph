@@ -173,7 +173,7 @@ if __name__ == '__main__':
             recon_loss, kl_class, kl_node = model(data.x, data.edge_index, data.batch, data.num_graphs)
             recon_loss_all += recon_loss
             kl_class_loss_all += kl_class
-            kl_node_loss_all += kl_node 
+            kl_node_loss_all += kl_node
             #loss.backward()
             optimizer.step()
         print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(dataloader), kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
