@@ -22,7 +22,6 @@ def accumulate_group_evidence(class_mu, class_logvar, batch, is_cuda):
 
     # calculate var inverse for each group using group vars
     #for nodeidx, graphidx in enumerate(labels_batch):
-    print('batch info', batch)
     for i in range(len(batch)):
         group_label = batch[i].item()
 
