@@ -176,7 +176,7 @@ if __name__ == '__main__':
 
         if epoch % log_interval == 0:
             model.eval()
-            emb, y = model.encoder.get_embeddings(dataloader)
+            emb, y = model.get_embeddings(dataloader)
             res = evaluate_embedding(emb, y)
             accuracies['logreg'].append(res[0])
             accuracies['svc'].append(res[1])
