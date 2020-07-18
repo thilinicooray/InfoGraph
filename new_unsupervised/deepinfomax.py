@@ -88,11 +88,11 @@ class GcnInfomax(nn.Module):
 
     reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
     #check input feat first
-    print('recon ', x[0],reconstructed_node[0])
+    #print('recon ', x[0],reconstructed_node[0])
     reconstruction_error = mse_loss(reconstructed_node, x) * num_graphs
     reconstruction_error.backward()
     
-    return reconstruction_error.item() + class_kl_divergence_loss.item() + node_kl_divergence_loss.item()
+    return reconstruction_error.item() , class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
 
   def get_embeddings(self, loader):
 
@@ -163,16 +163,20 @@ if __name__ == '__main__':
 
 
     for epoch in range(1, epochs+1):
-        loss_all = 0
+        recon_loss_all = 0
+        kl_class_loss_all = 0
+        kl_node_loss_all = 0
         model.train()
         for data in dataloader:
             data = data.to(device)
             optimizer.zero_grad()
-            loss = model(data.x, data.edge_index, data.batch, data.num_graphs)
-            loss_all += loss * data.num_graphs
+            recon_loss, kl_class, kl_node = model(data.x, data.edge_index, data.batch, data.num_graphs)
+            recon_loss_all += recon_loss
+            kl_class_loss_all += kl_class
+            kl_node_loss_all += kl_node 
             #loss.backward()
             optimizer.step()
-        print('Epoch {}, Loss {}'.format(epoch, loss_all / len(dataloader)))
+        print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(dataloader), kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
 
         if epoch % log_interval == 0:
             model.eval()
