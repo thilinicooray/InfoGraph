@@ -130,7 +130,7 @@ if __name__ == '__main__':
     np.random.seed(seed)
     torch.manual_seed(seed)
     accuracies = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
-    epochs = 20
+    epochs = 100
     log_interval = 1
     batch_size = 128
     lr = args.lr
