@@ -90,7 +90,6 @@ class Decoder(torch.nn.Module):
         x = torch.cat((node_latent_space, class_latent_space), dim=1)
 
         x = self.linear_model(x)
-        x = x.view(x.size(0), 1, 28, 28)
 
         return x
 
