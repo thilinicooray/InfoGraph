@@ -169,7 +169,7 @@ if __name__ == '__main__':
             data = data.to(device)
             optimizer.zero_grad()
             loss = model(data.x, data.edge_index, data.batch, data.num_graphs)
-            loss_all += loss.item() * data.num_graphs
+            loss_all += loss * data.num_graphs
             #loss.backward()
             optimizer.step()
         print('Epoch {}, Loss {}'.format(epoch, loss_all / len(dataloader)))
