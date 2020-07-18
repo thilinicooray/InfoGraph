@@ -44,12 +44,12 @@ class Encoder(torch.nn.Module):
             self.bns.append(bn)
 
         # node
-        self.node_mu = nn.Linear(in_features=dim, out_features=dim, bias=True)
-        self.node_logvar = nn.Linear(in_features=dim, out_features=dim, bias=True)
+        self.node_mu = Linear(in_features=dim, out_features=dim, bias=True)
+        self.node_logvar = Linear(in_features=dim, out_features=dim, bias=True)
 
         # class
-        self.class_mu = nn.Linear(in_features=dim, out_features=dim, bias=True)
-        self.class_logvar = nn.Linear(in_features=dim, out_features=dim, bias=True)
+        self.class_mu = Linear(in_features=dim, out_features=dim, bias=True)
+        self.class_logvar = Linear(in_features=dim, out_features=dim, bias=True)
 
 
     def forward(self, x, edge_index, batch):
