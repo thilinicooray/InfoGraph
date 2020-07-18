@@ -149,6 +149,7 @@ if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = GcnInfomax(args.hidden_dim, args.num_gc_layers).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
 
     print('================')
     print('lr: {}'.format(lr))
@@ -181,6 +182,7 @@ if __name__ == '__main__':
             kl_node_loss_all += kl_node
             #loss.backward()
             optimizer.step()
+
         print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(dataloader), kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
 
         if epoch % log_interval == 0:
@@ -192,6 +194,8 @@ if __name__ == '__main__':
             accuracies['linearsvc'].append(res[2])
             accuracies['randomforest'].append(res[3])
             print(accuracies)
+
+        scheduler.step()
 
     with open('unsupervised.log', 'a+') as f:
         s = json.dumps(accuracies)
