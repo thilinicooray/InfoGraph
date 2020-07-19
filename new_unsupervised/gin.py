@@ -36,6 +36,7 @@ class Encoder(torch.nn.Module):
             if i:
                 nn = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim))
             else:
+                print('num feat ', num_features)
                 nn = Sequential(Linear(num_features, dim), ReLU(), Linear(dim, dim))
             conv = GINConv(nn)
             bn = torch.nn.BatchNorm1d(dim)
