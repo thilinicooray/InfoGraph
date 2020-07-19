@@ -67,14 +67,14 @@ class GcnInfomax(nn.Module):
     node_kl_divergence_loss = torch.mean(
         - 0.5 * torch.sum(1 + node_logvar - node_mu.pow(2) - node_logvar.exp())
     )
-    node_kl_divergence_loss = 0.0000001 * node_kl_divergence_loss *num_graphs
+    node_kl_divergence_loss = 0.00000001 * node_kl_divergence_loss *num_graphs
     node_kl_divergence_loss.backward(retain_graph=True)
 
     # kl-divergence error for class latent space
     class_kl_divergence_loss = torch.mean(
         - 0.5 * torch.sum(1 + grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp())
     )
-    class_kl_divergence_loss = 0.0000001 * class_kl_divergence_loss * num_graphs
+    class_kl_divergence_loss = 0.00000001 * class_kl_divergence_loss * num_graphs
     class_kl_divergence_loss.backward(retain_graph=True)
 
     # reconstruct samples
@@ -90,7 +90,7 @@ class GcnInfomax(nn.Module):
     reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
     #check input feat first
     #print('recon ', x[0],reconstructed_node[0])
-    reconstruction_error = 0.1* mse_loss(reconstructed_node, x) * num_graphs
+    reconstruction_error = 0.01* mse_loss(reconstructed_node, x) * num_graphs
     reconstruction_error.backward()
     
     return reconstruction_error.item() , class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
