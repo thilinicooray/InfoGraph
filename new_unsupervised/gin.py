@@ -100,7 +100,7 @@ class Decoder(torch.nn.Module):
 
         self.convs = torch.nn.ModuleList()
         self.bns = torch.nn.ModuleList()
-        self.num_gc_layers = 1
+        self.num_gc_layers = 2
 
         for i in range(self.num_gc_layers):
 
