@@ -95,7 +95,7 @@ class GcnInfomax(nn.Module):
     #need to reduce ml between node and class latents
     measure='JSD'
     mi_loss = local_global_loss_disen(node_latent_embeddings, class_latent_embeddings, edge_index, batch, measure)
-    mi_loss.backward()
+    mi_loss.backward(retain_graph=True)
     
     return reconstruction_error.item() , class_kl_divergence_loss.item() , node_kl_divergence_loss.item(), mi_loss.item()
 
