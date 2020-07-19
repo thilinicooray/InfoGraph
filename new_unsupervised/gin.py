@@ -36,7 +36,6 @@ class Encoder(torch.nn.Module):
             if i:
                 nn = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim))
             else:
-                print('num feat ', num_features)
                 nn = Sequential(Linear(num_features, dim), ReLU(), Linear(dim, dim))
             conv = GINConv(nn)
             bn = torch.nn.BatchNorm1d(dim)
@@ -55,6 +54,7 @@ class Encoder(torch.nn.Module):
 
 
     def forward(self, x, edge_index, batch):
+        print('val  ', x)
         if x is None:
             x = torch.ones((batch.shape[0], 1)).to(device)
 

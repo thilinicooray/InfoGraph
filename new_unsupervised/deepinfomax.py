@@ -145,6 +145,9 @@ if __name__ == '__main__':
     except:
         dataset_num_features = 1
 
+    if not dataset_num_features:
+        dataset_num_features = 1
+
     dataloader = DataLoader(dataset, batch_size=batch_size)
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
