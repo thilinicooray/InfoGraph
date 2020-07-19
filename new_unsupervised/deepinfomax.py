@@ -92,8 +92,12 @@ class GcnInfomax(nn.Module):
     #print('recon ', x[0],reconstructed_node[0])
     reconstruction_error =  0.1*mse_loss(reconstructed_node, x) * num_graphs
     reconstruction_error.backward()
+    #need to reduce ml between node and class latents
+    measure='JSD'
+    mi_loss = local_global_loss_disen(node_latent_embeddings, class_latent_embeddings, edge_index, batch, measure)
+    mi_loss.backward()
     
-    return reconstruction_error.item() , class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
+    return reconstruction_error.item() , class_kl_divergence_loss.item() , node_kl_divergence_loss.item(), mi_loss.item()
 
   def get_embeddings(self, loader):
 
@@ -131,7 +135,7 @@ if __name__ == '__main__':
     np.random.seed(seed)
     torch.manual_seed(seed)
     accuracies = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
-    epochs = 40
+    epochs = args.num_epochs
     log_interval = 1
     batch_size = 128
     lr = args.lr
@@ -176,18 +180,20 @@ if __name__ == '__main__':
         recon_loss_all = 0
         kl_class_loss_all = 0
         kl_node_loss_all = 0
+        mi_loss_all = 0
         model.train()
         for data in dataloader:
             data = data.to(device)
             optimizer.zero_grad()
-            recon_loss, kl_class, kl_node = model(data.x, data.edge_index, data.batch, data.num_graphs)
+            recon_loss, kl_class, kl_node, mi = model(data.x, data.edge_index, data.batch, data.num_graphs)
             recon_loss_all += recon_loss
             kl_class_loss_all += kl_class
             kl_node_loss_all += kl_node
-            #loss.backward()
+            mi_loss_all += mi
             optimizer.step()
 
-        print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(dataloader), kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
+        print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {} MI loss {}'.format(epoch, recon_loss_all / len(dataloader),
+                                                                                           kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader), mi_loss_all / len(dataloader)))
 
         if epoch % log_interval == 0:
             model.eval()
