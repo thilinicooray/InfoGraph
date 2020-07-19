@@ -10,7 +10,7 @@ import random
 
 from torch_geometric.datasets import TUDataset
 from torch_geometric.data import DataLoader
-from torch_geometric.nn import global_mean_pool
+from torch_geometric.nn import global_mean_pool, global_add_pool, global_max_pool
 import sys
 import json
 from torch import optim
@@ -116,7 +116,7 @@ class GcnInfomax(nn.Module):
                   training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
               )
 
-              class_emb = global_mean_pool(accumulated_class_latent_embeddings, batch)
+              class_emb = global_add_pool(accumulated_class_latent_embeddings, batch)
               ret.append(class_emb.cpu().numpy())
               y.append(data.y.cpu().numpy())
       ret = np.concatenate(ret, 0)
