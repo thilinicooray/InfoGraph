@@ -79,7 +79,7 @@ class GcnInfomax(nn.Module):
 
     # reconstruct samples
     """
-    sampling from group mu and logvar for each image in mini-batch differently makes
+    sampling from group mu and logvar for each graph in mini-batch differently makes
     the decoder consider class latent embeddings as random noise and ignore them 
     """
     node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
@@ -87,15 +87,17 @@ class GcnInfomax(nn.Module):
         training=True, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
     )
 
+    #need to reduce ml between node and class latents
+    measure='JSD'
+    mi_loss = local_global_loss_disen(node_latent_embeddings, class_latent_embeddings, edge_index, batch, measure)
+    mi_loss.backward(retain_graph=True)
+
     reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
     #check input feat first
     #print('recon ', x[0],reconstructed_node[0])
     reconstruction_error =  0.1*mse_loss(reconstructed_node, x) * num_graphs
     reconstruction_error.backward()
-    #need to reduce ml between node and class latents
-    measure='JSD'
-    mi_loss = local_global_loss_disen(node_latent_embeddings, class_latent_embeddings, edge_index, batch, measure)
-    mi_loss.backward(retain_graph=True)
+
     
     return reconstruction_error.item() , class_kl_divergence_loss.item() , node_kl_divergence_loss.item(), mi_loss.item()
 
