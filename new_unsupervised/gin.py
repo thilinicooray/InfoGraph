@@ -100,12 +100,12 @@ class Decoder(torch.nn.Module):
 
         self.convs = torch.nn.ModuleList()
         self.bns = torch.nn.ModuleList()
-        self.num_gc_layers = 1
+        self.num_gc_layers = 2
 
         for i in range(self.num_gc_layers):
 
-            if i:
-                nn = Sequential(Linear(node_dim, node_dim), ReLU(), Linear(node_dim, node_dim))
+            if i == self.num_gc_layers-1:
+                nn = Sequential(Linear(node_dim, node_dim), ReLU(), Linear(node_dim, feat_size))
             else:
                 nn = Sequential(Linear(node_dim, node_dim), ReLU(), Linear(node_dim, node_dim))
             conv = GINConv(nn)
