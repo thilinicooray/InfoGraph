@@ -88,9 +88,9 @@ class GcnInfomax(nn.Module):
     )
 
     #need to reduce ml between node and class latents
-    measure='JSD'
+    '''measure='JSD'
     mi_loss = local_global_loss_disen(node_latent_embeddings, class_latent_embeddings, edge_index, batch, measure)
-    mi_loss.backward(retain_graph=True)
+    mi_loss.backward(retain_graph=True)'''
 
     reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
     #check input feat first
@@ -99,7 +99,7 @@ class GcnInfomax(nn.Module):
     reconstruction_error.backward()
 
     
-    return reconstruction_error.item() , class_kl_divergence_loss.item() , node_kl_divergence_loss.item(), mi_loss.item()
+    return reconstruction_error.item() , class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
 
   def get_embeddings(self, loader):
 
@@ -187,15 +187,14 @@ if __name__ == '__main__':
         for data in dataloader:
             data = data.to(device)
             optimizer.zero_grad()
-            recon_loss, kl_class, kl_node, mi = model(data.x, data.edge_index, data.batch, data.num_graphs)
+            recon_loss, kl_class, kl_node = model(data.x, data.edge_index, data.batch, data.num_graphs)
             recon_loss_all += recon_loss
             kl_class_loss_all += kl_class
             kl_node_loss_all += kl_node
-            mi_loss_all += mi
             optimizer.step()
 
-        print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {} MI loss {}'.format(epoch, recon_loss_all / len(dataloader),
-                                                                                           kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader), mi_loss_all / len(dataloader)))
+        print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(dataloader),
+                                                                                           kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
 
         if epoch % log_interval == 0:
             model.eval()
