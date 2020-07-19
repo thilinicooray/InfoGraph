@@ -90,7 +90,7 @@ class GcnInfomax(nn.Module):
     reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
     #check input feat first
     #print('recon ', x[0],reconstructed_node[0])
-    reconstruction_error = mse_loss(reconstructed_node, x) * num_graphs
+    reconstruction_error = 0.1* mse_loss(reconstructed_node, x) * num_graphs
     reconstruction_error.backward()
     
     return reconstruction_error.item() , class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
