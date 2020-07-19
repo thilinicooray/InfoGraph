@@ -105,7 +105,7 @@ def svc_classify(x, y, search):
             classifier = SVC(C=10)
         classifier.fit(x_train, y_train)
         accuracies.append(accuracy_score(y_test, classifier.predict(x_test)))
-    return np.mean(accuracies)
+    return np.mean(accuracies), np.std(accuracies)
 
 def randomforest_classify(x, y, search):
     kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
@@ -150,9 +150,9 @@ def evaluate_embedding(embeddings, labels, search=True):
     # print(logreg_accuracies)
     print('LogReg', np.mean(logreg_accuracies))
 
-    svc_accuracies = [svc_classify(x,y, search) for _ in range(1)]
+    svc_accuracies, std = svc_classify(x,y, search)
     # print(svc_accuracies)
-    print('svc', np.mean(svc_accuracies))
+    print('svc', np.mean(svc_accuracies), std)
 
     #linearsvc_accuracies = [linearsvc_classify(x, y, search) for _ in range(1)]
     # print(linearsvc_accuracies)

@@ -85,15 +85,15 @@ class Decoder(torch.nn.Module):
     def __init__(self, node_dim, class_dim, feat_size):
         super(Decoder, self).__init__()
 
-        '''self.linear_model = torch.nn.Sequential(OrderedDict([
+        self.linear_model = torch.nn.Sequential(OrderedDict([
             ('linear_1', torch.nn.Linear(in_features=node_dim + class_dim, out_features=node_dim, bias=True)),
             ('relu_1', ReLU()),
 
             ('linear_2', torch.nn.Linear(in_features=node_dim, out_features=feat_size, bias=True)),
             ('relu_final', ReLU()),
-        ]))'''
+        ]))
 
-        self.linear_model = torch.nn.Sequential(OrderedDict([
+        '''self.linear_model = torch.nn.Sequential(OrderedDict([
             ('linear_1', torch.nn.Linear(in_features=node_dim + class_dim, out_features=node_dim, bias=True)),
             ('relu_1', ReLU())
         ]))
@@ -114,17 +114,17 @@ class Decoder(torch.nn.Module):
 
 
             self.convs.append(conv)
-            self.bns.append(bn)
+            self.bns.append(bn)'''
 
     def forward(self, node_latent_space, class_latent_space, edge_index):
         x = torch.cat((node_latent_space, class_latent_space), dim=1)
 
         x = self.linear_model(x)
 
-        for i in range(self.num_gc_layers):
+        '''for i in range(self.num_gc_layers):
 
             x = F.relu(self.convs[i](x, edge_index))
-            x = self.bns[i](x)
+            x = self.bns[i](x)'''
 
         x = torch.softmax(x, dim=-1)
 
