@@ -43,40 +43,29 @@ class Encoder(torch.nn.Module):
             self.convs.append(conv)
             self.bns.append(bn)
 
-        '''
-        # node
-        self.node_mu = Linear(in_features=dim, out_features=dim, bias=True)
-        self.node_logvar = Linear(in_features=dim, out_features=dim, bias=True)
-
-        # class
-        self.class_mu = Linear(in_features=dim, out_features=dim, bias=True)
-        self.class_logvar = Linear(in_features=dim, out_features=dim, bias=True)'''
-
-
     def forward(self, x, edge_index, batch):
         if x is None:
             x = torch.ones((batch.shape[0], 1)).to(device)
 
-        xs = []
+        xs = None
         for i in range(self.num_gc_layers):
 
             x = F.relu(self.convs[i](x, edge_index))
             x = self.bns[i](x)
-            xs.append(x)
+
+            if xs is None :
+                xs = x
+            else:
+                xs += x
+            #xs.append(x)
             # if i == 2:
                 # feature_map = x2
         j = self.num_gc_layers
-        node_latent_space_mu = self.bns[j](F.relu(self.convs[j](x, edge_index)))
-        node_latent_space_logvar = self.bns[j+1](F.relu(self.convs[j+1](x, edge_index)))
+        node_latent_space_mu = self.bns[j](F.relu(self.convs[j](xs, edge_index)))
+        node_latent_space_logvar = self.bns[j+1](F.relu(self.convs[j+1](xs, edge_index)))
 
-        class_latent_space_mu = self.bns[j+2](F.relu(self.convs[j+2](x, edge_index)))
-        class_latent_space_logvar = self.bns[j+3](F.relu(self.convs[j+3](x, edge_index)))
-
-        '''node_latent_space_mu = F.relu(self.node_mu(x))
-        node_latent_space_logvar = F.relu(self.node_logvar(x))
-
-        class_latent_space_mu = F.relu(self.class_mu(x))
-        class_latent_space_logvar = F.relu(self.class_logvar(x))'''
+        class_latent_space_mu = self.bns[j+2](F.relu(self.convs[j+2](xs, edge_index)))
+        class_latent_space_logvar = self.bns[j+3](F.relu(self.convs[j+3](xs, edge_index)))
 
         return node_latent_space_mu, node_latent_space_logvar, class_latent_space_mu, class_latent_space_logvar
 
@@ -93,38 +82,10 @@ class Decoder(torch.nn.Module):
             ('relu_final', ReLU()),
         ]))
 
-        '''self.linear_model = torch.nn.Sequential(OrderedDict([
-            ('linear_1', torch.nn.Linear(in_features=node_dim + class_dim, out_features=node_dim, bias=True)),
-            ('relu_1', ReLU())
-        ]))
-
-        self.convs = torch.nn.ModuleList()
-        self.bns = torch.nn.ModuleList()
-        self.num_gc_layers = 2
-
-        for i in range(self.num_gc_layers):
-
-            if i == self.num_gc_layers-1:
-                nn = Sequential(Linear(node_dim, node_dim), ReLU(), Linear(node_dim, feat_size))
-                bn = torch.nn.BatchNorm1d(feat_size)
-            else:
-                nn = Sequential(Linear(node_dim, node_dim), ReLU(), Linear(node_dim, node_dim))
-                bn = torch.nn.BatchNorm1d(node_dim)
-            conv = GINConv(nn)
-
-
-            self.convs.append(conv)
-            self.bns.append(bn)'''
-
     def forward(self, node_latent_space, class_latent_space, edge_index):
         x = torch.cat((node_latent_space, class_latent_space), dim=1)
 
         x = self.linear_model(x)
-
-        '''for i in range(self.num_gc_layers):
-
-            x = F.relu(self.convs[i](x, edge_index))
-            x = self.bns[i](x)'''
 
         x = torch.softmax(x, dim=-1)
 
