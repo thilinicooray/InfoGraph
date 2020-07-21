@@ -132,10 +132,12 @@ class GcnInfomax(nn.Module):
 if __name__ == '__main__':
     
     args = arg_parse()
-    seed = 42
+    seed = 1
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
     accuracies = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
     epochs = int(args.num_epochs)
     log_interval = 1
