@@ -15,11 +15,8 @@ import sys
 import json
 from torch import optim
 
-from cortex_DIM.nn_modules.mi_networks import MIFCNet, MI1x1ConvNet
-from losses import *
 from gin import Encoder, Decoder
 from evaluate_embedding import evaluate_embedding
-from model import *
 from utils import imshow_grid, mse_loss, reparameterize, group_wise_reparameterize, accumulate_group_evidence
 
 from arguments import arg_parse
@@ -142,6 +139,7 @@ if __name__ == '__main__':
     path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', DS)
     # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
 
+    torch.manual_seed(12345)
     dataset = TUDataset(path, name=DS).shuffle()
     try:
         dataset_num_features = dataset.num_features
@@ -151,6 +149,7 @@ if __name__ == '__main__':
     if not dataset_num_features:
         dataset_num_features = 1
 
+    torch.manual_seed(12345)
     dataloader = DataLoader(dataset, batch_size=batch_size)
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

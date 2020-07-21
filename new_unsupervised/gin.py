@@ -44,6 +44,7 @@ class Encoder(torch.nn.Module):
             else:
                 nn = Sequential(Linear(num_features, dim), ReLU(), Linear(dim, dim))
 
+            torch.manual_seed(12345)
             conv = GINConv(nn)
             bn = torch.nn.BatchNorm1d(dim)
 
