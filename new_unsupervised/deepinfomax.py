@@ -28,8 +28,6 @@ class GcnInfomax(nn.Module):
   def __init__(self, hidden_dim, num_gc_layers, alpha=0.5, beta=1., gamma=.1):
     super(GcnInfomax, self).__init__()
 
-    print('infomax inside seed', torch.initial_seed())
-
     self.alpha = alpha
     self.beta = beta
     self.gamma = gamma
@@ -138,8 +136,6 @@ if __name__ == '__main__':
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
-
-    print('main inside seed', torch.initial_seed())
 
     accuracies = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
     epochs = int(args.num_epochs)
