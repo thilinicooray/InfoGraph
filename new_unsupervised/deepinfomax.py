@@ -132,7 +132,7 @@ class GcnInfomax(nn.Module):
 if __name__ == '__main__':
     
     args = arg_parse()
-    seed = 12
+    seed = 11
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
