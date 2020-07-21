@@ -125,7 +125,7 @@ def randomforest_classify(x, y, search):
     return ret
 
 def linearsvc_classify(x, y, search):
-    kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
+    kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=12)
     accuracies = []
     for train_index, test_index in kf.split(x, y):
 
