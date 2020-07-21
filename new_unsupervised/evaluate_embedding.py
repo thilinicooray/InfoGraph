@@ -15,6 +15,12 @@ from sklearn.metrics import accuracy_score
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 import seaborn as sns
+import random
+
+seed = 12345
+random.seed(seed)
+np.random.seed(seed)
+torch.manual_seed(seed)
 
 def draw_plot(datadir, DS, embeddings, fname, max_nodes=None):
     return

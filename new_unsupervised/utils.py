@@ -3,6 +3,13 @@ import torch.nn as nn
 import matplotlib.pyplot as plt
 from torch.autograd import Variable
 from mpl_toolkits.axes_grid1 import ImageGrid
+import numpy as np
+import random
+
+seed = 12345
+random.seed(seed)
+np.random.seed(seed)
+torch.manual_seed(seed)
 
 
 def accumulate_group_evidence(class_mu, class_logvar, batch, is_cuda):

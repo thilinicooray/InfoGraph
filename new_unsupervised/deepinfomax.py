@@ -24,6 +24,11 @@ from utils import imshow_grid, mse_loss, reparameterize, group_wise_reparameteri
 
 from arguments import arg_parse
 
+seed = 12345
+random.seed(seed)
+np.random.seed(seed)
+torch.manual_seed(seed)
+
 class GcnInfomax(nn.Module):
   def __init__(self, hidden_dim, num_gc_layers, alpha=0.5, beta=1., gamma=.1):
     super(GcnInfomax, self).__init__()
@@ -33,18 +38,13 @@ class GcnInfomax(nn.Module):
     self.gamma = gamma
     self.prior = args.prior
 
-    self.embedding_dim = mi_units = hidden_dim * num_gc_layers
     self.encoder = Encoder(dataset_num_features, hidden_dim, num_gc_layers)
     self.decoder = Decoder(hidden_dim, hidden_dim, dataset_num_features)
-
-    self.local_d = FF(self.embedding_dim)
-    self.global_d = FF(self.embedding_dim)
 
 
     self.init_emb()
 
   def init_emb(self):
-    initrange = -1.5 / self.embedding_dim
     for m in self.modules():
         if isinstance(m, nn.Linear):
             torch.nn.init.xavier_uniform_(m.weight.data)
@@ -132,12 +132,7 @@ class GcnInfomax(nn.Module):
 if __name__ == '__main__':
     
     args = arg_parse()
-    seed = 1
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
+
     accuracies = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
     epochs = int(args.num_epochs)
     log_interval = 1

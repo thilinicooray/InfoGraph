@@ -18,6 +18,12 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn import preprocessing
 from sklearn.metrics import accuracy_score
 import sys
+import random
+
+seed = 12345
+random.seed(seed)
+np.random.seed(seed)
+torch.manual_seed(seed)
 
 class Encoder(torch.nn.Module):
     def __init__(self, num_features, dim, num_gc_layers):
@@ -79,9 +85,7 @@ class Decoder(torch.nn.Module):
     def forward(self, node_latent_space, class_latent_space, edge_index):
         x = torch.cat((node_latent_space, class_latent_space), dim=1)
 
-        x = self.linear_model(x)
-
-        x = torch.softmax(x, dim=-1)
+        x = torch.softmax(self.linear_model(x), dim=-1)
 
         return x
 
