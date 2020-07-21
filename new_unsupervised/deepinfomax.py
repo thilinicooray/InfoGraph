@@ -10,7 +10,7 @@ import random
 
 from torch_geometric.datasets import TUDataset
 from torch_geometric.data import DataLoader
-from torch_geometric.nn import global_mean_pool, global_add_pool, global_max_pool
+from torch_geometric.nn import global_mean_pool
 import sys
 import json
 from torch import optim
@@ -79,17 +79,11 @@ class GcnInfomax(nn.Module):
         training=True, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
     )
 
-    #need to reduce ml between node and class latents
-    '''measure='JSD'
-    mi_loss = local_global_loss_disen(node_latent_embeddings, class_latent_embeddings, edge_index, batch, measure)
-    mi_loss.backward(retain_graph=True)'''
-
-    reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, edge_index)
+    reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
     #check input feat first
     #print('recon ', x[0],reconstructed_node[0])
-    reconstruction_error =  0.1*mse_loss(reconstructed_node, x) * num_graphs
+    reconstruction_error = 0.1* mse_loss(reconstructed_node, x) * num_graphs
     reconstruction_error.backward()
-
     
     return reconstruction_error.item() , class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
 
@@ -147,9 +141,6 @@ if __name__ == '__main__':
     except:
         dataset_num_features = 1
 
-    if not dataset_num_features:
-        dataset_num_features = 1
-
     dataloader = DataLoader(dataset, batch_size=batch_size)
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -178,7 +169,6 @@ if __name__ == '__main__':
         recon_loss_all = 0
         kl_class_loss_all = 0
         kl_node_loss_all = 0
-        mi_loss_all = 0
         model.train()
         for data in dataloader:
             data = data.to(device)
@@ -189,8 +179,7 @@ if __name__ == '__main__':
             kl_node_loss_all += kl_node
             optimizer.step()
 
-        print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(dataloader),
-                                                                                           kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
+        print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(dataloader), kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
 
         if epoch % log_interval == 0:
             model.eval()
