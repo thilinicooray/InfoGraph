@@ -21,13 +21,6 @@ from utils import imshow_grid, mse_loss, reparameterize, group_wise_reparameteri
 
 from arguments import arg_parse
 
-seed = 12345
-random.seed(seed)
-np.random.seed(seed)
-torch.manual_seed(seed)
-torch.cuda.manual_seed(seed)
-torch.cuda.manual_seed_all(seed)
-
 class GcnInfomax(nn.Module):
   def __init__(self, hidden_dim, num_gc_layers, alpha=0.5, beta=1., gamma=.1):
     super(GcnInfomax, self).__init__()
@@ -131,6 +124,13 @@ class GcnInfomax(nn.Module):
 if __name__ == '__main__':
     
     args = arg_parse()
+
+    seed = 42
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    #torch.cuda.manual_seed_all(seed)
 
     accuracies = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
     epochs = int(args.num_epochs)

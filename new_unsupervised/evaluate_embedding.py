@@ -17,13 +17,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import random
 
-seed = 12345
-random.seed(seed)
-np.random.seed(seed)
-torch.manual_seed(seed)
-torch.cuda.manual_seed(seed)
-torch.cuda.manual_seed_all(seed)
-
 def draw_plot(datadir, DS, embeddings, fname, max_nodes=None):
     return
     graphs = read_graphfile(datadir, DS, max_nodes=max_nodes)

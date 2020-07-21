@@ -20,13 +20,6 @@ from sklearn.metrics import accuracy_score
 import sys
 import random
 
-seed = 12345
-random.seed(seed)
-np.random.seed(seed)
-torch.manual_seed(seed)
-torch.cuda.manual_seed(seed)
-torch.cuda.manual_seed_all(seed)
-
 class Encoder(torch.nn.Module):
     def __init__(self, num_features, dim, num_gc_layers):
         super(Encoder, self).__init__()
