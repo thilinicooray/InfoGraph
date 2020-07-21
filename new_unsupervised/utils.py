@@ -10,6 +10,8 @@ seed = 12345
 random.seed(seed)
 np.random.seed(seed)
 torch.manual_seed(seed)
+torch.cuda.manual_seed(seed)
+torch.cuda.manual_seed_all(seed)
 
 
 def accumulate_group_evidence(class_mu, class_logvar, batch, is_cuda):

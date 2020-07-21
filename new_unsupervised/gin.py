@@ -24,6 +24,8 @@ seed = 12345
 random.seed(seed)
 np.random.seed(seed)
 torch.manual_seed(seed)
+torch.cuda.manual_seed(seed)
+torch.cuda.manual_seed_all(seed)
 
 class Encoder(torch.nn.Module):
     def __init__(self, num_features, dim, num_gc_layers):
@@ -44,7 +46,6 @@ class Encoder(torch.nn.Module):
             else:
                 nn = Sequential(Linear(num_features, dim), ReLU(), Linear(dim, dim))
 
-            torch.manual_seed(12345)
             conv = GINConv(nn)
             bn = torch.nn.BatchNorm1d(dim)
 

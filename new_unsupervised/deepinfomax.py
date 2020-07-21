@@ -25,6 +25,8 @@ seed = 12345
 random.seed(seed)
 np.random.seed(seed)
 torch.manual_seed(seed)
+torch.cuda.manual_seed(seed)
+torch.cuda.manual_seed_all(seed)
 
 class GcnInfomax(nn.Module):
   def __init__(self, hidden_dim, num_gc_layers, alpha=0.5, beta=1., gamma=.1):
@@ -139,7 +141,6 @@ if __name__ == '__main__':
     path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', DS)
     # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
 
-    torch.manual_seed(12345)
     dataset = TUDataset(path, name=DS).shuffle()
     try:
         dataset_num_features = dataset.num_features
@@ -149,7 +150,6 @@ if __name__ == '__main__':
     if not dataset_num_features:
         dataset_num_features = 1
 
-    torch.manual_seed(12345)
     dataloader = DataLoader(dataset, batch_size=batch_size)
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
