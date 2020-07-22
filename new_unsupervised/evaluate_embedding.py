@@ -140,7 +140,7 @@ def linearsvc_classify(x, y, search):
         accuracies.append(accuracy_score(y_test, classifier.predict(x_test)))
     return np.mean(accuracies)
 
-def evaluate_embedding(embeddings, labels, search=False):
+def evaluate_embedding(embeddings, labels, search=True):
 
     labels = preprocessing.LabelEncoder().fit_transform(labels)
     x, y = np.array(embeddings), np.array(labels)
