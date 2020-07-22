@@ -133,7 +133,7 @@ if __name__ == '__main__':
     
     args = arg_parse()
 
-    seed = 82
+    seed = 84
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
