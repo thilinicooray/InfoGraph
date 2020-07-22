@@ -140,11 +140,11 @@ if __name__ == '__main__':
         torch.manual_seed(seed)
         torch.cuda.manual_seed(seed)
 
-        print('init seed ', torch.initial_seed())
+        print('init seed, seed ', torch.initial_seed(), seed)
 
         accuracies = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
         epochs = int(args.num_epochs)
-        log_interval = 2
+        log_interval = 1
         batch_size = 128
         lr = args.lr
         DS = args.DS
