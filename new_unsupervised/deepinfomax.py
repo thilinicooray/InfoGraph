@@ -214,7 +214,7 @@ if __name__ == '__main__':
 
         #scheduler.step()
 
-    model.eval()
+    #model.eval()
     emb, y = model.get_embeddings(dataloader)
     res = evaluate_embedding(emb, y)
     accuracies['logreg'].append(res[0])
