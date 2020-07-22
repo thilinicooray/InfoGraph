@@ -133,7 +133,7 @@ if __name__ == '__main__':
     
     args = arg_parse()
 
-    for seed in range(20,40):
+    for seed in range(40,60):
 
         random.seed(seed)
         np.random.seed(seed)
