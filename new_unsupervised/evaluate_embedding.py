@@ -91,21 +91,25 @@ def logistic_classify(x, y):
     return np.mean(accs)
 
 def svc_classify(x, y, search):
-    kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=84)
-    accuracies = []
-    for train_index, test_index in kf.split(x, y):
+    for i in range(100):
+        print('seed ', i)
+        kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=i)
+        accuracies = []
+        for train_index, test_index in kf.split(x, y):
 
-        x_train, x_test = x[train_index], x[test_index]
-        y_train, y_test = y[train_index], y[test_index]
-        # x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.1)
-        if search:
-            params = {'C':[0.001, 0.01,0.1,1,10,100,1000]}
-            classifier = GridSearchCV(SVC(), params, cv=5, scoring='accuracy', verbose=0)
-        else:
-            classifier = SVC(C=10)
-        classifier.fit(x_train, y_train)
-        accuracies.append(accuracy_score(y_test, classifier.predict(x_test)))
-    return np.mean(accuracies)
+            x_train, x_test = x[train_index], x[test_index]
+            y_train, y_test = y[train_index], y[test_index]
+            # x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.1)
+            if search:
+                params = {'C':[0.001, 0.01,0.1,1,10,100,1000]}
+                classifier = GridSearchCV(SVC(), params, cv=5, scoring='accuracy', verbose=0)
+            else:
+                classifier = SVC(C=10)
+            classifier.fit(x_train, y_train)
+            accuracies.append(accuracy_score(y_test, classifier.predict(x_test)))
+        a = np.mean(accuracies)
+        print(i,a)
+    return a
 
 def randomforest_classify(x, y, search):
     kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
