@@ -143,7 +143,7 @@ if __name__ == '__main__':
 
     accuracies = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
     epochs = int(args.num_epochs)
-    log_interval = 1
+    log_interval = 2
     batch_size = 128
     lr = args.lr
     DS = args.DS
