@@ -91,7 +91,7 @@ def logistic_classify(x, y):
     return np.mean(accs)
 
 def svc_classify(x, y, search):
-    kf = StratifiedKFold(n_splits=10, shuffle=False, random_state=None)
+    kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=84)
     accuracies = []
     for train_index, test_index in kf.split(x, y):
 
