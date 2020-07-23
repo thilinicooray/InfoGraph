@@ -105,7 +105,13 @@ def svc_classify(x, y, search):
             classifier = SVC(C=10)
         classifier.fit(x_train, y_train)
         accuracies.append(accuracy_score(y_test, classifier.predict(x_test)))
-    return np.mean(accuracies)
+
+    mean = np.mean(accuracies)
+    std = np.std(accuracies)
+
+    print('mean libsvm ', mean, 'std ', std)
+
+    return mean
 
 def randomforest_classify(x, y, search):
     kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
