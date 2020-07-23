@@ -125,30 +125,34 @@ def randomforest_classify(x, y, search):
     return ret
 
 def linearsvc_classify(x, y, search):
-    kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
-    accuracies = []
-    for train_index, test_index in kf.split(x, y):
+    for i in range(100):
+        kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=i)
+        accuracies = []
+        for train_index, test_index in kf.split(x, y):
 
-        x_train, x_test = x[train_index], x[test_index]
-        y_train, y_test = y[train_index], y[test_index]
-        if search:
-            params = {'C':[0.001, 0.01,0.1,1,10,100,1000]}
-            classifier = GridSearchCV(LinearSVC(max_iter=1000), params, cv=5, scoring='accuracy', verbose=0)
-        else:
-            classifier = LinearSVC(C=10)
-        classifier.fit(x_train, y_train)
-        accuracies.append(accuracy_score(y_test, classifier.predict(x_test)))
-    return np.mean(accuracies)
+            x_train, x_test = x[train_index], x[test_index]
+            y_train, y_test = y[train_index], y[test_index]
+            if search:
+                params = {'C':[0.001, 0.01,0.1,1,10,100,1000]}
+                classifier = GridSearchCV(LinearSVC(max_iter=1000), params, cv=5, scoring='accuracy', verbose=0)
+            else:
+                classifier = LinearSVC(C=10)
+            classifier.fit(x_train, y_train)
+            accuracies.append(accuracy_score(y_test, classifier.predict(x_test)))
 
-def evaluate_embedding(embeddings, labels, search=True):
+        a =  np.mean(accuracies)
+        print(i, a)
+    return a
+
+def evaluate_embedding(embeddings, labels, search=False):
 
     labels = preprocessing.LabelEncoder().fit_transform(labels)
     x, y = np.array(embeddings), np.array(labels)
     print(x.shape, y.shape)
 
-    logreg_accuracies = [logistic_classify(x, y) for _ in range(1)]
+    #logreg_accuracies = [logistic_classify(x, y) for _ in range(1)]
     # print(logreg_accuracies)
-    print('LogReg', np.mean(logreg_accuracies))
+    #print('LogReg', np.mean(logreg_accuracies))
 
     svc_accuracies = [svc_classify(x,y, search) for _ in range(1)]
     # print(svc_accuracies)
@@ -156,13 +160,13 @@ def evaluate_embedding(embeddings, labels, search=True):
 
     #linearsvc_accuracies = [linearsvc_classify(x, y, search) for _ in range(1)]
     # print(linearsvc_accuracies)
-    print('LinearSvc', 0.0)
+    #print('LinearSvc', 0.0)
 
-    randomforest_accuracies = [randomforest_classify(x, y, search) for _ in range(1)]
+    #randomforest_accuracies = [randomforest_classify(x, y, search) for _ in range(1)]
     # print(randomforest_accuracies)
-    print('randomforest', np.mean(randomforest_accuracies))
+    #print('randomforest', np.mean(randomforest_accuracies))
 
-    return np.mean(logreg_accuracies), np.mean(svc_accuracies), 0.0, np.mean(randomforest_accuracies)
+    return 0.0, np.mean(svc_accuracies), 0.0, 0.0
 
 if __name__ == '__main__':
     evaluate_embedding('./data', 'ENZYMES', np.load('tmp/emb.npy'))
