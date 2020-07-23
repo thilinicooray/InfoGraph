@@ -137,12 +137,12 @@ if __name__ == '__main__':
     best results:
     seed  epoch  acc std
     17 30 92.54 6.33
-    84 25 92.57
-    84 26 93.07
-    42 29 92.48
+    84 25 92.57 5.89
+    84 26 93.07 5.82
+    42 29 92.48 6.46
     '''
-    seed = 42
-    epochs = 29
+    seed = 17
+    epochs = 30
 
     print('seed ', seed, 'epochs ', epochs)
 
