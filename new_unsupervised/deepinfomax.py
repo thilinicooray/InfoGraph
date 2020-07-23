@@ -142,7 +142,7 @@ if __name__ == '__main__':
     42 29 92.48
     '''
     seed = 84
-    epochs = 25
+    epochs = 26
 
     print('seed ', seed, 'epochs ', epochs)
 
