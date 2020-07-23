@@ -87,7 +87,7 @@ if __name__ == '__main__':
     np.random.seed(seed)
     torch.manual_seed(seed)
     accuracies = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
-    epochs = 20
+    epochs = 25
     log_interval = 1
     batch_size = 128
     lr = args.lr
@@ -115,13 +115,13 @@ if __name__ == '__main__':
     print('================')
 
     
-    model.eval()
+    '''model.eval()
     emb, y = model.encoder.get_embeddings(dataloader)
     res = evaluate_embedding(emb, y)
     accuracies['logreg'].append(res[0])
     accuracies['svc'].append(res[1])
     accuracies['linearsvc'].append(res[2])
-    accuracies['randomforest'].append(res[3])
+    accuracies['randomforest'].append(res[3])'''
 
 
     for epoch in range(1, epochs+1):
