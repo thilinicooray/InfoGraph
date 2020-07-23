@@ -142,7 +142,8 @@ if __name__ == '__main__':
     42 29 92.48 6.46
     '''
     seed = 17
-    epochs = 30
+    #epochs = 30
+    epochs = int(args.num_epochs)
 
     print('seed ', seed, 'epochs ', epochs)
 
@@ -155,7 +156,7 @@ if __name__ == '__main__':
     print('init seed, seed ', torch.initial_seed(), seed)
 
     accuracies = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
-    #epochs = int(args.num_epochs)
+
     log_interval = 1
     batch_size = 128
     lr = args.lr
