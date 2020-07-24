@@ -63,6 +63,8 @@ class GcnInfomax(nn.Module):
         class_mu.data, class_logvar.data, batch, True
     )
 
+    print(node_mu[:3,:5], node_logvar[:3,:5], class_mu[:3,:5], class_logvar[:3,:5])
+
     # kl-divergence error for style latent space
     node_kl_divergence_loss = torch.mean(
         - 0.5 * torch.sum(1 + node_logvar - node_mu.pow(2) - node_logvar.exp())
