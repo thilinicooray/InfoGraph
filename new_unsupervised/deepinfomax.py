@@ -134,8 +134,8 @@ if __name__ == '__main__':
     args = arg_parse()
 
     seed = 97
-    epochs = 30
-    #epochs = int(args.num_epochs)
+    #epochs = 30
+    epochs = int(args.num_epochs)
 
     print('seed ', seed, 'epochs ', epochs)
 
@@ -150,9 +150,10 @@ if __name__ == '__main__':
     accuracies = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
 
     log_interval = 1
-    batch_size = 128
-    #lr = args.lr
-    lr = 0.000001
+    #batch_size = 128
+    batch_size = args.batch_size
+    lr = args.lr
+    #lr = 0.000001
     DS = args.DS
     path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', DS)
     # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
@@ -208,7 +209,7 @@ if __name__ == '__main__':
         print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(dataloader),
                                                                                            kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
         #used during finetune phase
-        '''if epoch % log_interval == 0:
+        if epoch % log_interval == 0:
             model.eval()
             emb, y = model.get_embeddings(dataloader)
             res = evaluate_embedding(emb, y)
@@ -216,10 +217,10 @@ if __name__ == '__main__':
             accuracies['svc'].append(res[1])
             accuracies['linearsvc'].append(res[2])
             accuracies['randomforest'].append(res[3])
-            print(accuracies)'''
+            print(accuracies)
 
 
-    model.eval()
+    '''model.eval()
     
     emb, y = model.get_embeddings(dataloader)
     res = evaluate_embedding(emb, y)
@@ -227,7 +228,7 @@ if __name__ == '__main__':
     accuracies['svc'].append(res[1])
     accuracies['linearsvc'].append(res[2])
     accuracies['randomforest'].append(res[3])
-    print(accuracies)
+    print(accuracies)'''
 
     with open('unsupervised.log', 'a+') as f:
         s = json.dumps(accuracies)
