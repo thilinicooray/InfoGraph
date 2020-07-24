@@ -167,6 +167,7 @@ if __name__ == '__main__':
         dataset_num_features = 1
 
     if not dataset_num_features:
+        print('came here ')
         dataset_num_features = 1
 
     dataloader = DataLoader(dataset, batch_size=batch_size)
