@@ -98,7 +98,7 @@ class GcnInfomax(nn.Module):
     reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
     reconstruction_error.backward()
 
-    print(reconstruction_error.item(), class_kl_divergence_loss.item(), node_kl_divergence_loss.item())
+    #print(reconstruction_error.item(), class_kl_divergence_loss.item(), node_kl_divergence_loss.item())
 
     
     return reconstruction_error.item() , class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
