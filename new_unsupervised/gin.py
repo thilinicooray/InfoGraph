@@ -93,10 +93,14 @@ class Decoder(torch.nn.Module):
             ('relu_final', Sigmoid()),
         ]))
 
-    def forward(self, node_latent_space, class_latent_space):
+    def forward(self, node_latent_space, class_latent_space, edge_index):
         x = torch.cat((node_latent_space, class_latent_space), dim=1)
 
-        x = torch.softmax(self.linear_model(x), dim=-1)
+        #x = torch.softmax(self.linear_model(x), dim=-1)
+        x = self.linear_model(x)
+
+        #value = (z[edge_index[0]] * z[edge_index[1]]).sum(dim=1)
+        #return torch.sigmoid(value)
 
         return x
 

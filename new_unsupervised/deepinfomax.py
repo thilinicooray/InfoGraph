@@ -11,6 +11,7 @@ import random
 from torch_geometric.datasets import TUDataset
 from torch_geometric.data import DataLoader
 from torch_geometric.nn import global_mean_pool, global_add_pool, global_max_pool
+from torch_geometric.utils import negative_sampling, remove_self_loops, add_self_loops
 import sys
 import json
 from torch import optim
@@ -92,16 +93,58 @@ class GcnInfomax(nn.Module):
     mi_loss = local_global_loss_disen(node_latent_embeddings, class_latent_embeddings, edge_index, batch, measure)
     mi_loss.backward(retain_graph=True)'''
 
-    reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
+    reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, edge_index)
     #check input feat first
     #print('recon ', x[0],reconstructed_node[0])
-    reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
+    #reconstruction_error =  mse_loss(reconstructed_node, edge_index) * num_graphs
+    reconstruction_error = self.recon_loss(reconstructed_node, edge_index)
     reconstruction_error.backward()
 
     #print(reconstruction_error.item(), class_kl_divergence_loss.item(), node_kl_divergence_loss.item())
 
     
     return reconstruction_error.item() , class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
+
+
+  def edge_recon(self, z, edge_index, sigmoid=True):
+      r"""Decodes the latent variables :obj:`z` into edge probabilities for
+      the given node-pairs :obj:`edge_index`.
+
+      Args:
+          z (Tensor): The latent space :math:`\mathbf{Z}`.
+          sigmoid (bool, optional): If set to :obj:`False`, does not apply
+              the logistic sigmoid function to the output.
+              (default: :obj:`True`)
+      """
+      value = (z[edge_index[0]] * z[edge_index[1]]).sum(dim=1)
+      return torch.sigmoid(value) if sigmoid else value
+
+  def recon_loss(self, z, edge_index):
+
+      EPS = 1e-15
+      MAX_LOGSTD = 10
+      r"""Given latent variables :obj:`z`, computes the binary cross
+      entropy loss for positive edges :obj:`pos_edge_index` and negative
+      sampled edges.
+
+      Args:
+          z (Tensor): The latent space :math:`\mathbf{Z}`.
+          pos_edge_index (LongTensor): The positive edges to train against.
+      """
+
+      pos_loss = -torch.log(
+          self.edge_recon(z, edge_index) + EPS).mean()
+
+      # Do not include self-loops in negative samples
+      pos_edge_index, _ = remove_self_loops(edge_index)
+      pos_edge_index, _ = add_self_loops(pos_edge_index)
+
+      neg_edge_index = negative_sampling(pos_edge_index, z.size(0))
+      neg_loss = -torch.log(1 -
+                            self.edge_recon(z, neg_edge_index) +
+                            EPS).mean()
+
+      return pos_loss + neg_loss
 
   def get_embeddings(self, loader):
 
@@ -167,7 +210,6 @@ if __name__ == '__main__':
         dataset_num_features = 1
 
     if not dataset_num_features:
-        print('came here ')
         dataset_num_features = 1
 
     dataloader = DataLoader(dataset, batch_size=batch_size)
