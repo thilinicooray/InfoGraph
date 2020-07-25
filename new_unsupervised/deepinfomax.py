@@ -132,6 +132,10 @@ class GcnInfomax(nn.Module):
           pos_edge_index (LongTensor): The positive edges to train against.
       """
 
+      reco = self.edge_recon(z, edge_index)
+
+      print('edge recon try ', reco.size(), edge_index.size())
+
       pos_loss = -torch.log(
           self.edge_recon(z, edge_index) + EPS).mean()
 
@@ -139,7 +143,7 @@ class GcnInfomax(nn.Module):
       pos_edge_index, _ = remove_self_loops(edge_index)
       pos_edge_index, _ = add_self_loops(pos_edge_index)
 
-      neg_edge_index = negative_sampling(pos_edge_index, z.size(0))
+      neg_edge_index = negative_sampling(pos_edge_index, z.size(0)) #random thingggg
       neg_loss = -torch.log(1 -
                             self.edge_recon(z, neg_edge_index) +
                             EPS).mean()
