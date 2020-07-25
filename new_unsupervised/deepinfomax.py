@@ -134,7 +134,7 @@ class GcnInfomax(nn.Module):
 
       reco = self.edge_recon(z, edge_index)
 
-      print('edge recon try ', reco.size(), edge_index.size())
+      print('edge recon try ', reco.size(), edge_index.size(), reco [:10], edge_index[0][:10], edge_index[1][:10])
 
       pos_loss = -torch.log(
           self.edge_recon(z, edge_index) + EPS).mean()
