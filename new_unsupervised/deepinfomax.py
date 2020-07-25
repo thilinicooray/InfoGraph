@@ -106,7 +106,7 @@ class GcnInfomax(nn.Module):
     return reconstruction_error.item() , class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
 
 
-  def edge_recon(self, z, edge_index, sigmoid=True):
+  def edge_recon(self, z, edge_index, sigmoid=False):
       r"""Decodes the latent variables :obj:`z` into edge probabilities for
       the given node-pairs :obj:`edge_index`.
 
