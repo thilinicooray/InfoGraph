@@ -97,7 +97,7 @@ class GcnInfomax(nn.Module):
     #check input feat first
     #print('recon ', x[0],reconstructed_node[0])
     #reconstruction_error =  mse_loss(reconstructed_node, edge_index) * num_graphs
-    reconstruction_error = self.recon_loss(reconstructed_node, edge_index)
+    reconstruction_error = self.recon_loss(reconstructed_node, edge_index)  #reeval adj loss
     reconstruction_error.backward()
 
     #print(reconstruction_error.item(), class_kl_divergence_loss.item(), node_kl_divergence_loss.item())
@@ -132,23 +132,24 @@ class GcnInfomax(nn.Module):
           pos_edge_index (LongTensor): The positive edges to train against.
       """
 
-      reco = self.edge_recon(z, edge_index)
+      #reco = self.edge_recon(z, edge_index)
 
-      print('edge recon try ', reco.size(), edge_index.size(), reco [:10], edge_index[0][:10], edge_index[1][:10])
+      #print('edge recon try ', reco.size(), edge_index.size(), reco [:10], edge_index[0][:10], edge_index[1][:10])
 
       pos_loss = -torch.log(
           self.edge_recon(z, edge_index) + EPS).mean()
 
       # Do not include self-loops in negative samples
-      pos_edge_index, _ = remove_self_loops(edge_index)
+      '''pos_edge_index, _ = remove_self_loops(edge_index)
       pos_edge_index, _ = add_self_loops(pos_edge_index)
 
       neg_edge_index = negative_sampling(pos_edge_index, z.size(0)) #random thingggg
       neg_loss = -torch.log(1 -
                             self.edge_recon(z, neg_edge_index) +
-                            EPS).mean()
+                            EPS).mean()'''
 
-      return pos_loss + neg_loss
+      #return pos_loss + neg_loss
+      return pos_loss
 
   def get_embeddings(self, loader):
 
