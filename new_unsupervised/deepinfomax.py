@@ -235,13 +235,13 @@ if __name__ == '__main__':
     accuracies['linearsvc'].append(res[2])
     accuracies['randomforest'].append(res[3])'''
 
-    model.train()
+    #model.train()
     for epoch in range(1, epochs+1):
         recon_loss_all = 0
         kl_class_loss_all = 0
         kl_node_loss_all = 0
         mi_loss_all = 0
-        #model.train()
+        model.train()
         for data in dataloader:
             data = data.to(device)
             optimizer.zero_grad()
