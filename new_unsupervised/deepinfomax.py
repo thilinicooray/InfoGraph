@@ -60,7 +60,7 @@ class GcnInfomax(nn.Module):
     node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index, batch)
 
 
-    print('direct out ', node_mu[0,:5], node_logvar[0,:5], class_mu[0,:5], class_logvar[0,:5], batch)
+    #print('direct out ', node_mu[0,:5], node_logvar[0,:5], class_mu[0,:5], class_logvar[0,:5], batch)
 
 
     grouped_mu, grouped_logvar = accumulate_group_evidence(

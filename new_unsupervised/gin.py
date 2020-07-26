@@ -57,7 +57,7 @@ class Encoder(torch.nn.Module):
         '''if x is None:
             x = torch.ones((batch.shape[0], 1)).to(device)'''
 
-        print('input x' , x[:5])
+        #print('input x' , x[:5])
 
         xs = []
         for i in range(self.num_gc_layers):
