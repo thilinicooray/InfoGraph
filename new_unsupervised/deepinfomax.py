@@ -93,35 +93,24 @@ class GcnInfomax(nn.Module):
     sampling from group mu and logvar for each graph in mini-batch differently makes
     the decoder consider class latent embeddings as random noise and ignore them 
     """
-    node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
+    '''node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
     class_latent_embeddings = group_wise_reparameterize(
         training=True, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
     )
 
 
-    #print('latent node ', node_latent_embeddings[0:5])
-    #print('latent class ', class_latent_embeddings[0:5])
-
-    #need to reduce ml between node and class latents
-    '''measure='JSD'
-    mi_loss = local_global_loss_disen(node_latent_embeddings, class_latent_embeddings, edge_index, batch, measure)
-    mi_loss.backward(retain_graph=True)'''
+    
 
     reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, edge_index)
-    #print('reconstructed_node ', reconstructed_node[0:5])
-
-
-    #check input feat first
-    #print('recon ', x[0],reconstructed_node[0])
+    
     reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
     #reconstruction_error = self.recon_loss(reconstructed_node, edge_index)  #reeval adj loss
-    #print('reconstruction_error ', reconstruction_error)
     reconstruction_error.backward()
 
-    #print(reconstruction_error.item(), class_kl_divergence_loss.item(), node_kl_divergence_loss.item())
+    #print(reconstruction_error.item(), class_kl_divergence_loss.item(), node_kl_divergence_loss.item())'''
 
     
-    return reconstruction_error.item() , class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
+    return  class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
 
 
   def edge_recon(self, z, edge_index, sigmoid=False):
@@ -273,8 +262,8 @@ if __name__ == '__main__':
 
 
             optimizer.zero_grad()
-            recon_loss, kl_class, kl_node = model(data.x, data.edge_index, data.batch, data.num_graphs)
-            recon_loss_all += recon_loss
+            kl_class, kl_node = model(data.x, data.edge_index, data.batch, data.num_graphs)
+            #recon_loss_all += recon_loss
             kl_class_loss_all += kl_class
             kl_node_loss_all += kl_node
             optimizer.step()
