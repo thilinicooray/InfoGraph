@@ -113,8 +113,8 @@ class GcnInfomax(nn.Module):
 
     #check input feat first
     #print('recon ', x[0],reconstructed_node[0])
-    #reconstruction_error =  mse_loss(reconstructed_node, edge_index) * num_graphs
-    reconstruction_error = self.recon_loss(reconstructed_node, edge_index)  #reeval adj loss
+    reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
+    #reconstruction_error = self.recon_loss(reconstructed_node, edge_index)  #reeval adj loss
     #print('reconstruction_error ', reconstruction_error)
     reconstruction_error.backward()
 
