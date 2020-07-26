@@ -56,8 +56,6 @@ class GcnInfomax(nn.Module):
   def forward(self, x, edge_index, batch, num_graphs):
 
     # batch_size = data.num_graphs
-    if x is None:
-        x = torch.ones(batch.shape[0]).to(device)
 
     node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index, batch)
     grouped_mu, grouped_logvar = accumulate_group_evidence(
