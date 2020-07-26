@@ -140,16 +140,15 @@ class GcnInfomax(nn.Module):
           self.edge_recon(z, edge_index) + EPS).mean()
 
       # Do not include self-loops in negative samples
-      '''pos_edge_index, _ = remove_self_loops(edge_index)
+      pos_edge_index, _ = remove_self_loops(edge_index)
       pos_edge_index, _ = add_self_loops(pos_edge_index)
 
       neg_edge_index = negative_sampling(pos_edge_index, z.size(0)) #random thingggg
       neg_loss = -torch.log(1 -
                             self.edge_recon(z, neg_edge_index) +
-                            EPS).mean()'''
+                            EPS).mean()
 
-      #return pos_loss + neg_loss
-      return pos_loss
+      return pos_loss + neg_loss
 
   def get_embeddings(self, loader):
 
@@ -209,6 +208,8 @@ if __name__ == '__main__':
     # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
 
     dataset = TUDataset(path, name=DS).shuffle()
+
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     try:
         dataset_num_features = dataset.num_features
     except:
@@ -216,10 +217,11 @@ if __name__ == '__main__':
 
     if not dataset_num_features:
         dataset_num_features = 1
+        #input_feat = torch.ones((batch_size, 1)).to(device)
 
     dataloader = DataLoader(dataset, batch_size=batch_size)
 
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
     model = GcnInfomax(args.hidden_dim, args.num_gc_layers).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     #scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
@@ -249,6 +251,12 @@ if __name__ == '__main__':
         model.train()
         for data in dataloader:
             data = data.to(device)
+
+            if data.x is None:
+                'came here'
+                data.x = torch.ones((data.batch.shape[0], 1)).to(device)
+
+
             optimizer.zero_grad()
             recon_loss, kl_class, kl_node = model(data.x, data.edge_index, data.batch, data.num_graphs)
             recon_loss_all += recon_loss
