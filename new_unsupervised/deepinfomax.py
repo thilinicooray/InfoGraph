@@ -267,7 +267,7 @@ if __name__ == '__main__':
             #if data.x is None:
             #data.x = torch.ones((data.batch.shape[0], 5)).to(device)
 
-            print(data.x)
+            print(data)
 
             new = to_dense_adj(data.edge_index, data.batch)
 
