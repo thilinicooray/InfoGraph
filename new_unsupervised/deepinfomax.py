@@ -11,7 +11,7 @@ import random
 from torch_geometric.datasets import TUDataset
 from torch_geometric.data import DataLoader
 from torch_geometric.nn import global_mean_pool, global_add_pool, global_max_pool
-from torch_geometric.utils import negative_sampling, remove_self_loops, add_self_loops
+from torch_geometric.utils import negative_sampling, remove_self_loops, add_self_loops, to_dense_adj
 import sys
 import json
 from torch import optim
@@ -263,12 +263,15 @@ if __name__ == '__main__':
         for data in dataloader:
             data = data.to(device)
 
-            print('data', data)
 
             #if data.x is None:
-            data.x = torch.ones((data.batch.shape[0], 5)).to(device)
+            #data.x = torch.ones((data.batch.shape[0], 5)).to(device)
 
-           # print(data.x)
+            print(data.x)
+
+            new = to_dense_adj(data.edge_index, data.batch)
+
+            print(new.size())
 
 
             optimizer.zero_grad()
