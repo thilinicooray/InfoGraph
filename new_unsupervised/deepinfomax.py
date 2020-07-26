@@ -54,6 +54,7 @@ class GcnInfomax(nn.Module):
 
 
   def forward(self, x, edge_index, batch, num_graphs):
+    print('init seed, seed info ', torch.initial_seed())
 
     # batch_size = data.num_graphs
 
