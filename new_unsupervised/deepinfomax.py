@@ -222,7 +222,7 @@ if __name__ == '__main__':
         dataset_num_features = 1
 
     if not dataset_num_features:
-        dataset_num_features = 1
+        dataset_num_features = 5
         #input_feat = torch.ones((batch_size, 1)).to(device)
 
     dataloader = DataLoader(dataset, batch_size=batch_size)
@@ -258,7 +258,7 @@ if __name__ == '__main__':
         for data in dataloader:
             data = data.to(device)
             #if data.x is None:
-            data.x = torch.ones((data.batch.shape[0], 1)).to(device)
+            data.x = torch.ones((data.batch.shape[0], 5)).to(device)
 
 
             optimizer.zero_grad()
