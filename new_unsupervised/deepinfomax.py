@@ -170,8 +170,8 @@ class GcnInfomax(nn.Module):
                   x, edge_index, batch = data.x, data.edge_index, data.batch
 
                   #print(x, edge_index, data.x)
-
-                  x = torch.zeros((batch.shape[0],5)).to(device)
+                  x = torch.rand(data.batch.shape[0], 5).to(device)
+                  #x = torch.zeros((batch.shape[0],5)).to(device)
                   __, _, class_mu, class_logvar = self.encoder(x, edge_index, batch)
 
                   grouped_mu, grouped_logvar = accumulate_group_evidence(
@@ -270,7 +270,8 @@ if __name__ == '__main__':
 
 
             #if data.x is None:
-            data.x = torch.zeros((data.batch.shape[0], 5)).to(device)
+            #data.x = torch.zeros((data.batch.shape[0], 5)).to(device)
+            data.x = torch.rand(data.batch.shape[0], 5).to(device)
 
 
 
