@@ -166,7 +166,7 @@ class GcnInfomax(nn.Module):
           for data in loader:
               data.to(device)
               x, edge_index, batch = data.x, data.edge_index, data.batch
-              #x = torch.ones((batch.shape[0],5)).to(device)
+              x = torch.ones((batch.shape[0],5)).to(device)
               __, _, class_mu, class_logvar = self.encoder(x, edge_index, batch)
 
               grouped_mu, grouped_logvar = accumulate_group_evidence(
@@ -262,7 +262,7 @@ if __name__ == '__main__':
         for data in dataloader:
             data = data.to(device)
             #if data.x is None:
-            #data.x = torch.ones((data.batch.shape[0], 5)).to(device)
+            data.x = torch.ones((data.batch.shape[0], 5)).to(device)
 
            # print(data.x)
 
