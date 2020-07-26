@@ -60,25 +60,32 @@ class GcnInfomax(nn.Module):
     node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index, batch)
 
 
-    print(node_mu[0,:5], node_logvar[0,:5], class_mu[0,:5], class_logvar[0,:5], batch)
+    print('direct out ', node_mu[0,:5], node_logvar[0,:5], class_mu[0,:5], class_logvar[0,:5], batch)
 
 
     grouped_mu, grouped_logvar = accumulate_group_evidence(
         class_mu.data, class_logvar.data, batch, True
     )
 
+    print('grouped ', grouped_mu[0,:5], grouped_logvar[0,:5])
+
+
     # kl-divergence error for style latent space
     node_kl_divergence_loss = torch.mean(
         - 0.5 * torch.sum(1 + node_logvar - node_mu.pow(2) - node_logvar.exp())
     )
+    print('node kl unwei ', node_kl_divergence_loss)
     node_kl_divergence_loss = 0.0000001*node_kl_divergence_loss *num_graphs
+    print('node kl wei ', node_kl_divergence_loss)
     node_kl_divergence_loss.backward(retain_graph=True)
 
     # kl-divergence error for class latent space
     class_kl_divergence_loss = torch.mean(
         - 0.5 * torch.sum(1 + grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp())
     )
+    print('class kl unwei ', class_kl_divergence_loss)
     class_kl_divergence_loss = 0.0000001* class_kl_divergence_loss * num_graphs
+    print('class kl wei ', class_kl_divergence_loss)
     class_kl_divergence_loss.backward(retain_graph=True)
 
     # reconstruct samples
@@ -91,16 +98,24 @@ class GcnInfomax(nn.Module):
         training=True, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
     )
 
+
+    print('latent node ', node_latent_embeddings[0:5])
+    print('latent class ', class_latent_embeddings[0:5])
+
     #need to reduce ml between node and class latents
     '''measure='JSD'
     mi_loss = local_global_loss_disen(node_latent_embeddings, class_latent_embeddings, edge_index, batch, measure)
     mi_loss.backward(retain_graph=True)'''
 
     reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, edge_index)
+    print('reconstructed_node ', reconstructed_node[0:5])
+
+
     #check input feat first
     #print('recon ', x[0],reconstructed_node[0])
     #reconstruction_error =  mse_loss(reconstructed_node, edge_index) * num_graphs
     reconstruction_error = self.recon_loss(reconstructed_node, edge_index)  #reeval adj loss
+    print('reconstruction_error ', reconstruction_error)
     reconstruction_error.backward()
 
     #print(reconstruction_error.item(), class_kl_divergence_loss.item(), node_kl_divergence_loss.item())
