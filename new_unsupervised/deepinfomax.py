@@ -6,6 +6,7 @@ import torch.nn.functional as F
 import numpy as np
 import json
 import random
+import os
 # from core.encoders import *
 
 from torch_geometric.datasets import TUDataset
@@ -209,6 +210,7 @@ if __name__ == '__main__':
     torch.cuda.manual_seed(seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
+    os.environ['PYTHONHASHSEED'] = str(seed)
 
     print('init seed, seed ', torch.initial_seed(), seed)
 
