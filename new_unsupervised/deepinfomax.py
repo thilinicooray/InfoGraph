@@ -164,9 +164,9 @@ class GcnInfomax(nn.Module):
       y = []
       with torch.no_grad():
           for data in loader:
-              data.to(device)
+              #data.to(device)
               x, edge_index, batch = data.x, data.edge_index, data.batch
-              #x = torch.ones((batch.shape[0],5)).to(device)
+              x = torch.ones((batch.shape[0],5)).to(device)
               __, _, class_mu, class_logvar = self.encoder(x, edge_index, batch)
 
               grouped_mu, grouped_logvar = accumulate_group_evidence(
@@ -226,6 +226,7 @@ if __name__ == '__main__':
         dataset_num_features = 1
 
     if not dataset_num_features:
+
         dataset_num_features = 5
         #input_feat = torch.ones((batch_size, 1)).to(device)
 
@@ -261,6 +262,9 @@ if __name__ == '__main__':
         model.train()
         for data in dataloader:
             data = data.to(device)
+
+            print('data', data)
+
             #if data.x is None:
             data.x = torch.ones((data.batch.shape[0], 5)).to(device)
 
