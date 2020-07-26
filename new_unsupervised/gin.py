@@ -18,6 +18,19 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn import preprocessing
 from sklearn.metrics import accuracy_score
 import sys
+import os
+
+seed = 97
+#epochs = 30
+
+
+
+np.random.seed(seed)
+torch.manual_seed(seed)
+torch.cuda.manual_seed(seed)
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = False
+os.environ['PYTHONHASHSEED'] = str(seed)
 
 class Encoder(torch.nn.Module):
     def __init__(self, num_features, dim, num_gc_layers):

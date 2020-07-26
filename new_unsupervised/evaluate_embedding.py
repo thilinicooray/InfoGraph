@@ -16,6 +16,19 @@ from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+import os
+
+seed = 97
+#epochs = 30
+
+
+
+torch.manual_seed(seed)
+torch.cuda.manual_seed(seed)
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = False
+os.environ['PYTHONHASHSEED'] = str(seed)
+
 def draw_plot(datadir, DS, embeddings, fname, max_nodes=None):
     return
     graphs = read_graphfile(datadir, DS, max_nodes=max_nodes)

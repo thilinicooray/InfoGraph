@@ -3,6 +3,18 @@ import torch.nn as nn
 import matplotlib.pyplot as plt
 from torch.autograd import Variable
 from mpl_toolkits.axes_grid1 import ImageGrid
+import os
+
+seed = 97
+#epochs = 30
+
+
+
+torch.manual_seed(seed)
+torch.cuda.manual_seed(seed)
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = False
+os.environ['PYTHONHASHSEED'] = str(seed)
 
 
 def accumulate_group_evidence(class_mu, class_logvar, batch, is_cuda):
