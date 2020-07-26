@@ -251,7 +251,7 @@ if __name__ == '__main__':
         model.train()
         for data in dataloader:
             data = data.to(device)
-
+            print('data   ', data.x, data.x.size())
             if data.x is None:
                 'came here'
                 data.x = torch.ones((data.batch.shape[0], 1)).to(device)
