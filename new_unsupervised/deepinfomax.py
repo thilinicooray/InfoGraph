@@ -58,6 +58,11 @@ class GcnInfomax(nn.Module):
     # batch_size = data.num_graphs
 
     node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index, batch)
+
+
+    print(node_mu[0,:5], node_logvar[0,:5], class_mu[0,:5], class_logvar[0,:5], batch)
+
+
     grouped_mu, grouped_logvar = accumulate_group_evidence(
         class_mu.data, class_logvar.data, batch, True
     )
@@ -157,8 +162,7 @@ class GcnInfomax(nn.Module):
           for data in loader:
               data.to(device)
               x, edge_index, batch = data.x, data.edge_index, data.batch
-              if x is None:
-                  x = torch.ones((batch.shape[0],1)).to(device)
+              x = torch.ones((batch.shape[0],1)).to(device)
               __, _, class_mu, class_logvar = self.encoder(x, edge_index, batch)
 
               grouped_mu, grouped_logvar = accumulate_group_evidence(
