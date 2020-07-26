@@ -169,8 +169,8 @@ class GcnInfomax(nn.Module):
               x, edge_index, batch = data.x, data.edge_index, data.batch
 
               #print(x, edge_index, data.x)
-              x = torch.rand(data.batch.shape[0], 5).to(device)
-              #x = torch.zeros((batch.shape[0],5)).to(device)
+              #x = torch.rand(data.batch.shape[0], 5).to(device)
+              x = torch.ones((batch.shape[0],5)).to(device)
               __, _, class_mu, class_logvar = self.encoder(x, edge_index, batch)
 
               grouped_mu, grouped_logvar = accumulate_group_evidence(
@@ -207,6 +207,8 @@ if __name__ == '__main__':
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
     print('init seed, seed ', torch.initial_seed(), seed)
 
@@ -269,8 +271,8 @@ if __name__ == '__main__':
 
 
             #if data.x is None:
-            #data.x = torch.zeros((data.batch.shape[0], 5)).to(device)
-            data.x = torch.rand(data.batch.shape[0], 5).to(device)
+            data.x = torch.ones((data.batch.shape[0], 5)).to(device)
+            #data.x = torch.rand(data.batch.shape[0], 5).to(device)
 
 
 
