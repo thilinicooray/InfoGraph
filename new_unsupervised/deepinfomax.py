@@ -164,25 +164,27 @@ class GcnInfomax(nn.Module):
       y = []
       with torch.no_grad():
           for data in loader:
-              #data.to(device)
-              x, edge_index, batch = data.x, data.edge_index, data.batch
 
-              print(x, edge_index, data.x)
+              for j in range(10):
+                  data.to(device)
+                  x, edge_index, batch = data.x, data.edge_index, data.batch
 
-              x = torch.ones((batch.shape[0],5)).to(device)
-              __, _, class_mu, class_logvar = self.encoder(x, edge_index, batch)
+                  #print(x, edge_index, data.x)
 
-              grouped_mu, grouped_logvar = accumulate_group_evidence(
-                  class_mu.data, class_logvar.data, batch, True
-              )
+                  x = torch.ones((batch.shape[0],5)).to(device)
+                  __, _, class_mu, class_logvar = self.encoder(x, edge_index, batch)
 
-              accumulated_class_latent_embeddings = group_wise_reparameterize(
-                  training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
-              )
+                  grouped_mu, grouped_logvar = accumulate_group_evidence(
+                      class_mu.data, class_logvar.data, batch, True
+                  )
 
-              class_emb = global_mean_pool(accumulated_class_latent_embeddings, batch)
+                  accumulated_class_latent_embeddings = group_wise_reparameterize(
+                      training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
+                  )
 
-              print('clz emb ', class_emb[:5,:3])
+                  class_emb = global_mean_pool(accumulated_class_latent_embeddings, batch)
+
+                  print('clz emb ', class_emb[:5,:3])
 
 
               ret.append(class_emb.cpu().numpy())
