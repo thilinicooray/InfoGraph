@@ -54,7 +54,6 @@ class GcnInfomax(nn.Module):
 
 
   def forward(self, x, edge_index, batch, num_graphs):
-    print('init seed, seed info ', torch.initial_seed())
 
     # batch_size = data.num_graphs
 
@@ -172,7 +171,7 @@ class GcnInfomax(nn.Module):
 
                   #print(x, edge_index, data.x)
 
-                  x = torch.ones((batch.shape[0],5)).to(device)
+                  x = torch.zeros((batch.shape[0],5)).to(device)
                   __, _, class_mu, class_logvar = self.encoder(x, edge_index, batch)
 
                   grouped_mu, grouped_logvar = accumulate_group_evidence(
@@ -271,7 +270,7 @@ if __name__ == '__main__':
 
 
             #if data.x is None:
-            data.x = torch.ones((data.batch.shape[0], 5)).to(device)
+            data.x = torch.zeros((data.batch.shape[0], 5)).to(device)
 
 
 
