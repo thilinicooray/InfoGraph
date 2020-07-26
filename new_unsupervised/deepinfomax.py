@@ -178,6 +178,10 @@ class GcnInfomax(nn.Module):
               )
 
               class_emb = global_mean_pool(accumulated_class_latent_embeddings, batch)
+
+              print('clz emb ', class_emb[:5,:3])
+
+
               ret.append(class_emb.cpu().numpy())
               y.append(data.y.cpu().numpy())
       ret = np.concatenate(ret, 0)
