@@ -86,6 +86,7 @@ if __name__ == '__main__':
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
     accuracies = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
     epochs = 25
     log_interval = 1
