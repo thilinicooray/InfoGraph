@@ -27,7 +27,7 @@ def accumulate_group_evidence(class_mu, class_logvar, batch, is_cuda):
         group_label = batch[i].item()
 
         # remove 0 values from variances
-        class_var[i][class_var[i] == double(0)] = 1e-6
+        class_var[i][class_var[i] == torch.double(0)] = 1e-6
 
         if group_label in var_dict.keys():
             var_dict[group_label] += 1 / class_var[i]
@@ -66,7 +66,7 @@ def accumulate_group_evidence(class_mu, class_logvar, batch, is_cuda):
         group_var[i] = var_dict[group_label]
 
         # remove 0 from var before taking log
-        group_var[i][group_var[i] == double(0)] = 1e-6
+        group_var[i][group_var[i] == torch.double(0)] = 1e-6
 
     # convert group vars into logvars before returning
     return Variable(group_mu, requires_grad=True), Variable(torch.log(group_var), requires_grad=True)
