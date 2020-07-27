@@ -103,7 +103,7 @@ class GcnInfomax(nn.Module):
     reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, edge_index)
     
     #reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
-    reconstruction_error = self.recon_loss(reconstructed_node, edge_index)  #reeval adj loss
+    reconstruction_error = self.recon_loss(reconstructed_node, edge_index, batch)  #reeval adj loss
     reconstruction_error.backward()
 
     #print(reconstruction_error.item(), class_kl_divergence_loss.item(), node_kl_divergence_loss.item())'''
@@ -125,7 +125,7 @@ class GcnInfomax(nn.Module):
       value = (z[edge_index[0]] * z[edge_index[1]]).sum(dim=1)
       return torch.sigmoid(value) if sigmoid else value
 
-  def recon_loss(self, z, edge_index):
+  def recon_loss(self, z, edge_index, batch):
 
       EPS = 1e-15
       MAX_LOGSTD = 10
@@ -142,8 +142,18 @@ class GcnInfomax(nn.Module):
 
       #print('edge recon try ', reco.size(), edge_index.size(), reco [:10], edge_index[0][:10], edge_index[1][:10])
 
+
+      recon_adj = self.edge_recon(z, edge_index)
+
+
+      r_adj = to_dense_adj(recon_adj, batch)
+      org_adj = to_dense_adj(edge_index, batch)
+
+      print(r_adj.size(), org_adj.size())
+
+
       pos_loss = -torch.log(
-          self.edge_recon(z, edge_index) + EPS).mean()
+          recon_adj + EPS).mean()
 
       # Do not include self-loops in negative samples
       pos_edge_index, _ = remove_self_loops(edge_index)

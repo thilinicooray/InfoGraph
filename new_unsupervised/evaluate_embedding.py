@@ -22,13 +22,6 @@ seed = 97
 #epochs = 30
 
 
-
-torch.manual_seed(seed)
-torch.cuda.manual_seed(seed)
-torch.backends.cudnn.deterministic = True
-torch.backends.cudnn.benchmark = False
-os.environ['PYTHONHASHSEED'] = str(seed)
-
 def draw_plot(datadir, DS, embeddings, fname, max_nodes=None):
     return
     graphs = read_graphfile(datadir, DS, max_nodes=max_nodes)
@@ -118,7 +111,7 @@ def svc_classify(x, y, search):
             params = {'C':[0.001, 0.01,0.1,1,10,100,1000]}
             classifier = GridSearchCV(SVC(), params, cv=5, scoring='accuracy', verbose=0)
         else:
-            classifier = SVC(C=10000, random_state=42)
+            classifier = SVC(C=10000)
         classifier.fit(x_train, y_train)
         accuracies.append(accuracy_score(y_test, classifier.predict(x_test)))
 
