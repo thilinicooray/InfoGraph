@@ -145,7 +145,7 @@ class GcnInfomax(nn.Module):
 
       #recon_adj = self.edge_recon(z, edge_index)
 
-      a = to_dense_batch(z, batch)
+      a, idx_tensor = to_dense_batch(z, batch)
       a_t = a.permute(0, 2, 1)
 
       print('batch size', a.size(), a_t.size())
