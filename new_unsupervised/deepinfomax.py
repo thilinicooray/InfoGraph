@@ -106,7 +106,7 @@ class GcnInfomax(nn.Module):
     reconstruction_error = self.recon_loss(reconstructed_node, edge_index, batch)  #reeval adj loss
     reconstruction_error.backward()
 
-    #print(reconstruction_error.item(), class_kl_divergence_loss.item(), node_kl_divergence_loss.item())'''
+    print(reconstruction_error.item(), class_kl_divergence_loss.item(), node_kl_divergence_loss.item())
 
     
     return  reconstruction_error.item(), class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
