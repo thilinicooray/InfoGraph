@@ -148,16 +148,16 @@ class GcnInfomax(nn.Module):
       a, idx_tensor = to_dense_batch(z, batch)
       a_t = a.permute(0, 2, 1)
 
-      print('batch size', a.size(), a_t.size())
+      #print('batch size', a.size(), a_t.size())
 
       rec = torch.bmm(a, a_t)
 
-      print('inner pro', rec.size())
+      #print('inner pro', rec.size())
 
       org_adj = to_dense_adj(edge_index, batch)
 
 
-      print('new' ,rec, 'org', org_adj)
+      #print('new' ,rec, 'org', org_adj)
 
 
       '''#adj = torch.matmul(z, z.t())
