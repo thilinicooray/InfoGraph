@@ -78,7 +78,7 @@ class GcnInfomax(nn.Module):
     node_kl_divergence_loss = torch.mean(
         - 0.5 * torch.sum(1 + node_logvar - node_mu.pow(2) - node_logvar.exp())
     )
-    print('node kl unwei ', node_kl_divergence_loss, node_logvar, node_mu)
+    #print('node kl unwei ', node_kl_divergence_loss, node_logvar, node_mu)
 
 
     node_kl_divergence_loss = 0.0000001*node_kl_divergence_loss *num_graphs
@@ -111,7 +111,7 @@ class GcnInfomax(nn.Module):
     reconstruction_error = self.recon_loss(reconstructed_node, edge_index, batch)  #reeval adj loss
     reconstruction_error.backward()
 
-    #print(reconstruction_error.item(), class_kl_divergence_loss.item(), node_kl_divergence_loss.item())
+    print(reconstruction_error.item(), class_kl_divergence_loss.item(), node_kl_divergence_loss.item())
 
     
     return  reconstruction_error.item(), class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
