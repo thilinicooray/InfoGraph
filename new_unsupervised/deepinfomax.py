@@ -94,27 +94,25 @@ class GcnInfomax(nn.Module):
     sampling from group mu and logvar for each graph in mini-batch differently makes
     the decoder consider class latent embeddings as random noise and ignore them 
     """
-    '''node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
+    node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
     class_latent_embeddings = group_wise_reparameterize(
         training=True, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
     )
 
 
-    
-
     reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, edge_index)
     
-    reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
-    #reconstruction_error = self.recon_loss(reconstructed_node, edge_index)  #reeval adj loss
+    #reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
+    reconstruction_error = self.recon_loss(reconstructed_node, edge_index)  #reeval adj loss
     reconstruction_error.backward()
 
     #print(reconstruction_error.item(), class_kl_divergence_loss.item(), node_kl_divergence_loss.item())'''
 
     
-    return  class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
+    return  reconstruction_error.item(), class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
 
 
-  def edge_recon(self, z, edge_index, sigmoid=False):
+  def edge_recon(self, z, edge_index, sigmoid=True):
       r"""Decodes the latent variables :obj:`z` into edge probabilities for
       the given node-pairs :obj:`edge_index`.
 
@@ -281,8 +279,8 @@ if __name__ == '__main__':
 
 
             optimizer.zero_grad()
-            kl_class, kl_node = model(data.x, data.edge_index, data.batch, data.num_graphs)
-            #recon_loss_all += recon_loss
+            recon_loss, kl_class, kl_node = model(data.x, data.edge_index, data.batch, data.num_graphs)
+            recon_loss_all += recon_loss
             kl_class_loss_all += kl_class
             kl_node_loss_all += kl_node
             optimizer.step()
