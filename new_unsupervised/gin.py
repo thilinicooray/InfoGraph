@@ -70,11 +70,12 @@ class Encoder(torch.nn.Module):
             # if i == 2:
                 # feature_map = x2
         j = self.num_gc_layers
-        node_latent_space_mu = self.bns[j](torch.tanh(self.convs[j](x, edge_index)))
-        node_latent_space_logvar = self.bns[j+1](torch.tanh(self.convs[j+1](x, edge_index)))
+        #self.bns[j](
+        node_latent_space_mu = torch.tanh(self.convs[j](x, edge_index))
+        node_latent_space_logvar = torch.tanh(self.convs[j+1](x, edge_index))
 
-        class_latent_space_mu = self.bns[j+2](torch.tanh(self.convs[j+2](x, edge_index)))
-        class_latent_space_logvar = self.bns[j+3](torch.tanh(self.convs[j+3](x, edge_index)))
+        class_latent_space_mu = torch.tanh(self.convs[j+2](x, edge_index))
+        class_latent_space_logvar = torch.tanh(self.convs[j+3](x, edge_index))
 
         '''node_latent_space_mu = F.relu(self.node_mu(x))
         node_latent_space_logvar = F.relu(self.node_logvar(x))
@@ -92,10 +93,10 @@ class Decoder(torch.nn.Module):
 
         self.linear_model = torch.nn.Sequential(OrderedDict([
             ('linear_1', torch.nn.Linear(in_features=node_dim + class_dim, out_features=node_dim, bias=True)),
-            ('relu_1', Tanh()),
+            ('relu_1', ReLU()),
 
             ('linear_2', torch.nn.Linear(in_features=node_dim, out_features=feat_size, bias=True)),
-            ('relu_final', Sigmoid()),
+            ('relu_final', Tanh()),
         ]))
 
     def forward(self, node_latent_space, class_latent_space, edge_index):
