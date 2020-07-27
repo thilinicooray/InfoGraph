@@ -60,7 +60,7 @@ class GcnInfomax(nn.Module):
 
     node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index, batch)
 
-    n_digits = 2
+    n_digits = 4
     #print('before ', node_mu)
     node_mu = (node_mu * 10**n_digits).round() / (10**n_digits)
     node_logvar = (node_logvar * 10**n_digits).round() / (10**n_digits)
@@ -328,6 +328,8 @@ if __name__ == '__main__':
             recon_loss_all += recon_loss
             kl_class_loss_all += kl_class
             kl_node_loss_all += kl_node
+
+            #torch.nn.utils.clip_grad_norm_(model.parameters(), 0.25)
             optimizer.step()
 
         print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(dataloader),
