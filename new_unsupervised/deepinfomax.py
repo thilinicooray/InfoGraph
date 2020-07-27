@@ -215,6 +215,7 @@ class GcnInfomax(nn.Module):
               #print(x, edge_index, data.x)
               #x = torch.rand(data.batch.shape[0], 5).to(device)
               x = torch.ones((batch.shape[0],5)).to(device)
+              print('eval train', x.type())
               __, _, class_mu, class_logvar = self.encoder(x, edge_index, batch)
 
               grouped_mu, grouped_logvar = accumulate_group_evidence(
@@ -317,6 +318,8 @@ if __name__ == '__main__':
 
             #if data.x is None:
             data.x = torch.ones((data.batch.shape[0], 5)).to(device)
+
+            print('type train', data.x.type())
             #data.x = torch.rand(data.batch.shape[0], 5).to(device)
 
 
@@ -328,6 +331,9 @@ if __name__ == '__main__':
             recon_loss_all += recon_loss
             kl_class_loss_all += kl_class
             kl_node_loss_all += kl_node
+
+
+
 
             #torch.nn.utils.clip_grad_norm_(model.parameters(), 0.25)
             optimizer.step()
