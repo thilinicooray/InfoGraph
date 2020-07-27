@@ -317,7 +317,7 @@ if __name__ == '__main__':
 
 
             #if data.x is None:
-            data.x = torch.ones((data.batch.shape[0], 5)).to(device)
+            #data.x = torch.ones((data.batch.shape[0], 5)).to(device)
 
             #print('type train', data.x.type())
             #data.x = torch.rand(data.batch.shape[0], 5).to(device)
