@@ -106,7 +106,7 @@ class GcnInfomax(nn.Module):
     reconstruction_error = self.recon_loss(reconstructed_node, edge_index, batch)  #reeval adj loss
     reconstruction_error.backward()
 
-    print(reconstruction_error.item(), class_kl_divergence_loss.item(), node_kl_divergence_loss.item())
+    #print(reconstruction_error.item(), class_kl_divergence_loss.item(), node_kl_divergence_loss.item())
 
     
     return  reconstruction_error.item(), class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
@@ -321,7 +321,7 @@ if __name__ == '__main__':
         print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(dataloader),
                                                                                            kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
         #used during finetune phase
-        '''if epoch % log_interval == 0:
+        if epoch % log_interval == 0:
             model.eval()
             emb, y = model.get_embeddings(dataloader)
             res = evaluate_embedding(emb, y)
@@ -329,7 +329,7 @@ if __name__ == '__main__':
             accuracies['svc'].append(res[1])
             accuracies['linearsvc'].append(res[2])
             accuracies['randomforest'].append(res[3])
-            print(accuracies)'''
+            print(accuracies)
 
 
     '''model.eval()
