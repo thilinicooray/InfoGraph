@@ -340,8 +340,8 @@ if __name__ == '__main__':
             #torch.nn.utils.clip_grad_norm_(model.parameters(), 0.25)
             optimizer.step()
 
-            print(model.encoder.grad)
-            for f in model.parameters():
+            for f in model.encoder.parameters():
+                print(f)
                 print('data is')
                 print(f.data)
                 print('grad is')
