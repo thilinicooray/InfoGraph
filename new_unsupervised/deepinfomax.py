@@ -60,6 +60,9 @@ class GcnInfomax(nn.Module):
 
     node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index, batch)
 
+
+    print('type ', node_mu.type())
+
     '''n_digits = 4
     #print('before ', node_mu)
     node_mu = (node_mu * 10**n_digits).round() / (10**n_digits)
@@ -285,7 +288,7 @@ if __name__ == '__main__':
     dataloader = DataLoader(dataset, batch_size=batch_size)
 
 
-    model = GcnInfomax(args.hidden_dim, args.num_gc_layers).to(device)
+    model = GcnInfomax(args.hidden_dim, args.num_gc_layers).double().to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     #scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
 
@@ -317,7 +320,7 @@ if __name__ == '__main__':
 
 
             #if data.x is None:
-            data.x = torch.ones((data.batch.shape[0], 5)).to(device)
+            data.x = torch.ones((data.batch.shape[0], 5)).double().to(device)
 
             #print('type train', data.x.type())
             #data.x = torch.rand(data.batch.shape[0], 5).to(device)
