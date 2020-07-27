@@ -12,7 +12,7 @@ import os
 from torch_geometric.datasets import TUDataset
 from torch_geometric.data import DataLoader
 from torch_geometric.nn import global_mean_pool, global_add_pool, global_max_pool
-from torch_geometric.utils import negative_sampling, remove_self_loops, add_self_loops, to_dense_adj
+from torch_geometric.utils import negative_sampling, remove_self_loops, add_self_loops, to_dense_adj, to_dense_batch
 import sys
 import json
 from torch import optim
@@ -143,13 +143,27 @@ class GcnInfomax(nn.Module):
       #print('edge recon try ', reco.size(), edge_index.size(), reco [:10], edge_index[0][:10], edge_index[1][:10])
 
 
+      #recon_adj = self.edge_recon(z, edge_index)
+
+      a = to_dense_batch(z, batch)
+      a_t = a.permute(0, 2, 1)
+
+      print('batch size', a.size(), a_t.size())
+
+      rec = torch.bmm(a, a_t)
+
+      print('inner pro', rec.size())
+
+
+      #adj = torch.matmul(z, z.t())
+
+
+      #r_adj = to_dense_adj(recon_adj, batch)
+      #org_adj = to_dense_adj(edge_index, batch)
+
+      #print(r_adj.size(), org_adj.size())
+
       recon_adj = self.edge_recon(z, edge_index)
-
-
-      r_adj = to_dense_adj(recon_adj, batch)
-      org_adj = to_dense_adj(edge_index, batch)
-
-      print(r_adj.size(), org_adj.size())
 
 
       pos_loss = -torch.log(
