@@ -360,15 +360,15 @@ if __name__ == '__main__':
 
     model.eval()
 
-    for i in range(5):
+    #for i in range(5):
     
-        emb, y = model.get_embeddings(dataloader)
-        res = evaluate_embedding(emb, y)
-        accuracies['logreg'].append(res[0])
-        accuracies['svc'].append(res[1])
-        accuracies['linearsvc'].append(res[2])
-        accuracies['randomforest'].append(res[3])
-        print(accuracies)
+    emb, y = model.get_embeddings(dataloader)
+    res = evaluate_embedding(emb, y)
+    accuracies['logreg'].append(res[0])
+    accuracies['svc'].append(res[1])
+    accuracies['linearsvc'].append(res[2])
+    accuracies['randomforest'].append(res[3])
+    print(accuracies)
 
     with open('unsupervised.log', 'a+') as f:
         s = json.dumps(accuracies)
