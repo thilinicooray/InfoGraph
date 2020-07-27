@@ -69,9 +69,10 @@ class GcnInfomax(nn.Module):
     )
 
     #print('grouped ', grouped_mu[0,:5], grouped_logvar[0,:5])
-    '''n_digits = 4
-
-    node_mu = (node_mu * 10**n_digits).round() / (10**n_digits)'''
+    n_digits = 2
+    print('before ', node_mu)
+    node_mu = (node_mu * 10**n_digits).round() / (10**n_digits)
+    print('after ', node_mu)
 
 
     # kl-divergence error for style latent space
