@@ -77,7 +77,7 @@ class GcnInfomax(nn.Module):
     )
     print('node kl unwei ', node_kl_divergence_loss, node_logvar, node_mu)
 
-    
+
     node_kl_divergence_loss = 0.0000001*node_kl_divergence_loss *num_graphs
     #print('node kl wei ', node_kl_divergence_loss)
     node_kl_divergence_loss.backward(retain_graph=True)
@@ -204,7 +204,7 @@ class GcnInfomax(nn.Module):
 
               #print(x, edge_index, data.x)
               #x = torch.rand(data.batch.shape[0], 5).to(device)
-              x = torch.ones((batch.shape[0],5)).to(device)
+              #x = torch.ones((batch.shape[0],5)).to(device)
               __, _, class_mu, class_logvar = self.encoder(x, edge_index, batch)
 
               grouped_mu, grouped_logvar = accumulate_group_evidence(
@@ -306,7 +306,7 @@ if __name__ == '__main__':
 
 
             #if data.x is None:
-            data.x = torch.ones((data.batch.shape[0], 5)).to(device)
+            #data.x = torch.ones((data.batch.shape[0], 5)).to(device)
             #data.x = torch.rand(data.batch.shape[0], 5).to(device)
 
 
