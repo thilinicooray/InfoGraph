@@ -61,7 +61,7 @@ class GcnInfomax(nn.Module):
     node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index, batch)
 
 
-    print('type ', node_mu.type())
+    print('type ', node_mu.type(), class_mu.type())
 
     '''n_digits = 4
     #print('before ', node_mu)
