@@ -332,8 +332,11 @@ if __name__ == '__main__':
             kl_class_loss_all += kl_class
             kl_node_loss_all += kl_node
 
-            for param in model.parameters():
-                print(param)
+            for f in model.parameters():
+                print('data is')
+                print(f.data)
+                print('grad is')
+                print(f.grad)
 
 
 
