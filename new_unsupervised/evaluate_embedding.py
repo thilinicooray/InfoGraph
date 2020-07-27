@@ -100,7 +100,7 @@ def svc_classify(x, y, search):
 
     for i in range(100):
 
-        kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
+        kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=i)
         accuracies = []
         for train_index, test_index in kf.split(x, y):
 
@@ -118,7 +118,7 @@ def svc_classify(x, y, search):
         mean = np.mean(accuracies)
         std = np.std(accuracies)
 
-        print('mean libsvm ', mean, 'std ', std)
+        print('mean libsvm ', i, mean, 'std ', std)
 
     return mean
 
