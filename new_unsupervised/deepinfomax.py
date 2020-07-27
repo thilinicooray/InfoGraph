@@ -242,7 +242,7 @@ if __name__ == '__main__':
     
     args = arg_parse()
 
-    for seed in range(40,60):
+    for seed in range(60,80):
 
         #seed = 97
         #epochs = 30
