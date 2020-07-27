@@ -75,7 +75,9 @@ class GcnInfomax(nn.Module):
     node_kl_divergence_loss = torch.mean(
         - 0.5 * torch.sum(1 + node_logvar - node_mu.pow(2) - node_logvar.exp())
     )
-    #print('node kl unwei ', node_kl_divergence_loss)
+    print('node kl unwei ', node_kl_divergence_loss, node_logvar, node_mu)
+
+    
     node_kl_divergence_loss = 0.0000001*node_kl_divergence_loss *num_graphs
     #print('node kl wei ', node_kl_divergence_loss)
     node_kl_divergence_loss.backward(retain_graph=True)
@@ -215,7 +217,7 @@ class GcnInfomax(nn.Module):
 
               class_emb = global_mean_pool(accumulated_class_latent_embeddings, batch)
 
-              print('clz emb ', class_emb[:5,:3])
+              #print('clz emb ', class_emb[:5,:3])
 
 
               ret.append(class_emb.cpu().numpy())
