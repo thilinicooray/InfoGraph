@@ -61,12 +61,12 @@ class GcnInfomax(nn.Module):
     node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index, batch)
 
 
-    n_digits = 4
+    '''n_digits = 4
     #print('before ', node_mu)
     node_mu = (node_mu * 10**n_digits).round() / (10**n_digits)
     node_logvar = (node_logvar * 10**n_digits).round() / (10**n_digits)
     class_mu = (class_mu * 10**n_digits).round() / (10**n_digits)
-    class_logvar = (class_logvar * 10**n_digits).round() / (10**n_digits)
+    class_logvar = (class_logvar * 10**n_digits).round() / (10**n_digits)'''
 
 
     #print('direct out ', node_mu[0,:5], node_logvar[0,:5], class_mu[0,:5], class_logvar[0,:5], batch)
