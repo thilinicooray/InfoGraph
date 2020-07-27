@@ -292,13 +292,13 @@ if __name__ == '__main__':
     accuracies['linearsvc'].append(res[2])
     accuracies['randomforest'].append(res[3])'''
 
-    model.train()
+    #model.train()
     for epoch in range(1, epochs+1):
         recon_loss_all = 0
         kl_class_loss_all = 0
         kl_node_loss_all = 0
         mi_loss_all = 0
-        #model.train()
+        model.train()
         for data in dataloader:
             data = data.to(device)
 
@@ -332,7 +332,7 @@ if __name__ == '__main__':
             print(accuracies)'''
 
 
-    model.eval()
+    '''model.eval()
 
     for i in range(5):
     
@@ -342,7 +342,7 @@ if __name__ == '__main__':
         accuracies['svc'].append(res[1])
         accuracies['linearsvc'].append(res[2])
         accuracies['randomforest'].append(res[3])
-        print(accuracies)
+        print(accuracies)'''
 
     with open('unsupervised.log', 'a+') as f:
         s = json.dumps(accuracies)
