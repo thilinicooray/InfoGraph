@@ -61,8 +61,6 @@ class GcnInfomax(nn.Module):
     node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index, batch)
 
 
-    print('type ', node_mu.type(), class_mu.type())
-
     '''n_digits = 4
     #print('before ', node_mu)
     node_mu = (node_mu * 10**n_digits).round() / (10**n_digits)
@@ -121,7 +119,7 @@ class GcnInfomax(nn.Module):
     reconstruction_error = self.recon_loss(reconstructed_node, edge_index, batch)  #reeval adj loss
     reconstruction_error.backward()
 
-    print(reconstruction_error.item(), class_kl_divergence_loss.item(), node_kl_divergence_loss.item())
+    #print(reconstruction_error.item(), class_kl_divergence_loss.item(), node_kl_divergence_loss.item())
 
     
     return  reconstruction_error.item(), class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
