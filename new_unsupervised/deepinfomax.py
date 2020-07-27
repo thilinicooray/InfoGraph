@@ -154,8 +154,13 @@ class GcnInfomax(nn.Module):
 
       print('inner pro', rec.size())
 
+      org_adj = to_dense_adj(edge_index, batch)
 
-      #adj = torch.matmul(z, z.t())
+
+      print('new' ,rec, 'org', org_adj)
+
+
+      '''#adj = torch.matmul(z, z.t())
 
 
       #r_adj = to_dense_adj(recon_adj, batch)
@@ -178,7 +183,11 @@ class GcnInfomax(nn.Module):
                             self.edge_recon(z, neg_edge_index) +
                             EPS).mean()
 
-      return pos_loss + neg_loss
+      return pos_loss + neg_loss'''
+
+      loss = F.binary_cross_entropy_with_logits(rec, org_adj)
+
+      return loss
 
   def get_embeddings(self, loader):
 
