@@ -332,17 +332,18 @@ if __name__ == '__main__':
             kl_class_loss_all += kl_class
             kl_node_loss_all += kl_node
 
-            for f in model.parameters():
-                print('data is')
-                print(f.data)
-                print('grad is')
-                print(f.grad)
+
 
 
 
 
             #torch.nn.utils.clip_grad_norm_(model.parameters(), 0.25)
             optimizer.step()
+            for f in model.parameters():
+                print('data is')
+                print(f.data)
+                print('grad is')
+                print(f.grad)
 
         print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(dataloader),
                                                                                            kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
