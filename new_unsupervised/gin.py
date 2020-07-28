@@ -32,11 +32,7 @@ class Encoder(torch.nn.Module):
         self.convs = torch.nn.ModuleList()
         self.bns = torch.nn.ModuleList()
 
-        self.embedding = torch.nn.Sequential(OrderedDict([
-            ('linear_1', torch.nn.Linear(in_features=num_features, out_features=dim, bias=True)),
-            ('relu_1', ReLU()),
-
-        ]))
+        self.embedding = Sequential(Linear(num_features, dim), ReLU())
 
 
         for i in range(num_gc_layers+4):
