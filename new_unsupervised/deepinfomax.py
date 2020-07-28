@@ -280,12 +280,20 @@ if __name__ == '__main__':
     except:
         dataset_num_features = 1
 
+    dataloader = DataLoader(dataset, batch_size=batch_size)
+
     if not dataset_num_features:
 
-        dataset_num_features = 5
-        #input_feat = torch.ones((batch_size, 1)).to(device)
+        dataset_num_features = 0
 
-    dataloader = DataLoader(dataset, batch_size=batch_size)
+        for data in dataloader:
+            data = data.to(device)
+
+            new_adj = to_dense_adj(data.edge_index, data.batch)
+            current_n_count = new_adj.size(-1)
+
+            if current_n_count > dataset_num_features:
+                dataset_num_features = current_n_count
 
 
     model = GcnInfomax(args.hidden_dim, args.num_gc_layers).double().to(device)
@@ -315,7 +323,6 @@ if __name__ == '__main__':
         kl_node_loss_all = 0
         mi_loss_all = 0
         model.train()
-        max_elements = 0
         for data in dataloader:
             data = data.to(device)
 
@@ -327,7 +334,7 @@ if __name__ == '__main__':
             #data.x = torch.rand(data.batch.shape[0], 5).to(device)
 
             #new_x, _ = to_dense_batch(data.x,data.batch)
-            '''new_adj = to_dense_adj(data.edge_index, data.batch)
+            new_adj = to_dense_adj(data.edge_index, data.batch)
 
             #b = dense_to_sparse(new_adj)
 
@@ -358,17 +365,18 @@ if __name__ == '__main__':
                 else :
                     nodes = torch.cat([nodes.clone(), current_nodes], 0)
 
-            #print('nodes', nodes.size())
+            print('nodes', nodes.size())
 
-            data.x = nodes'''
+            pad_count = dataset_num_features - new_adj.size(-1)
 
-            new_adj = to_dense_adj(data.edge_index, data.batch)
-            current_n_count = new_adj.size(-1)
+            if pad_count > 0:
+                nodes = torch.cat([nodes.clone(), torch.zeros(data.batch.shape[0], pad_count)],  1)
 
-            print('this batch count ', current_n_count)
+            print('after padding nodes', nodes.size())
 
-            if current_n_count > max_elements:
-                max_elements = current_n_count
+            data.x = nodes
+
+
 
             data.x = torch.ones((data.batch.shape[0], 5)).double().to(device)
 
@@ -388,7 +396,6 @@ if __name__ == '__main__':
             optimizer.step()
 
 
-        print('max_elements ', max_elements)
 
         print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(dataloader),
                                                                                            kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
