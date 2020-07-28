@@ -334,6 +334,8 @@ if __name__ == '__main__':
 
             print('new_x ', new_x.size(), new_adj.size(), data.x.size(), data.edge_index.size(), data.batch.shape)
 
+            print('data batch', data.batch)
+
 
 
 
