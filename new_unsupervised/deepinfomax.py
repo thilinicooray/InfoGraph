@@ -362,7 +362,8 @@ if __name__ == '__main__':
 
             data.x = nodes'''
 
-            current_n_count = data.edge_index.max().item()
+            new_adj = to_dense_adj(data.edge_index, data.batch)
+            current_n_count = new_adj.size(-1)
 
             print('this batch count ', current_n_count)
 
