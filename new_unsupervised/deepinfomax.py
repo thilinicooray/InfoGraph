@@ -373,53 +373,34 @@ if __name__ == '__main__':
         for data in dataloader:
             data = data.to(device)
 
-
-            #if data.x is None:
-            #data.x = torch.ones((data.batch.shape[0], 5)).double().to(device)
-
-            #print('type train', data.x.type())
-            #data.x = torch.rand(data.batch.shape[0], 5).to(device)
-
-            #new_x, _ = to_dense_batch(data.x,data.batch)
             new_adj = to_dense_adj(data.edge_index, data.batch)
 
-            #b = dense_to_sparse(new_adj)
-
-
-
-            #print('new_x ', new_x.size(), new_adj.size(), data.x.size(), data.edge_index.size(), data.batch.shape)
-
-            #print('data batch', data.batch)
-
-            #start = 0
 
             x_unique = data.batch.unique(sorted=True)
             x_unique_count = torch.stack([(data.batch==x_u).sum() for x_u in x_unique])
 
-            #print('unique ', x_unique_count, x_unique_count.sum())
+            print('unique ', x_unique_count.size())
+
 
             nodes = None
 
-            for gid in range(batch_size):
+            for gid in range(0, batch_size):
                 count = x_unique_count[gid]
 
                 current_nodes = new_adj[gid][:count]
 
-                #print('out nodes ', new_adj[gid][count], new_adj[gid][count-1])
 
                 if nodes is None:
                     nodes = current_nodes
                 else :
                     nodes = torch.cat([nodes.clone(), current_nodes], 0)
 
-            #print('nodes', nodes.size())
 
             pad_count = dataset_num_features - new_adj.size(-1)
 
             if pad_count > 0:
                 nodes = torch.cat([nodes.clone(), torch.zeros(data.batch.shape[0], pad_count).to(device)],  1)
 
-            #print('after padding nodes', nodes.size())
 
             data.x = nodes
 
