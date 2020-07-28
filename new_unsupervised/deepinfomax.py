@@ -379,12 +379,12 @@ if __name__ == '__main__':
             x_unique = data.batch.unique(sorted=True)
             x_unique_count = torch.stack([(data.batch==x_u).sum() for x_u in x_unique])
 
-            print('unique ', x_unique_count.size())
 
 
             nodes = None
+            batch_count = x_unique_count.size(0)
 
-            for gid in range(0, batch_size):
+            for gid in range(batch_count):
                 count = x_unique_count[gid]
 
                 current_nodes = new_adj[gid][:count]
