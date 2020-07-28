@@ -320,10 +320,15 @@ if __name__ == '__main__':
 
 
             #if data.x is None:
-            data.x = torch.ones((data.batch.shape[0], 5)).double().to(device)
+            #data.x = torch.ones((data.batch.shape[0], 5)).double().to(device)
 
             #print('type train', data.x.type())
             #data.x = torch.rand(data.batch.shape[0], 5).to(device)
+
+            new_x = to_dense_batch(data.x,data.batch)
+            new_adj = to_dense_adj(data.edge_index, data.batch)
+
+            print('new_x ', new_x.size(), new_adj.size())
 
 
 
