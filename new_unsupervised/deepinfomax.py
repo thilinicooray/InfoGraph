@@ -214,7 +214,7 @@ class GcnInfomax(nn.Module):
 
               adj_looped, _ = add_remaining_self_loops(data.edge_index)
 
-              new_adj = to_dense_adj(adj_looped, data.batch)
+              new_adj = to_dense_adj(data.edge_index, data.batch)
 
 
               x_unique = data.batch.unique(sorted=True)
@@ -363,7 +363,7 @@ if __name__ == '__main__':
 
             adj_looped, _ = add_remaining_self_loops(data.edge_index)
 
-            new_adj = to_dense_adj(adj_looped, data.batch)
+            new_adj = to_dense_adj(data.edge_index, data.batch)
 
 
             x_unique = data.batch.unique(sorted=True)
