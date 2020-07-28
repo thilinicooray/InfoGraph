@@ -336,6 +336,19 @@ if __name__ == '__main__':
 
             print('data batch', data.batch)
 
+            start = 0
+
+            x_unique = data.batch.unique(sorted=True)
+            x_unique_count = torch.stack([(data.batch==x_u).sum() for x_u in x_unique])
+
+            print('unique ', x_unique_count)
+
+            '''nodes = []
+
+            for gid in data.batch:
+                if gid == start:'''
+
+
 
 
 
