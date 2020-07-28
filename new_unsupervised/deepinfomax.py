@@ -350,6 +350,8 @@ if __name__ == '__main__':
 
                 current_nodes = new_adj[gid][:count]
 
+                print('out nodes ', new_adj[gid][count], new_adj[gid][count-1])
+
                 if nodes is None:
                     nodes = current_nodes
                 else :
