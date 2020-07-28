@@ -12,7 +12,7 @@ import os
 from torch_geometric.datasets import TUDataset
 from torch_geometric.data import DataLoader
 from torch_geometric.nn import global_mean_pool, global_add_pool, global_max_pool
-from torch_geometric.utils import negative_sampling, remove_self_loops, add_self_loops, to_dense_adj, to_dense_batch, add_remaining_self_loops
+from torch_geometric.utils import negative_sampling, remove_self_loops, add_self_loops, to_dense_adj, to_dense_batch
 import sys
 import json
 from torch import optim
@@ -89,7 +89,7 @@ class GcnInfomax(nn.Module):
     #print('node kl unwei ', node_kl_divergence_loss, node_logvar, node_mu)
 
 
-    node_kl_divergence_loss = node_kl_divergence_loss *num_graphs
+    node_kl_divergence_loss = 0.0000001*node_kl_divergence_loss *num_graphs
     #print('node kl wei ', node_kl_divergence_loss)
     node_kl_divergence_loss.backward(retain_graph=True)
 
@@ -98,7 +98,7 @@ class GcnInfomax(nn.Module):
         - 0.5 * torch.sum(1 + grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp())
     )
     #print('class kl unwei ', class_kl_divergence_loss)
-    class_kl_divergence_loss = class_kl_divergence_loss * num_graphs
+    class_kl_divergence_loss = 0.0000001* class_kl_divergence_loss * num_graphs
     #print('class kl wei ', class_kl_divergence_loss)
     class_kl_divergence_loss.backward(retain_graph=True)
 
@@ -116,7 +116,7 @@ class GcnInfomax(nn.Module):
     reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, edge_index)
     
     #reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
-    reconstruction_error = self.recon_loss(reconstructed_node, edge_index, batch) * num_graphs
+    reconstruction_error = 0.01* self.recon_loss(reconstructed_node, edge_index, batch) * num_graphs
     reconstruction_error.backward()
 
     #print(reconstruction_error.item(), class_kl_divergence_loss.item(), node_kl_divergence_loss.item())
@@ -211,46 +211,11 @@ class GcnInfomax(nn.Module):
           for data in loader:
 
               data.to(device)
-
-              adj_looped, _ = add_remaining_self_loops(data.edge_index)
-
-              new_adj = to_dense_adj(data.edge_index, data.batch)
-
-
-              x_unique = data.batch.unique(sorted=True)
-              x_unique_count = torch.stack([(data.batch==x_u).sum() for x_u in x_unique])
-
-
-              nodes = None
-
-              batch_count = x_unique_count.size(0)
-
-              for gid in range(batch_count):
-                  count = x_unique_count[gid]
-
-                  current_nodes = new_adj[gid][:count]
-
-
-                  if nodes is None:
-                      nodes = current_nodes
-                  else :
-                      nodes = torch.cat([nodes.clone(), current_nodes], 0)
-
-              pad_count = dataset_num_features - new_adj.size(-1)
-
-              if pad_count > 0:
-                  nodes = torch.cat([nodes.clone(), torch.zeros(data.batch.shape[0], pad_count).to(device)],  1)
-
-              data.x = nodes.double().to(device)
-
-
-
-
               x, edge_index, batch = data.x, data.edge_index, data.batch
 
               #print(x, edge_index, data.x)
               #x = torch.rand(data.batch.shape[0], 5).to(device)
-              #x = torch.ones((batch.shape[0],5)).to(device)
+              x = torch.ones((batch.shape[0],5)).double().to(device)
               #print('eval train', x.type())
               __, _, class_mu, class_logvar = self.encoder(x, edge_index, batch)
 
@@ -315,20 +280,12 @@ if __name__ == '__main__':
     except:
         dataset_num_features = 1
 
-    dataloader = DataLoader(dataset, batch_size=batch_size)
-
     if not dataset_num_features:
 
-        dataset_num_features = 0
+        dataset_num_features = 5
+        #input_feat = torch.ones((batch_size, 1)).to(device)
 
-        for data in dataloader:
-            data = data.to(device)
-
-            new_adj = to_dense_adj(data.edge_index, data.batch)
-            current_n_count = new_adj.size(-1)
-
-            if current_n_count > dataset_num_features:
-                dataset_num_features = current_n_count
+    dataloader = DataLoader(dataset, batch_size=batch_size)
 
 
     model = GcnInfomax(args.hidden_dim, args.num_gc_layers).double().to(device)
@@ -361,42 +318,9 @@ if __name__ == '__main__':
         for data in dataloader:
             data = data.to(device)
 
-            adj_looped, _ = add_remaining_self_loops(data.edge_index)
 
-            new_adj = to_dense_adj(data.edge_index, data.batch)
-
-
-            x_unique = data.batch.unique(sorted=True)
-            x_unique_count = torch.stack([(data.batch==x_u).sum() for x_u in x_unique])
-
-
-
-            nodes = None
-            batch_count = x_unique_count.size(0)
-
-            for gid in range(batch_count):
-                count = x_unique_count[gid]
-
-                current_nodes = new_adj[gid][:count]
-
-
-                if nodes is None:
-                    nodes = current_nodes
-                else :
-                    nodes = torch.cat([nodes.clone(), current_nodes], 0)
-
-
-            pad_count = dataset_num_features - new_adj.size(-1)
-
-            if pad_count > 0:
-                nodes = torch.cat([nodes.clone(), torch.zeros(data.batch.shape[0], pad_count).to(device)],  1)
-
-
-            data.x = nodes.double().to(device)
-
-
-
-            #data.x = torch.ones((data.batch.shape[0], 5)).double().to(device)
+            #if data.x is None:
+            data.x = torch.ones((data.batch.shape[0], 5)).double().to(device)
 
             optimizer.zero_grad()
             recon_loss, kl_class, kl_node = model(data.x, data.edge_index, data.batch, data.num_graphs)

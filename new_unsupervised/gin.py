@@ -32,7 +32,7 @@ class Encoder(torch.nn.Module):
         self.convs = torch.nn.ModuleList()
         self.bns = torch.nn.ModuleList()
 
-        self.embedding = Sequential(Linear(num_features, dim), ReLU())
+        #self.embedding = Sequential(Linear(num_features, dim), ReLU())
 
 
         for i in range(num_gc_layers+4):
@@ -40,7 +40,7 @@ class Encoder(torch.nn.Module):
             if i:
                 nn = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim))
             else:
-                nn = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim))
+                nn = Sequential(Linear(num_features, dim), ReLU(), Linear(dim, dim))
             conv = GINConv(nn)
             bn = torch.nn.BatchNorm1d(dim)
 
@@ -64,7 +64,7 @@ class Encoder(torch.nn.Module):
 
         #print('input x' , x[:5])
 
-        x = self.embedding(x)
+        #x = self.embedding(x)
 
         xs = []
         for i in range(self.num_gc_layers):
