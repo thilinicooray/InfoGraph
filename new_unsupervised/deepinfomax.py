@@ -12,7 +12,7 @@ import os
 from torch_geometric.datasets import TUDataset
 from torch_geometric.data import DataLoader
 from torch_geometric.nn import global_mean_pool, global_add_pool, global_max_pool
-from torch_geometric.utils import negative_sampling, remove_self_loops, add_self_loops, to_dense_adj, to_dense_batch
+from torch_geometric.utils import negative_sampling, remove_self_loops, add_self_loops, to_dense_adj, to_dense_batch, add_remaining_self_loops
 import sys
 import json
 from torch import optim
@@ -210,10 +210,10 @@ class GcnInfomax(nn.Module):
       with torch.no_grad():
           for data in loader:
 
-              data.double().to(device)
+              data.to(device)
 
 
-              new_adj = to_dense_adj(data.edge_index, data.batch)
+              new_adj = to_dense_adj(add_remaining_self_loops(data.edge_index), data.batch)
 
 
               x_unique = data.batch.unique(sorted=True)
@@ -360,7 +360,7 @@ if __name__ == '__main__':
         for data in dataloader:
             data = data.to(device)
 
-            new_adj = to_dense_adj(data.edge_index, data.batch)
+            new_adj = to_dense_adj(add_remaining_self_loops(data.edge_index), data.batch)
 
 
             x_unique = data.batch.unique(sorted=True)
