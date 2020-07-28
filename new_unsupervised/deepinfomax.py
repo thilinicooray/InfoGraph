@@ -89,7 +89,7 @@ class GcnInfomax(nn.Module):
     #print('node kl unwei ', node_kl_divergence_loss, node_logvar, node_mu)
 
 
-    node_kl_divergence_loss = 0.0000001*node_kl_divergence_loss *num_graphs
+    node_kl_divergence_loss = 0.000001*node_kl_divergence_loss *num_graphs
     #print('node kl wei ', node_kl_divergence_loss)
     node_kl_divergence_loss.backward(retain_graph=True)
 
