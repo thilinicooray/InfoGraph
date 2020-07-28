@@ -325,8 +325,8 @@ if __name__ == '__main__':
             #print('type train', data.x.type())
             #data.x = torch.rand(data.batch.shape[0], 5).to(device)
 
-            new_x = to_dense_batch(data.x,data.batch)
-            new_adj = to_dense_adj(data.edge_index, data.batch)
+            new_x, _ = to_dense_batch(data.x,data.batch)
+            new_adj,_ = to_dense_adj(data.edge_index, data.batch)
 
             print('new_x ', new_x.size(), new_adj.size())
 
