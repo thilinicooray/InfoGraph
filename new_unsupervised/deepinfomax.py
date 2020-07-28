@@ -370,7 +370,7 @@ if __name__ == '__main__':
             pad_count = dataset_num_features - new_adj.size(-1)
 
             if pad_count > 0:
-                nodes = torch.cat([nodes.clone(), torch.zeros(data.batch.shape[0], pad_count)],  1)
+                nodes = torch.cat([nodes.clone(), torch.zeros(data.batch.shape[0], pad_count).to(device)],  1)
 
             print('after padding nodes', nodes.size())
 
