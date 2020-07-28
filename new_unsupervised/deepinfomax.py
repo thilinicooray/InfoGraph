@@ -210,7 +210,7 @@ class GcnInfomax(nn.Module):
       with torch.no_grad():
           for data in loader:
 
-              data.to(device)
+              data.double().to(device)
 
 
               new_adj = to_dense_adj(data.edge_index, data.batch)
@@ -240,7 +240,7 @@ class GcnInfomax(nn.Module):
               if pad_count > 0:
                   nodes = torch.cat([nodes.clone(), torch.zeros(data.batch.shape[0], pad_count).to(device)],  1)
 
-              data.x = nodes
+              data.x = nodes.double().to(device)
 
 
 
@@ -389,7 +389,7 @@ if __name__ == '__main__':
                 nodes = torch.cat([nodes.clone(), torch.zeros(data.batch.shape[0], pad_count).to(device)],  1)
 
 
-            data.x = nodes
+            data.x = nodes.double().to(device)
 
 
 
