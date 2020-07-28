@@ -211,11 +211,58 @@ class GcnInfomax(nn.Module):
           for data in loader:
 
               data.to(device)
+
+
+              new_adj = to_dense_adj(data.edge_index, data.batch)
+
+              #b = dense_to_sparse(new_adj)
+
+
+
+              #print('new_x ', new_x.size(), new_adj.size(), data.x.size(), data.edge_index.size(), data.batch.shape)
+
+              #print('data batch', data.batch)
+
+              #start = 0
+
+              x_unique = data.batch.unique(sorted=True)
+              x_unique_count = torch.stack([(data.batch==x_u).sum() for x_u in x_unique])
+
+              #print('unique ', x_unique_count, x_unique_count.sum())
+
+              nodes = None
+
+              for gid in range(batch_size):
+                  count = x_unique_count[gid]
+
+                  current_nodes = new_adj[gid][:count]
+
+                  #print('out nodes ', new_adj[gid][count], new_adj[gid][count-1])
+
+                  if nodes is None:
+                      nodes = current_nodes
+                  else :
+                      nodes = torch.cat([nodes.clone(), current_nodes], 0)
+
+              #print('nodes', nodes.size())
+
+              pad_count = dataset_num_features - new_adj.size(-1)
+
+              if pad_count > 0:
+                  nodes = torch.cat([nodes.clone(), torch.zeros(data.batch.shape[0], pad_count).to(device)],  1)
+
+              #print('after padding nodes', nodes.size())
+
+              data.x = nodes
+
+
+
+
               x, edge_index, batch = data.x, data.edge_index, data.batch
 
               #print(x, edge_index, data.x)
               #x = torch.rand(data.batch.shape[0], 5).to(device)
-              x = torch.ones((batch.shape[0],5)).to(device)
+              #x = torch.ones((batch.shape[0],5)).to(device)
               #print('eval train', x.type())
               __, _, class_mu, class_logvar = self.encoder(x, edge_index, batch)
 
@@ -365,20 +412,20 @@ if __name__ == '__main__':
                 else :
                     nodes = torch.cat([nodes.clone(), current_nodes], 0)
 
-            print('nodes', nodes.size())
+            #print('nodes', nodes.size())
 
             pad_count = dataset_num_features - new_adj.size(-1)
 
             if pad_count > 0:
                 nodes = torch.cat([nodes.clone(), torch.zeros(data.batch.shape[0], pad_count).to(device)],  1)
 
-            print('after padding nodes', nodes.size())
+            #print('after padding nodes', nodes.size())
 
             data.x = nodes
 
 
 
-            data.x = torch.ones((data.batch.shape[0], 5)).double().to(device)
+            #data.x = torch.ones((data.batch.shape[0], 5)).double().to(device)
 
             optimizer.zero_grad()
             recon_loss, kl_class, kl_node = model(data.x, data.edge_index, data.batch, data.num_graphs)
