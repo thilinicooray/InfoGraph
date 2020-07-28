@@ -64,6 +64,8 @@ class Encoder(torch.nn.Module):
 
         #print('input x' , x[:5])
 
+        print('type  ', x.type())
+
         x = self.embedding(x)
 
         xs = []
