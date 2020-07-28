@@ -343,10 +343,19 @@ if __name__ == '__main__':
 
             print('unique ', x_unique_count, x_unique_count.sum())
 
-            '''nodes = []
+            nodes = None
 
-            for gid in data.batch:
-                if gid == start:'''
+            for gid in range(batch_size):
+                count = x_unique_count[gid]
+
+                current_nodes = new_adj[gid][:count]
+
+                if nodes is None:
+                    nodes = current_nodes
+                else :
+                    nodes = torch.cat([nodes.clone(), current_nodes], 0)
+
+            print('nodes', nodes.size())
 
 
 
