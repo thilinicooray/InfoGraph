@@ -323,7 +323,7 @@ if __name__ == '__main__':
             data.x = torch.ones((data.batch.shape[0], 5)).double().to(device)
 
             optimizer.zero_grad()
-            recon_loss, kl_class, kl_node = model(data.x.double(), data.edge_index.double(), data.batch.double(), data.num_graphs.double())
+            recon_loss, kl_class, kl_node = model(data.x.double(), data.edge_index.double(), data.batch.double(), data.num_graphs)
             recon_loss_all += recon_loss
             kl_class_loss_all += kl_class
             kl_node_loss_all += kl_node
