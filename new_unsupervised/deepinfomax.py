@@ -212,8 +212,9 @@ class GcnInfomax(nn.Module):
 
               data.to(device)
 
+              adj_looped, _ = add_remaining_self_loops(data.edge_index)
 
-              new_adj = to_dense_adj(add_remaining_self_loops(data.edge_index), data.batch)
+              new_adj = to_dense_adj(adj_looped, data.batch)
 
 
               x_unique = data.batch.unique(sorted=True)
@@ -360,7 +361,9 @@ if __name__ == '__main__':
         for data in dataloader:
             data = data.to(device)
 
-            new_adj = to_dense_adj(add_remaining_self_loops(data.edge_index), data.batch)
+            adj_looped, _ = add_remaining_self_loops(data.edge_index)
+
+            new_adj = to_dense_adj(adj_looped, data.batch)
 
 
             x_unique = data.batch.unique(sorted=True)
