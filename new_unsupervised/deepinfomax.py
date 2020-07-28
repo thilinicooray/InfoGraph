@@ -328,9 +328,9 @@ if __name__ == '__main__':
             new_x, _ = to_dense_batch(data.x,data.batch)
             new_adj = to_dense_adj(data.edge_index, data.batch)
 
-            
 
-            print('new_x ', new_x.size(), new_adj.size(), data.x.size())
+
+            print('new_x ', new_x.size(), new_adj.size(), data.x.size(), data.edge_index.size())
 
 
 
