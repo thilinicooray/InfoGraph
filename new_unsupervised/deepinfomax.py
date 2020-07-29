@@ -116,7 +116,7 @@ class GcnInfomax(nn.Module):
     reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, edge_index)
     
     #reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
-    reconstruction_error = 0.01* self.recon_loss(reconstructed_node, edge_index, batch) * num_graphs
+    reconstruction_error = 0.01* self.recon_loss1(reconstructed_node, edge_index, batch) * num_graphs
 
 
     #print(reconstruction_error.item(), class_kl_divergence_loss.item(), node_kl_divergence_loss.item())
@@ -211,6 +211,43 @@ class GcnInfomax(nn.Module):
       loss = F.binary_cross_entropy_with_logits(rec, org_adj)
 
       return loss
+
+
+  def recon_loss1(self, z, edge_index, batch):
+
+      EPS = 1e-15
+      MAX_LOGSTD = 10
+      r"""Given latent variables :obj:`z`, computes the binary cross
+      entropy loss for positive edges :obj:`pos_edge_index` and negative
+      sampled edges.
+
+      Args:
+          z (Tensor): The latent space :math:`\mathbf{Z}`.
+          pos_edge_index (LongTensor): The positive edges to train against.
+      """
+
+
+
+      recon_adj = self.edge_recon(z, edge_index)
+
+
+      pos_loss = -torch.log(
+          recon_adj + EPS).mean()
+
+      # Do not include self-loops in negative samples
+      pos_edge_index, _ = remove_self_loops(edge_index)
+      pos_edge_index, _ = add_self_loops(pos_edge_index)
+
+      neg_edge_index = negative_sampling(pos_edge_index, z.size(0)) #random thingggg
+      neg_loss = -torch.log(1 -
+                            self.edge_recon(z, neg_edge_index) +
+                            EPS).mean()
+
+      return pos_loss + neg_loss
+
+      #loss = F.binary_cross_entropy_with_logits(rec, org_adj)
+
+      #return loss
 
   def get_embeddings(self, loader):
 
