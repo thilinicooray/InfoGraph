@@ -89,7 +89,7 @@ class GcnInfomax(nn.Module):
     #print('node kl unwei ', node_kl_divergence_loss, node_logvar, node_mu)
 
 
-    node_kl_divergence_loss = 0.01*node_kl_divergence_loss *num_graphs
+    node_kl_divergence_loss = 0.0000001*node_kl_divergence_loss *num_graphs
     #print('node kl wei ', node_kl_divergence_loss)
 
 
@@ -98,7 +98,7 @@ class GcnInfomax(nn.Module):
         - 0.5 * torch.sum(1 + grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp())
     )
     #print('class kl unwei ', class_kl_divergence_loss)
-    class_kl_divergence_loss = 0.01* class_kl_divergence_loss * num_graphs
+    class_kl_divergence_loss = 0.0000001* class_kl_divergence_loss * num_graphs
     #print('class kl wei ', class_kl_divergence_loss)
 
 
@@ -322,13 +322,13 @@ if __name__ == '__main__':
     accuracies['linearsvc'].append(res[2])
     accuracies['randomforest'].append(res[3])'''
 
-    #model.train()
+    model.train()
     for epoch in range(1, epochs+1):
         recon_loss_all = 0
         kl_class_loss_all = 0
         kl_node_loss_all = 0
         mi_loss_all = 0
-        model.train()
+        #model.train()
         for data in dataloader:
             data = data.to(device)
 
@@ -365,7 +365,7 @@ if __name__ == '__main__':
 
 
         #used during finetune phase
-        if epoch % log_interval == 0:
+        '''if epoch % log_interval == 0:
             model.eval()
             emb, y = model.get_embeddings(dataloader)
             res = evaluate_embedding(emb, y)
@@ -373,10 +373,10 @@ if __name__ == '__main__':
             accuracies['svc'].append(res[1])
             accuracies['linearsvc'].append(res[2])
             accuracies['randomforest'].append(res[3])
-            print(accuracies)
+            print(accuracies)'''
 
 
-    '''model.eval()
+    model.eval()
     
     #for i in range(5):
     emb, y = model.get_embeddings(dataloader)
@@ -385,7 +385,7 @@ if __name__ == '__main__':
     accuracies['svc'].append(res[1])
     accuracies['linearsvc'].append(res[2])
     accuracies['randomforest'].append(res[3])
-    print(accuracies)'''
+    print(accuracies)
 
     with open('unsupervised.log', 'a+') as f:
         s = json.dumps(accuracies)
