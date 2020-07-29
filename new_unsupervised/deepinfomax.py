@@ -283,6 +283,8 @@ if __name__ == '__main__':
     if not dataset_num_features:
 
         dataset_num_features = 5
+
+    dataset_num_features = 5
         #input_feat = torch.ones((batch_size, 1)).to(device)
 
     dataloader = DataLoader(dataset, batch_size=batch_size)
