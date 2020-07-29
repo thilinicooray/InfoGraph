@@ -89,7 +89,7 @@ class GcnInfomax(nn.Module):
     #print('node kl unwei ', node_kl_divergence_loss, node_logvar, node_mu)
 
 
-    node_kl_divergence_loss = 0.0000001*node_kl_divergence_loss *num_graphs
+    node_kl_divergence_loss = 0.01*node_kl_divergence_loss *num_graphs
     #print('node kl wei ', node_kl_divergence_loss)
 
 
@@ -98,7 +98,7 @@ class GcnInfomax(nn.Module):
         - 0.5 * torch.sum(1 + grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp())
     )
     #print('class kl unwei ', class_kl_divergence_loss)
-    class_kl_divergence_loss = 0.0000001* class_kl_divergence_loss * num_graphs
+    class_kl_divergence_loss = 0.01* class_kl_divergence_loss * num_graphs
     #print('class kl wei ', class_kl_divergence_loss)
 
 
@@ -121,11 +121,11 @@ class GcnInfomax(nn.Module):
 
     #print(reconstruction_error.item(), class_kl_divergence_loss.item(), node_kl_divergence_loss.item())
 
-    n_digits = 9
+    '''n_digits = 9
     #print('before ', node_mu)
     reconstruction_error = (reconstruction_error * 10**n_digits).round() / (10**n_digits)
     class_kl_divergence_loss = (class_kl_divergence_loss * 10**n_digits).round() / (10**n_digits)
-    node_kl_divergence_loss = (node_kl_divergence_loss * 10**n_digits).round() / (10**n_digits)
+    node_kl_divergence_loss = (node_kl_divergence_loss * 10**n_digits).round() / (10**n_digits)'''
 
     class_kl_divergence_loss.backward(retain_graph=True)
     node_kl_divergence_loss.backward(retain_graph=True)
