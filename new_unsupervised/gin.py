@@ -65,7 +65,7 @@ class Encoder(torch.nn.Module):
         #print('input x' , x[:5])
 
         #x = self.embedding(x)
-        dropout_val = 0.2
+        dropout_val = 0.3
 
         xs = []
         for i in range(self.num_gc_layers):
