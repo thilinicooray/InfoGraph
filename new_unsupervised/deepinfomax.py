@@ -91,7 +91,7 @@ class GcnInfomax(nn.Module):
 
     node_kl_divergence_loss = 0.0000001*node_kl_divergence_loss *num_graphs
     #print('node kl wei ', node_kl_divergence_loss)
-    node_kl_divergence_loss.backward(retain_graph=True)
+
 
     # kl-divergence error for class latent space
     class_kl_divergence_loss = torch.mean(
@@ -100,7 +100,7 @@ class GcnInfomax(nn.Module):
     #print('class kl unwei ', class_kl_divergence_loss)
     class_kl_divergence_loss = 0.0000001* class_kl_divergence_loss * num_graphs
     #print('class kl wei ', class_kl_divergence_loss)
-    class_kl_divergence_loss.backward(retain_graph=True)
+
 
     # reconstruct samples
     """
@@ -117,9 +117,19 @@ class GcnInfomax(nn.Module):
     
     #reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
     reconstruction_error = 0.01* self.recon_loss(reconstructed_node, edge_index, batch) * num_graphs
-    reconstruction_error.backward()
+
 
     #print(reconstruction_error.item(), class_kl_divergence_loss.item(), node_kl_divergence_loss.item())
+
+    n_digits = 5
+    #print('before ', node_mu)
+    reconstruction_error = (reconstruction_error * 10**n_digits).round() / (10**n_digits)
+    class_kl_divergence_loss = (class_kl_divergence_loss * 10**n_digits).round() / (10**n_digits)
+    node_kl_divergence_loss = (node_kl_divergence_loss * 10**n_digits).round() / (10**n_digits)
+
+    class_kl_divergence_loss.backward(retain_graph=True)
+    node_kl_divergence_loss.backward(retain_graph=True)
+    reconstruction_error.backward()
 
     
     return  reconstruction_error.item(), class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
