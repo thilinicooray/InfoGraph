@@ -78,7 +78,17 @@ class Encoder(torch.nn.Module):
                 # feature_map = x2
         j = self.num_gc_layers
         #self.bns[j](
-        node_latent_space_mu = self.bns[j](torch.tanh(self.convs[j](x, edge_index)))
+
+        print('in cov ', x[0])
+
+        out_conv = self.convs[j](x, edge_index)
+        print('out_conv ', out_conv[0])
+        out_tan = torch.tanh(out_conv)
+        print('out_tan ', out_tan[0])
+        out_bn = self.bns[j](out_tan)
+        print('out_bn ', out_bn[0])
+
+        node_latent_space_mu = out_bn
 
         #print('node mu bn', self.bns[j].running_mean, self.bns[j].running_var)
 
