@@ -121,7 +121,7 @@ class GcnInfomax(nn.Module):
 
     #print(reconstruction_error.item(), class_kl_divergence_loss.item(), node_kl_divergence_loss.item())
 
-    n_digits = 5
+    n_digits = 9
     #print('before ', node_mu)
     reconstruction_error = (reconstruction_error * 10**n_digits).round() / (10**n_digits)
     class_kl_divergence_loss = (class_kl_divergence_loss * 10**n_digits).round() / (10**n_digits)
