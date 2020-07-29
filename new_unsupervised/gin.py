@@ -72,7 +72,7 @@ class Encoder(torch.nn.Module):
 
             x = F.relu(self.convs[i](x, edge_index))
             x = self.bns[i](x)
-            x = F.dropout(x, dropout_val, training=self.training)
+            #x = F.dropout(x, dropout_val, training=self.training)
             xs.append(x)
             # if i == 2:
                 # feature_map = x2

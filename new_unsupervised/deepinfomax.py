@@ -367,7 +367,6 @@ if __name__ == '__main__':
     '''model.eval()
     
     #for i in range(5):
-
     emb, y = model.get_embeddings(dataloader)
     res = evaluate_embedding(emb, y)
     accuracies['logreg'].append(res[0])
