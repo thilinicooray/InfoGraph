@@ -286,7 +286,7 @@ if __name__ == '__main__':
 
         dataset_num_features = 5
 
-    dataset_num_features = 5
+    #dataset_num_features = 5
         #input_feat = torch.ones((batch_size, 1)).to(device)
 
     dataloader = DataLoader(dataset, batch_size=batch_size)
@@ -332,9 +332,7 @@ if __name__ == '__main__':
             kl_class_loss_all += kl_class
             kl_node_loss_all += kl_node
 
-            losses['recon'].append(recon_loss)
-            losses['node_kl'].append(kl_node)
-            losses['class_kl'].append(kl_class)
+
 
             '''for name, param in model.named_parameters():
                 print(name, param.grad)'''
@@ -344,6 +342,10 @@ if __name__ == '__main__':
 
             #torch.nn.utils.clip_grad_norm_(model.parameters(), 0.25)
             optimizer.step()
+
+        losses['recon'].append(recon_loss_all/ len(dataloader))
+        losses['node_kl'].append(kl_node_loss_all/ len(dataloader))
+        losses['class_kl'].append(kl_class_loss_all/ len(dataloader))
 
 
 

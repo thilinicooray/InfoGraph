@@ -65,14 +65,14 @@ class Encoder(torch.nn.Module):
         #print('input x' , x[:5])
 
         #x = self.embedding(x)
-        dropout_val = 0.5
+        dropout_val = 0.1
 
         xs = []
         for i in range(self.num_gc_layers):
 
             x = F.relu(self.convs[i](x, edge_index))
             x = self.bns[i](x)
-            #x = F.dropout(x, dropout_val, training=self.training)
+            x = F.dropout(x, dropout_val, training=self.training)
             xs.append(x)
             # if i == 2:
                 # feature_map = x2
