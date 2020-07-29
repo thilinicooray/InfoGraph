@@ -263,6 +263,8 @@ if __name__ == '__main__':
 
     accuracies = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
 
+    losses = {'recon':[], 'node_kl':[], 'class_kl': []}
+
     log_interval = 1
     #batch_size = 128
     batch_size = args.batch_size
@@ -330,6 +332,10 @@ if __name__ == '__main__':
             kl_class_loss_all += kl_class
             kl_node_loss_all += kl_node
 
+            losses['recon'].append(recon_loss)
+            losses['node_kl'].append(kl_node)
+            losses['class_kl'].append(kl_class)
+
             '''for name, param in model.named_parameters():
                 print(name, param.grad)'''
 
@@ -343,6 +349,7 @@ if __name__ == '__main__':
 
         print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(dataloader),
                                                                                            kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
+        print(losses)
         #used during finetune phase
         if epoch % log_interval == 0:
             model.eval()
