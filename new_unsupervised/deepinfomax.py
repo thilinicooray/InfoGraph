@@ -351,7 +351,9 @@ if __name__ == '__main__':
 
         print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(dataloader),
                                                                                            kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
-        print(losses)
+        #print(losses)
+
+        
         #used during finetune phase
         if epoch % log_interval == 0:
             model.eval()
