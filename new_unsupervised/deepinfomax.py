@@ -116,7 +116,7 @@ class GcnInfomax(nn.Module):
     reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, edge_index)
     
     #reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
-    reconstruction_error = 0.05* self.recon_loss1(reconstructed_node, edge_index, batch) * num_graphs
+    reconstruction_error = 0.05* self.recon_loss(reconstructed_node, edge_index, batch) * num_graphs
 
 
     #print(reconstruction_error.item(), class_kl_divergence_loss.item(), node_kl_divergence_loss.item())
@@ -361,8 +361,6 @@ if __name__ == '__main__':
     accuracies['linearsvc'].append(res[2])
     accuracies['randomforest'].append(res[3])'''
 
-    best = 1e9
-
     #model.train()
     for epoch in range(1, epochs+1):
         recon_loss_all = 0
@@ -403,13 +401,6 @@ if __name__ == '__main__':
         print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(dataloader),
                                                                                            kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
         #print('\n\n', losses, '\n')
-
-        tot_loss = kl_class_loss_all 
-
-        if tot_loss < best :
-            best = tot_loss
-            print('current best model')
-
 
         #used during finetune phase
         if epoch % log_interval == 0:
