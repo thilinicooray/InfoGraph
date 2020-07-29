@@ -404,7 +404,7 @@ if __name__ == '__main__':
                                                                                            kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
         #print('\n\n', losses, '\n')
 
-        tot_loss = (recon_loss_all + kl_class_loss_all + kl_node_loss_all)/3
+        tot_loss = kl_class_loss_all 
 
         if tot_loss < best :
             best = tot_loss
