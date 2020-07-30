@@ -176,7 +176,7 @@ class GcnInfomax(nn.Module):
 
       #print('batch size', a.size(), a_t.size())
 
-      rec = torch.bmm(a, a_t)
+      rec = torch.sigmoid(torch.bmm(a, a_t))
 
       #print('inner pro', rec.size())
 
