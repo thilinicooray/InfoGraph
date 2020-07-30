@@ -115,7 +115,7 @@ class GcnInfomax(nn.Module):
 
     reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, edge_index)
     
-    reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs + self.recon_loss(node_latent_embeddings, edge_index, batch) * num_graphs
+    reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs + self.recon_loss(node_latent_embeddings + class_latent_embeddings, edge_index, batch) * num_graphs
     #reconstruction_error = 0.01*self.recon_loss(reconstructed_node, edge_index, batch) * num_graphs
 
 
