@@ -8,7 +8,7 @@ import json
 import random
 import os
 # from core.encoders import *
-
+import torch_geometric
 from torch_geometric.datasets import TUDataset
 from torch_geometric.data import DataLoader
 from torch_geometric.nn import global_mean_pool, global_add_pool, global_max_pool
@@ -265,7 +265,7 @@ class GcnInfomax(nn.Module):
 
               #print(x, edge_index, data.x)
               #x = torch.rand(data.batch.shape[0], 5).to(device)
-              x = torch.ones((batch.shape[0],5)).double().to(device)
+              #x = torch.ones((batch.shape[0],5)).double().to(device)
               #print('eval train', x.type())
               __, _, class_mu, class_logvar = self.encoder(x, edge_index, batch)
 
@@ -326,7 +326,7 @@ if __name__ == '__main__':
     path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', DS)
     # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
 
-    dataset = TUDataset(path, name=DS).shuffle()
+    dataset = TUDataset(path, name=DS,transform=torch_geometric.transforms.OneHotDegree).shuffle()
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     try:
@@ -374,9 +374,11 @@ if __name__ == '__main__':
         for data in dataloader:
             data = data.to(device)
 
+            print(data.x.size())
+
 
             #if data.x is None:
-            data.x = torch.ones((data.batch.shape[0], 5)).double().to(device)
+            #data.x = torch.ones((data.batch.shape[0], 5)).double().to(device)
 
             optimizer.zero_grad()
             recon_loss, kl_class, kl_node = model(data.x, data.edge_index, data.batch, data.num_graphs)
