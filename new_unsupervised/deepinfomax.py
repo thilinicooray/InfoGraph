@@ -326,7 +326,9 @@ if __name__ == '__main__':
     path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', DS)
     # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
 
-    dataset = TUDataset(path, name=DS, pre_transform=torch_geometric.transforms.OneHotDegree(max_degree=88)).shuffle()
+    #dataset = TUDataset(path, name=DS, pre_transform=torch_geometric.transforms.OneHotDegree(max_degree=88)).shuffle()
+
+    dataset = TUDataset(path, name=DS, pre_transform=torch_geometric.transforms.OneHotDegree(max_degree=88))
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     try:
