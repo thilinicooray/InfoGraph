@@ -211,7 +211,9 @@ class GcnInfomax(nn.Module):
 
       return pos_loss + neg_loss'''
 
-      loss = F.binary_cross_entropy_with_logits(rec, org_adj)
+      #loss = F.binary_cross_entropy_with_logits(rec, org_adj)
+
+      loss = mse_loss(rec, org_adj)
 
       return loss
 
