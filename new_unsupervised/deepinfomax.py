@@ -335,7 +335,6 @@ if __name__ == '__main__':
         dataset_num_features = 1
 
     if not dataset_num_features:
-        print('came here', dataset.num_features)
 
         dataset_num_features = 5
 
