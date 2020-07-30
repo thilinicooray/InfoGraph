@@ -374,7 +374,7 @@ if __name__ == '__main__':
         for data in dataloader:
             data = data.to(device)
 
-            print(data.x.size())
+            #print(data.x.size())
 
 
             #if data.x is None:
