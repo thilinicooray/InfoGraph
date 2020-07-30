@@ -115,8 +115,8 @@ class GcnInfomax(nn.Module):
 
     reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, edge_index)
     
-    #reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
-    reconstruction_error = 0.01*self.recon_loss(reconstructed_node, edge_index, batch) * num_graphs
+    reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
+    #reconstruction_error = 0.01*self.recon_loss(reconstructed_node, edge_index, batch) * num_graphs
 
 
     #print(reconstruction_error.item(), class_kl_divergence_loss.item(), node_kl_divergence_loss.item())
@@ -328,8 +328,8 @@ if __name__ == '__main__':
 
     #dataset = TUDataset(path, name=DS, pre_transform=torch_geometric.transforms.OneHotDegree(max_degree=88)).shuffle()
 
-    #dataset = TUDataset(path, name=DS, pre_transform=torch_geometric.transforms.OneHotDegree(max_degree=88))
-    dataset = TUDataset(path, name=DS, pre_transform=torch_geometric.transforms.Constant(value=1))
+    dataset = TUDataset(path, name=DS, pre_transform=torch_geometric.transforms.OneHotDegree(max_degree=88))
+    #dataset = TUDataset(path, name=DS, pre_transform=torch_geometric.transforms.Constant(value=1))
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     try:
