@@ -344,7 +344,7 @@ if __name__ == '__main__':
     #dataset_num_features = 5
         #input_feat = torch.ones((batch_size, 1)).to(device)
 
-    dataloader = DataLoader(dataset, batch_size=batch_size)
+    dataloader = DataLoader(dataset, shuffle=True, batch_size=batch_size)
 
 
     model = GcnInfomax(args.hidden_dim, args.num_gc_layers).to(device)
