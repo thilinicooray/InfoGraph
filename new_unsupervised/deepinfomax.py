@@ -411,7 +411,7 @@ if __name__ == '__main__':
         #print('\n\n', losses, '\n')
 
         #used during finetune phase
-        if epoch % log_interval == 0:
+        '''if epoch % log_interval == 0:
             model.eval()
             emb, y = model.get_embeddings(dataloader)
             res = evaluate_embedding(emb, y)
@@ -419,19 +419,21 @@ if __name__ == '__main__':
             accuracies['svc'].append(res[1])
             accuracies['linearsvc'].append(res[2])
             accuracies['randomforest'].append(res[3])
-            print(accuracies)
+            print(accuracies)'''
 
 
-    '''model.eval()
+    model.eval()
+
+    eval_dataloader = DataLoader(dataset, shuffle=False, batch_size=batch_size)
 
     #for i in range(5):
-    emb, y = model.get_embeddings(dataloader)
+    emb, y = model.get_embeddings(eval_dataloader)
     res = evaluate_embedding(emb, y)
     accuracies['logreg'].append(res[0])
     accuracies['svc'].append(res[1])
     accuracies['linearsvc'].append(res[2])
     accuracies['randomforest'].append(res[3])
-    print(accuracies)'''
+    print(accuracies)
 
     with open('unsupervised.log', 'a+') as f:
         s = json.dumps(accuracies)
