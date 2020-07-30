@@ -115,7 +115,8 @@ class GcnInfomax(nn.Module):
 
     reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, edge_index)
     
-    reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs + self.recon_loss(class_latent_embeddings, edge_index, batch) * num_graphs
+    reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
+                            #+ self.recon_loss(class_latent_embeddings, edge_index, batch) * num_graphs
     #reconstruction_error = 0.01*self.recon_loss(reconstructed_node, edge_index, batch) * num_graphs
 
 
@@ -413,18 +414,19 @@ if __name__ == '__main__':
         #print('\n\n', losses, '\n')
 
         #used during finetune phase
-        '''if epoch % log_interval == 0:
+        if epoch % log_interval == 0:
             model.eval()
-            emb, y = model.get_embeddings(dataloader)
+            eval_dataloader = DataLoader(dataset, shuffle=False, batch_size=batch_size)
+            emb, y = model.get_embeddings(eval_dataloader)
             res = evaluate_embedding(emb, y)
             accuracies['logreg'].append(res[0])
             accuracies['svc'].append(res[1])
             accuracies['linearsvc'].append(res[2])
             accuracies['randomforest'].append(res[3])
-            print(accuracies)'''
+            print(accuracies)
 
 
-    model.eval()
+    '''model.eval()
 
     eval_dataloader = DataLoader(dataset, shuffle=False, batch_size=batch_size)
 
@@ -435,7 +437,7 @@ if __name__ == '__main__':
     accuracies['svc'].append(res[1])
     accuracies['linearsvc'].append(res[2])
     accuracies['randomforest'].append(res[3])
-    print(accuracies)
+    print(accuracies)'''
 
     with open('unsupervised.log', 'a+') as f:
         s = json.dumps(accuracies)
