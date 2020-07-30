@@ -346,7 +346,7 @@ if __name__ == '__main__':
     dataloader = DataLoader(dataset, batch_size=batch_size)
 
 
-    model = GcnInfomax(args.hidden_dim, args.num_gc_layers).double().to(device)
+    model = GcnInfomax(args.hidden_dim, args.num_gc_layers).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     #scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
 
