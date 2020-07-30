@@ -127,10 +127,13 @@ class GcnInfomax(nn.Module):
     class_kl_divergence_loss = (class_kl_divergence_loss * 10**n_digits).round() / (10**n_digits)
     node_kl_divergence_loss = (node_kl_divergence_loss * 10**n_digits).round() / (10**n_digits)'''
 
-    class_kl_divergence_loss.backward(retain_graph=True)
-    node_kl_divergence_loss.backward(retain_graph=True)
-    reconstruction_error.backward()
+    #class_kl_divergence_loss.backward(retain_graph=True)
+    #node_kl_divergence_loss.backward(retain_graph=True)
+    #reconstruction_error.backward()
 
+    loss = class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error
+
+    loss.backward(retain_graph=True)
     
     return  reconstruction_error.item(), class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
 
