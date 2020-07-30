@@ -52,8 +52,8 @@ def accumulate_group_evidence(class_mu, class_logvar, batch, is_cuda):
         mu_dict[group_label] *= var_dict[group_label]
 
     # replace individual mu and logvar values for each sample with group mu and logvar
-    group_mu = torch.DoubleTensor(class_mu.size(0), class_mu.size(1))
-    group_var = torch.DoubleTensor(class_var.size(0), class_var.size(1))
+    group_mu = torch.FloatTensor(class_mu.size(0), class_mu.size(1))
+    group_var = torch.FloatTensor(class_var.size(0), class_var.size(1))
 
     if is_cuda:
         group_mu = group_mu.cuda()
@@ -95,9 +95,9 @@ def group_wise_reparameterize(training, mu, logvar, labels_batch, cuda):
     # generate only 1 eps value per group label
     for label in torch.unique(labels_batch):
         if cuda:
-            eps_dict[label.item()] = torch.cuda.DoubleTensor(1, logvar.size(1)).normal_(0., 0.1)
+            eps_dict[label.item()] = torch.cuda.FloatTensor(1, logvar.size(1)).normal_(0., 0.1)
         else:
-            eps_dict[label.item()] = torch.DoubleTensor(1, logvar.size(1)).normal_(0., 0.1)
+            eps_dict[label.item()] = torch.FloatTensor(1, logvar.size(1)).normal_(0., 0.1)
 
     if training:
         std = logvar.mul(0.5).exp_()
