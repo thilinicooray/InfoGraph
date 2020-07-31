@@ -78,12 +78,12 @@ class Encoder(torch.nn.Module):
                 # feature_map = x2
         j = self.num_gc_layers
         #self.bns[j](
-        node_latent_space_mu = self.bns[j](torch.tanh(self.convs[j](x, edge_index)))
+        #node_latent_space_mu = self.bns[j](torch.tanh(self.convs[j](x, edge_index)))
 
         #print('node mu bn', self.bns[j].running_mean, self.bns[j].running_var)
 
 
-        node_latent_space_logvar = self.bns[j+1](torch.tanh(self.convs[j+1](x, edge_index)))
+        #node_latent_space_logvar = self.bns[j+1](torch.tanh(self.convs[j+1](x, edge_index)))
 
         class_latent_space_mu = self.bns[j+2](torch.tanh(self.convs[j+2](x, edge_index)))
         class_latent_space_logvar = self.bns[j+3](torch.tanh(self.convs[j+3](x, edge_index)))
@@ -95,7 +95,7 @@ class Encoder(torch.nn.Module):
         class_latent_space_logvar = F.relu(self.class_logvar(x))'''
 
 
-        return node_latent_space_mu, node_latent_space_logvar, class_latent_space_mu, class_latent_space_logvar
+        return None, None, class_latent_space_mu, class_latent_space_logvar
 
 
 class Decoder(torch.nn.Module):
