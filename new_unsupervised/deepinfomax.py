@@ -268,7 +268,7 @@ class GcnInfomax(nn.Module):
 
               #print(x, edge_index, data.x)
               #x = torch.rand(data.batch.shape[0], 5).to(device)
-              #x = torch.ones((batch.shape[0],5)).double().to(device)
+              x = torch.ones((batch.shape[0],5)).double().to(device)
               #print('eval train', x.type())
               __, _, class_mu, class_logvar = self.encoder(x, edge_index, batch)
 
@@ -381,11 +381,11 @@ if __name__ == '__main__':
         for data in dataloader:
             data = data.to(device)
 
-            print(data)
+            #print(data)
 
 
             #if data.x is None:
-            #data.x = torch.ones((data.batch.shape[0], 5)).double().to(device)
+            data.x = torch.ones((data.batch.shape[0], 5)).double().to(device)
 
             optimizer.zero_grad()
             recon_loss, kl_class, kl_node = model(data.x, data.edge_index, data.batch, data.num_graphs)
