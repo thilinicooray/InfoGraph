@@ -268,7 +268,7 @@ class GcnInfomax(nn.Module):
 
               #print(x, edge_index, data.x)
               #x = torch.rand(data.batch.shape[0], 5).to(device)
-              x = torch.ones((batch.shape[0],5)).to(device)
+              #x = torch.ones((batch.shape[0],5)).to(device)
               #print('eval train', x.type())
               __, _, class_mu, class_logvar = self.encoder(x, edge_index, batch)
 
@@ -334,7 +334,7 @@ if __name__ == '__main__':
     #dataset = TUDataset(path, name=DS, pre_transform=torch_geometric.transforms.OneHotDegree(max_degree=88))
     #dataset = TUDataset(path, name=DS, pre_transform=torch_geometric.transforms.Constant(value=1))
     #dataset = TUDataset(path, name=DS, pre_transform=torch_geometric.transforms.LineGraph())
-    dataset = TUDataset(path, name=DS, pre_transform=torch_geometric.transforms.LineGraph())
+    dataset = TUDataset(path, name=DS, pre_transform=torch_geometric.transforms.LocalDegreeProfile())
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     try:
@@ -382,11 +382,11 @@ if __name__ == '__main__':
         for data in dataloader:
             data = data.to(device)
 
-            #print(data)
+            print(data)
 
 
             #if data.x is None:
-            data.x = torch.ones((data.batch.shape[0], 5)).to(device)
+            #data.x = torch.ones((data.batch.shape[0], 5)).to(device)
 
             optimizer.zero_grad()
             recon_loss, kl_class, kl_node = model(data.x, data.edge_index, data.batch, data.num_graphs)
