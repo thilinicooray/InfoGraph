@@ -331,8 +331,9 @@ if __name__ == '__main__':
 
     #dataset = TUDataset(path, name=DS, pre_transform=torch_geometric.transforms.OneHotDegree(max_degree=88)).shuffle()
 
-    dataset = TUDataset(path, name=DS, pre_transform=torch_geometric.transforms.OneHotDegree(max_degree=88))
+    #dataset = TUDataset(path, name=DS, pre_transform=torch_geometric.transforms.OneHotDegree(max_degree=88))
     #dataset = TUDataset(path, name=DS, pre_transform=torch_geometric.transforms.Constant(value=1))
+    dataset = TUDataset(path, name=DS, pre_transform=torch_geometric.transforms.LineGraph())
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     try:
@@ -380,7 +381,7 @@ if __name__ == '__main__':
         for data in dataloader:
             data = data.to(device)
 
-            #print(data.x.size())
+            print(data.x.size(), data.edge_index.size())
 
 
             #if data.x is None:
