@@ -381,7 +381,7 @@ if __name__ == '__main__':
         for data in dataloader:
             data = data.to(device)
 
-            print(data.x.size(), data.edge_index.size())
+            print(data)
 
 
             #if data.x is None:
