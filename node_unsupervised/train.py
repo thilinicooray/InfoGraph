@@ -91,68 +91,44 @@ def train(dataset, verbose=False):
         print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss,
                                                                                 kl_class, kl_node))
 
-        if loss < best:
-            best = loss
-            best_t = epoch
-            cnt_wait = 0
-            torch.save(model.state_dict(), 'model.pkl')
-        else:
-            cnt_wait += 1
 
-        if cnt_wait == patience:
-            if verbose:
-                print('Early stopping!')
-            break
+        model.eval()
+        embeds= model.get_embeddings(features, adj)
+        train_embs = embeds[idx_train]
+        test_embs = embeds[idx_test]
 
-    #if verbose:
-    print('Loading {}th epoch'.format(best_t))
-    model.load_state_dict(torch.load('model.pkl'))
-    print('model loaded')
-    model.eval()
+        train_lbls = labels[idx_train]
+        test_lbls = labels[idx_test]
 
-    if sparse:
-        adj = sparse_mx_to_torch_sparse_tensor(sp.coo_matrix(adj))
-        diff = sparse_mx_to_torch_sparse_tensor(sp.coo_matrix(diff))
+        accs = []
+        wd = 0.01 if dataset == 'citeseer' else 0.0
+
+        for _ in range(50):
+            log = LogReg(hid_units, nb_classes)
+            opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=wd)
+            log.cuda()
+            for _ in range(300):
+                log.train()
+                opt.zero_grad()
+
+                logits = log(train_embs)
+                loss = xent(logits, train_lbls)
+
+                loss.backward()
+                opt.step()
+
+            logits = log(test_embs)
+            preds = torch.argmax(logits, dim=1)
+            acc = torch.sum(preds == test_lbls).float() / test_lbls.shape[0]
+            accs.append(acc * 100)
+
+        accs = torch.stack(accs)
+        print('evaluating embeddings for node classification', accs.mean().item(), accs.std().item())
 
 
 
-    features = torch.FloatTensor(features)
-    adj = torch.FloatTensor(adj)
 
-    features = features.cuda()
-    adj = adj.cuda()
 
-    embeds= model.get_embeddings(features, adj)
-    train_embs = embeds[idx_train]
-    test_embs = embeds[idx_test]
-
-    train_lbls = labels[idx_train]
-    test_lbls = labels[idx_test]
-
-    accs = []
-    wd = 0.01 if dataset == 'citeseer' else 0.0
-
-    for _ in range(50):
-        log = LogReg(hid_units, nb_classes)
-        opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=wd)
-        log.cuda()
-        for _ in range(300):
-            log.train()
-            opt.zero_grad()
-
-            logits = log(train_embs)
-            loss = xent(logits, train_lbls)
-
-            loss.backward()
-            opt.step()
-
-        logits = log(test_embs)
-        preds = torch.argmax(logits, dim=1)
-        acc = torch.sum(preds == test_lbls).float() / test_lbls.shape[0]
-        accs.append(acc * 100)
-
-    accs = torch.stack(accs)
-    print(accs.mean().item(), accs.std().item())
 
 
 if __name__ == '__main__':
@@ -162,5 +138,5 @@ if __name__ == '__main__':
 
     # 'cora', 'citeseer', 'pubmed'
     dataset = 'cora'
-    for __ in range(50):
+    for __ in range(1):
         train(dataset)
