@@ -71,6 +71,10 @@ class GcnInfomax(nn.Module):
         class_mu.data, class_logvar.data, True
     )
 
+    print('grouped_mu', grouped_mu)
+
+    print('grouped_logvar', grouped_logvar)
+
     # kl-divergence error for style latent space
     node_kl_divergence_loss = torch.mean(
         - 0.5 * torch.sum(1 + node_logvar - node_mu.pow(2) - node_logvar.exp())
@@ -94,6 +98,8 @@ class GcnInfomax(nn.Module):
     class_latent_embeddings = group_wise_reparameterize(
         training=True, mu=grouped_mu, logvar=grouped_logvar,  cuda=True
     )
+
+    print('class_latent_embeddings', class_latent_embeddings)
 
     #need to reduce ml between node and class latents
     '''measure='JSD'
