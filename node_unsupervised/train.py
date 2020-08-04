@@ -64,8 +64,9 @@ def train(dataset, verbose=False):
         lbl = lbl.cuda()
         idx_train = idx_train.cuda()
         idx_test = idx_test.cuda()
+        adj = torch.FloatTensor(adj).cuda()
+        features = torch.FloatTensor(features).cuda()
 
-    b_xent = nn.BCEWithLogitsLoss()
     xent = nn.CrossEntropyLoss()
     cnt_wait = 0
     best = 1e9
@@ -73,39 +74,11 @@ def train(dataset, verbose=False):
 
     for epoch in range(nb_epochs):
 
-        idx = np.random.randint(0, adj.shape[-1] - sample_size + 1, batch_size)
-        ba, bd, bf = [], [], []
-        for i in idx:
-            ba.append(adj[i: i + sample_size, i: i + sample_size])
-            bd.append(diff[i: i + sample_size, i: i + sample_size])
-            bf.append(features[i: i + sample_size])
-
-        ba = np.array(ba).reshape(batch_size, sample_size, sample_size)
-        bd = np.array(bd).reshape(batch_size, sample_size, sample_size)
-        bf = np.array(bf).reshape(batch_size, sample_size, ft_size)
-
-        if sparse:
-            ba = sparse_mx_to_torch_sparse_tensor(sp.coo_matrix(ba))
-            bd = sparse_mx_to_torch_sparse_tensor(sp.coo_matrix(bd))
-        else:
-            ba = torch.FloatTensor(ba)
-            bd = torch.FloatTensor(bd)
-
-        bf = torch.FloatTensor(bf)
-        idx = np.random.permutation(sample_size)
-        shuf_fts = bf[:, idx, :]
-
-        if torch.cuda.is_available():
-            bf = bf.cuda()
-            ba = ba.cuda()
-            bd = bd.cuda()
-            shuf_fts = shuf_fts.cuda()
-
         model.train()
         optimiser.zero_grad()
 
         #logits, __, __ = model(bf, shuf_fts, ba, bd, sparse, None, None, None)
-        recon_loss, kl_class, kl_node = model(bf, ba)
+        recon_loss, kl_class, kl_node = model(features, adj)
 
         loss = recon_loss + kl_class + kl_node
 
