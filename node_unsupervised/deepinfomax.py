@@ -67,7 +67,12 @@ class GcnInfomax(nn.Module):
 
     print('class_logvar', class_logvar)'''
 
-    batch = torch.ones(x.size(0)).cuda()
+    node_mu = node_mu.view(-1, node_mu.size(0))
+    node_logvar = node_logvar.view(-1, node_logvar.size(0))
+    class_mu = class_mu.view(-1, class_mu.size(0))
+    class_logvar = class_logvar.view(-1, class_logvar.size(0))
+
+    batch = torch.ones(node_mu.size(0)).cuda()
 
     grouped_mu, grouped_logvar = accumulate_group_evidence(
         class_mu.data, class_logvar.data, batch, True

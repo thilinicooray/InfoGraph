@@ -86,7 +86,7 @@ class Encoder(torch.nn.Module):
         self.class_logvar = Linear(in_features=dim, out_features=dim, bias=True)'''
 
 
-    def forward(self, x, edge_index):
+    '''def forward(self, x, edge_index):
 
         for i in range(self.num_gc_layers):
 
@@ -99,13 +99,30 @@ class Encoder(torch.nn.Module):
         node_latent_space_logvar = self.bns[j+1](torch.tanh(self.convs[j+1](x, edge_index)))
 
         class_latent_space_mu = self.bns[j+2](torch.tanh(self.convs[j+2](x, edge_index)))
-        class_latent_space_logvar = self.bns[j+3](torch.tanh(self.convs[j+3](x, edge_index)))
+        class_latent_space_logvar = self.bns[j+3](torch.tanh(self.convs[j+3](x, edge_index)))'''
 
         '''node_latent_space_mu = F.relu(self.node_mu(x))
         node_latent_space_logvar = F.relu(self.node_logvar(x))
 
         class_latent_space_mu = F.relu(self.class_mu(x))
         class_latent_space_logvar = F.relu(self.class_logvar(x))'''
+
+        #return node_latent_space_mu, node_latent_space_logvar, class_latent_space_mu, class_latent_space_logvar
+
+    def forward(self, x, edge_index):
+
+        for i in range(self.num_gc_layers):
+
+            x = F.relu(self.convs[i](x, edge_index))
+            x = x
+            # if i == 2:
+            # feature_map = x2
+        j = self.num_gc_layers
+        node_latent_space_mu = torch.relu(self.convs[j](x, edge_index))
+        node_latent_space_logvar = torch.relu(self.convs[j+1](x, edge_index))
+
+        class_latent_space_mu = torch.relu(self.convs[j+2](x, edge_index))
+        class_latent_space_logvar = torch.relu(self.convs[j+3](x, edge_index))
 
         return node_latent_space_mu, node_latent_space_logvar, class_latent_space_mu, class_latent_space_logvar
 
@@ -119,7 +136,7 @@ class Decoder(torch.nn.Module):
             ('relu_1', ReLU()),
 
             ('linear_2', torch.nn.Linear(in_features=node_dim, out_features=feat_size, bias=True)),
-            ('relu_final', Tanh()),
+            ('relu_final', ReLU()),
         ]))
 
     def forward(self, node_latent_space, class_latent_space):
