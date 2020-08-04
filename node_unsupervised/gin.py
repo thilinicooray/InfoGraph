@@ -4,6 +4,7 @@ from collections import OrderedDict
 
 import torch
 import torch.nn.functional as F
+import torch.nn as nn
 from torch.nn import Sequential, Linear, ReLU
 from torch_geometric.datasets import TUDataset
 from torch_geometric.data import DataLoader
@@ -18,6 +19,39 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn import preprocessing
 from sklearn.metrics import accuracy_score
 import sys
+
+
+class GCN(nn.Module):
+    def __init__(self, in_ft, out_ft, bias=True):
+        super(GCN, self).__init__()
+        self.fc = nn.Linear(in_ft, out_ft, bias=False)
+        self.act = nn.PReLU()
+
+        if bias:
+            self.bias = nn.Parameter(torch.FloatTensor(out_ft))
+            self.bias.data.fill_(0.0)
+        else:
+            self.register_parameter('bias', None)
+
+        for m in self.modules():
+            self.weights_init(m)
+
+    def weights_init(self, m):
+        if isinstance(m, nn.Linear):
+            torch.nn.init.xavier_uniform_(m.weight.data)
+            if m.bias is not None:
+                m.bias.data.fill_(0.0)
+
+    # Shape of seq: (batch, nodes, features)
+    def forward(self, seq, adj, sparse=False):
+        seq_fts = self.fc(seq)
+        if sparse:
+            out = torch.unsqueeze(torch.spmm(adj, torch.squeeze(seq_fts, 0)), 0)
+        else:
+            out = torch.bmm(adj, seq_fts)
+        if self.bias is not None:
+            out += self.bias
+        return self.act(out)
 
 class Encoder(torch.nn.Module):
     def __init__(self, num_features, dim, num_gc_layers):
@@ -34,10 +68,9 @@ class Encoder(torch.nn.Module):
         for i in range(num_gc_layers+4):
 
             if i:
-                nn = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim))
+                conv = GCN(num_features, dim)
             else:
-                nn = Sequential(Linear(num_features, dim), ReLU(), Linear(dim, dim))
-            conv = GINConv(nn)
+                conv = GCN(dim, dim)
             bn = torch.nn.BatchNorm1d(dim)
 
             self.convs.append(conv)
