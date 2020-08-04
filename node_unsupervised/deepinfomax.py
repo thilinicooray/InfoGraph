@@ -101,7 +101,7 @@ class GcnInfomax(nn.Module):
         training=True, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
     )
 
-    print('class_latent_embeddings', class_latent_embeddings)
+    #print('class_latent_embeddings', class_latent_embeddings)
 
     #need to reduce ml between node and class latents
     '''measure='JSD'
