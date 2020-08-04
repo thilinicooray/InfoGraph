@@ -57,7 +57,7 @@ class GcnInfomax(nn.Module):
     # batch_size = data.num_graphs
 
 
-    node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index)
+    node_mu, node_logvar, _, _ = self.encoder(x, edge_index)
 
     '''print('node mu', node_mu)
 
@@ -69,14 +69,14 @@ class GcnInfomax(nn.Module):
 
     node_mu = node_mu.view(-1, node_mu.size(-1))
     node_logvar = node_logvar.view(-1, node_logvar.size(-1))
-    class_mu = class_mu.view(-1, class_mu.size(-1))
-    class_logvar = class_logvar.view(-1, class_logvar.size(-1))
+    #class_mu = class_mu.view(-1, class_mu.size(-1))
+    #class_logvar = class_logvar.view(-1, class_logvar.size(-1))
 
     batch = torch.ones(node_mu.size(0)).cuda()
 
-    grouped_mu, grouped_logvar = accumulate_group_evidence(
+    '''grouped_mu, grouped_logvar = accumulate_group_evidence(
         class_mu.data, class_logvar.data, batch, True
-    )
+    )'''
 
     #print('grouped_mu', grouped_mu)
 
@@ -90,11 +90,11 @@ class GcnInfomax(nn.Module):
     node_kl_divergence_loss.backward(retain_graph=True)
 
     # kl-divergence error for class latent space
-    class_kl_divergence_loss = torch.mean(
+    '''class_kl_divergence_loss = torch.mean(
         - 0.5 * torch.sum(1 + grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp())
     )
     class_kl_divergence_loss = 0.00001*class_kl_divergence_loss
-    class_kl_divergence_loss.backward(retain_graph=True)
+    class_kl_divergence_loss.backward(retain_graph=True)'''
 
     # reconstruct samples
     """
@@ -104,9 +104,9 @@ class GcnInfomax(nn.Module):
     node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
 
 
-    class_latent_embeddings = group_wise_reparameterize(
+    '''class_latent_embeddings = group_wise_reparameterize(
         training=True, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
-    )
+    )'''
 
     #print('class_latent_embeddings', class_latent_embeddings)
 
@@ -115,7 +115,7 @@ class GcnInfomax(nn.Module):
     mi_loss = local_global_loss_disen(node_latent_embeddings, class_latent_embeddings, edge_index, batch, measure)
     mi_loss.backward(retain_graph=True)'''
 
-    reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
+    reconstructed_node = self.decoder(node_latent_embeddings)
 
     #check input feat first
     #print('recon ', x[0],reconstructed_node[0])
@@ -123,7 +123,7 @@ class GcnInfomax(nn.Module):
     reconstruction_error.backward()
 
 
-    return reconstruction_error.item() , class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
+    return reconstruction_error.item() ,  node_kl_divergence_loss.item()
 
   def get_embeddings(self, feat, adj):
 

@@ -117,9 +117,9 @@ def train(dataset, verbose=True):
         model.train()
         optimiser.zero_grad()
 
-        recon_loss, kl_class, kl_node = model(bf, ba)
+        recon_loss, kl_node = model(bf, ba)
 
-        loss = recon_loss + kl_class + kl_node
+        loss = recon_loss + kl_node
 
         optimiser.step()
 
