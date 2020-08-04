@@ -116,14 +116,11 @@ def train(dataset, verbose=False):
 
 
 
-    features = torch.FloatTensor(features[np.newaxis])
-    adj = torch.FloatTensor(adj[np.newaxis])
-
-    print('adj after train ', adj.size())
+    features = torch.FloatTensor(features)
+    adj = torch.FloatTensor(adj)
 
     features = features.cuda()
     adj = adj.cuda()
-    diff = diff.cuda()
 
     embeds= model.get_embeddings(features, adj)
     train_embs = embeds[0, idx_train]
