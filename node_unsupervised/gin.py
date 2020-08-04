@@ -68,9 +68,9 @@ class Encoder(torch.nn.Module):
         for i in range(num_gc_layers+4):
 
             if i:
-                conv = GCN(num_features, dim)
-            else:
                 conv = GCN(dim, dim)
+            else:
+                conv = GCN(num_features, dim)
             bn = torch.nn.BatchNorm1d(dim)
 
             self.convs.append(conv)
