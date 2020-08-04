@@ -238,6 +238,8 @@ def train(dataset, verbose=False):
                 print('Early stopping!')
             break
 
+        break
+
     if verbose:
         print('Loading {}th epoch'.format(best_t))
     model.load_state_dict(torch.load('model.pkl'))
