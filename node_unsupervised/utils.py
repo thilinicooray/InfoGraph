@@ -11,11 +11,12 @@ from scipy.linalg import fractional_matrix_power, inv
 import scipy.sparse as sp
 
 
-def accumulate_group_evidence(class_mu, class_logvar, is_cuda):
+def accumulate_group_evidence(class_mu, class_logvar, batch, is_cuda):
     """
     :param class_mu: mu values for class latent embeddings of each sample in the mini-batch
     :param class_logvar: logvar values for class latent embeddings for each sample in the mini-batch
-    :param labels_batch: all samples from the same graph
+    :param labels_batch: class labels of each sample (the operation of accumulating class evidence can also
+        be performed using group labels instead of actual class labels)
     :param is_cuda:
     :return:
     """
@@ -27,8 +28,8 @@ def accumulate_group_evidence(class_mu, class_logvar, is_cuda):
 
     # calculate var inverse for each group using group vars
     #for nodeidx, graphidx in enumerate(labels_batch):
-    for i in range(1):
-        group_label = 1
+    for i in range(len(batch)):
+        group_label = batch[i].item()
 
         # remove 0 values from variances
         class_var[i][class_var[i] == float(0)] = 1e-6
@@ -43,8 +44,8 @@ def accumulate_group_evidence(class_mu, class_logvar, is_cuda):
         var_dict[group_label] = 1 / var_dict[group_label]
 
     # calculate mu for each group
-    for i in range(1):
-        group_label = 1
+    for i in range(len(batch)):
+        group_label = batch[i].item()
 
         if group_label in mu_dict.keys():
             mu_dict[group_label] += class_mu[i] * (1 / class_var[i])
@@ -63,8 +64,8 @@ def accumulate_group_evidence(class_mu, class_logvar, is_cuda):
         group_mu = group_mu.cuda()
         group_var = group_var.cuda()
 
-    for i in range(1):
-        group_label = 1
+    for i in range(len(batch)):
+        group_label = batch[i].item()
 
         group_mu[i] = mu_dict[group_label]
         group_var[i] = var_dict[group_label]
@@ -93,15 +94,15 @@ def reparameterize(training, mu, logvar):
         return mu
 
 
-def group_wise_reparameterize(training, mu, logvar, cuda):
+def group_wise_reparameterize(training, mu, logvar, labels_batch, cuda):
     eps_dict = {}
 
     # generate only 1 eps value per group label
-    for label in [1]:
+    for label in torch.unique(labels_batch):
         if cuda:
-            eps_dict[label] = torch.cuda.FloatTensor(1, logvar.size(1)).normal_(0., 0.1)
+            eps_dict[label.item()] = torch.cuda.FloatTensor(1, logvar.size(1)).normal_(0., 0.1)
         else:
-            eps_dict[label] = torch.FloatTensor(1, logvar.size(1)).normal_(0., 0.1)
+            eps_dict[label.item()] = torch.FloatTensor(1, logvar.size(1)).normal_(0., 0.1)
 
     if training:
         std = logvar.mul(0.5).exp_()
@@ -109,7 +110,7 @@ def group_wise_reparameterize(training, mu, logvar, cuda):
 
         # multiply std by correct eps and add mu
         for i in range(logvar.size(0)):
-            reparameterized_var[i] = std[i].mul(Variable(eps_dict[1]))
+            reparameterized_var[i] = std[i].mul(Variable(eps_dict[labels_batch[i].item()]))
             reparameterized_var[i].add_(mu[i])
 
         return reparameterized_var
