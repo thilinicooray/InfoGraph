@@ -58,6 +58,9 @@ class GcnInfomax(nn.Module):
 
 
     node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index)
+
+    print('node mu', node_mu)
+
     grouped_mu, grouped_logvar = accumulate_group_evidence(
         class_mu.data, class_logvar.data, True
     )
