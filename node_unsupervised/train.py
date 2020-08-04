@@ -123,8 +123,8 @@ def train(dataset, verbose=False):
     adj = adj.cuda()
 
     embeds= model.get_embeddings(features, adj)
-    train_embs = embeds[0, idx_train]
-    test_embs = embeds[0, idx_test]
+    train_embs = embeds[idx_train]
+    test_embs = embeds[idx_test]
 
     train_lbls = labels[idx_train]
     test_lbls = labels[idx_test]
