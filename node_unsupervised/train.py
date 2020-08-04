@@ -118,7 +118,9 @@ def train(dataset, verbose=False):
 
     features = torch.FloatTensor(features[np.newaxis])
     adj = torch.FloatTensor(adj[np.newaxis])
-    diff = torch.FloatTensor(diff[np.newaxis])
+
+    print('adj after train ', adj.size())
+
     features = features.cuda()
     adj = adj.cuda()
     diff = diff.cuda()
