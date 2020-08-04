@@ -35,7 +35,7 @@ class GcnInfomax(nn.Module):
 
     self.embedding_dim = mi_units = hidden_dim * num_gc_layers
     self.encoder = Encoder(dataset_num_features, hidden_dim, num_gc_layers)
-    self.decoder = Decoder(hidden_dim, dataset_num_features)
+    self.decoder = Decoder(hidden_dim, hidden_dim, dataset_num_features)
 
     #self.local_d = FF(self.embedding_dim)
     #self.global_d = FF(self.embedding_dim)
@@ -57,7 +57,7 @@ class GcnInfomax(nn.Module):
     # batch_size = data.num_graphs
 
 
-    node_mu, node_logvar, _, _ = self.encoder(x, edge_index)
+    node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index)
 
     '''print('node mu', node_mu)
 
@@ -69,14 +69,14 @@ class GcnInfomax(nn.Module):
 
     node_mu = node_mu.view(-1, node_mu.size(-1))
     node_logvar = node_logvar.view(-1, node_logvar.size(-1))
-    #class_mu = class_mu.view(-1, class_mu.size(-1))
-    #class_logvar = class_logvar.view(-1, class_logvar.size(-1))
+    class_mu = class_mu.view(-1, class_mu.size(-1))
+    class_logvar = class_logvar.view(-1, class_logvar.size(-1))
 
     batch = torch.ones(node_mu.size(0)).cuda()
 
-    '''grouped_mu, grouped_logvar = accumulate_group_evidence(
+    grouped_mu, grouped_logvar = accumulate_group_evidence(
         class_mu.data, class_logvar.data, batch, True
-    )'''
+    )
 
     #print('grouped_mu', grouped_mu)
 
@@ -90,11 +90,11 @@ class GcnInfomax(nn.Module):
     node_kl_divergence_loss.backward(retain_graph=True)
 
     # kl-divergence error for class latent space
-    '''class_kl_divergence_loss = torch.mean(
+    class_kl_divergence_loss = torch.mean(
         - 0.5 * torch.sum(1 + grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp())
     )
     class_kl_divergence_loss = 0.00001*class_kl_divergence_loss
-    class_kl_divergence_loss.backward(retain_graph=True)'''
+    class_kl_divergence_loss.backward(retain_graph=True)
 
     # reconstruct samples
     """
@@ -104,9 +104,9 @@ class GcnInfomax(nn.Module):
     node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
 
 
-    '''class_latent_embeddings = group_wise_reparameterize(
+    class_latent_embeddings = group_wise_reparameterize(
         training=True, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
-    )'''
+    )
 
     #print('class_latent_embeddings', class_latent_embeddings)
 
@@ -115,44 +115,23 @@ class GcnInfomax(nn.Module):
     mi_loss = local_global_loss_disen(node_latent_embeddings, class_latent_embeddings, edge_index, batch, measure)
     mi_loss.backward(retain_graph=True)'''
 
-    #reconstructed_node = self.decoder(node_latent_embeddings)
+    reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
 
     #check input feat first
     #print('recon ', x[0],reconstructed_node[0])
-    #reconstruction_error =  100000*mse_loss(reconstructed_node, x.view(-1, x.size(-1)))
-    reconstruction_error = self.adj_recon(node_latent_embeddings, edge_index)
-
+    reconstruction_error =  100000*mse_loss(reconstructed_node, x.view(-1, x.size(-1)))
     reconstruction_error.backward()
 
-    print('losses ', reconstruction_error, node_kl_divergence_loss)
 
-
-    return reconstruction_error.item() ,  node_kl_divergence_loss.item()
+    return reconstruction_error.item() , class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
 
   def get_embeddings(self, feat, adj):
 
       with torch.no_grad():
           node_mu, node_logvar, _, _ = self.encoder(feat, adj)
-          #node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
+          node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
 
       return node_mu
-
-
-  def adj_recon(self, node_latent, edge_index):
-
-      node_view = node_latent.view(4, -1, node_latent.size(-1))
-
-      node_t = node_view.permute(0,2,1)
-
-      recon_adj = torch.sigmoid(torch.bmm(node_view, node_t))
-
-      print('2 adj ', recon_adj.size(), edge_index.size())
-
-      loss = F.binary_cross_entropy_with_logits(recon_adj, edge_index)
-
-      return loss
-
-
 
 if __name__ == '__main__':
     
