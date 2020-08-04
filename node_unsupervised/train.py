@@ -86,6 +86,8 @@ def train(dataset, verbose=True):
 
     for epoch in range(nb_epochs):
 
+        print('enter the loop')
+
         idx = np.random.randint(0, adj.shape[-1] - sample_size + 1, batch_size)
         ba, bd, bf = [], [], []
         for i in idx:
@@ -116,6 +118,8 @@ def train(dataset, verbose=True):
 
         model.train()
         optimiser.zero_grad()
+
+        print('go to forward')
 
         recon_loss, kl_class, kl_node = model(bf, ba)
 
