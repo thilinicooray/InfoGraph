@@ -25,7 +25,7 @@ from utils import imshow_grid, mse_loss, reparameterize, group_wise_reparameteri
 from arguments import arg_parse
 
 class GcnInfomax(nn.Module):
-  def __init__(self, hidden_dim, num_gc_layers, alpha=0.5, beta=1., gamma=.1):
+  def __init__(self, dataset_num_features, hidden_dim, num_gc_layers, alpha=0.5, beta=1., gamma=.1):
     super(GcnInfomax, self).__init__()
 
     self.alpha = alpha
@@ -52,29 +52,28 @@ class GcnInfomax(nn.Module):
                 m.bias.data.fill_(0.0)
 
 
-  def forward(self, x, edge_index, batch, num_graphs):
+  def forward(self, x, edge_index):
 
     # batch_size = data.num_graphs
-    if x is None:
-        x = torch.ones(batch.shape[0]).to(device)
 
-    node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index, batch)
+
+    node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index)
     grouped_mu, grouped_logvar = accumulate_group_evidence(
-        class_mu.data, class_logvar.data, batch, True
+        class_mu.data, class_logvar.data, True
     )
 
     # kl-divergence error for style latent space
     node_kl_divergence_loss = torch.mean(
         - 0.5 * torch.sum(1 + node_logvar - node_mu.pow(2) - node_logvar.exp())
     )
-    node_kl_divergence_loss = node_kl_divergence_loss *num_graphs
+    node_kl_divergence_loss = node_kl_divergence_loss
     node_kl_divergence_loss.backward(retain_graph=True)
 
     # kl-divergence error for class latent space
     class_kl_divergence_loss = torch.mean(
         - 0.5 * torch.sum(1 + grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp())
     )
-    class_kl_divergence_loss = class_kl_divergence_loss * num_graphs
+    class_kl_divergence_loss = class_kl_divergence_loss
     class_kl_divergence_loss.backward(retain_graph=True)
 
     # reconstruct samples
@@ -84,7 +83,7 @@ class GcnInfomax(nn.Module):
     """
     node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
     class_latent_embeddings = group_wise_reparameterize(
-        training=True, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
+        training=True, mu=grouped_mu, logvar=grouped_logvar,  cuda=True
     )
 
     #need to reduce ml between node and class latents
@@ -95,39 +94,19 @@ class GcnInfomax(nn.Module):
     reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
     #check input feat first
     #print('recon ', x[0],reconstructed_node[0])
-    reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
+    reconstruction_error =  mse_loss(reconstructed_node, x)
     reconstruction_error.backward()
 
     
     return reconstruction_error.item() , class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
 
-  def get_embeddings(self, loader):
+  def get_embeddings(self, feat, adj):
 
-      device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-      ret = []
-      y = []
       with torch.no_grad():
-          for data in loader:
-              data.to(device)
-              x, edge_index, batch = data.x, data.edge_index, data.batch
-              if x is None:
-                  x = torch.ones((batch.shape[0],1)).to(device)
-              __, _, class_mu, class_logvar = self.encoder(x, edge_index, batch)
+          node_mu, node_logvar, _, _ = self.encoder(feat, adj)
+          node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
 
-              grouped_mu, grouped_logvar = accumulate_group_evidence(
-                  class_mu.data, class_logvar.data, batch, True
-              )
-
-              accumulated_class_latent_embeddings = group_wise_reparameterize(
-                  training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
-              )
-
-              class_emb = global_mean_pool(accumulated_class_latent_embeddings, batch)
-              ret.append(class_emb.cpu().numpy())
-              y.append(data.y.cpu().numpy())
-      ret = np.concatenate(ret, 0)
-      y = np.concatenate(y, 0)
-      return ret, y
+      return node_latent_embeddings
 
 if __name__ == '__main__':
     

@@ -5,12 +5,11 @@ from torch.autograd import Variable
 from mpl_toolkits.axes_grid1 import ImageGrid
 
 
-def accumulate_group_evidence(class_mu, class_logvar, batch, is_cuda):
+def accumulate_group_evidence(class_mu, class_logvar, is_cuda):
     """
     :param class_mu: mu values for class latent embeddings of each sample in the mini-batch
     :param class_logvar: logvar values for class latent embeddings for each sample in the mini-batch
-    :param labels_batch: class labels of each sample (the operation of accumulating class evidence can also
-        be performed using group labels instead of actual class labels)
+    :param labels_batch: all samples from the same graph
     :param is_cuda:
     :return:
     """
@@ -22,8 +21,8 @@ def accumulate_group_evidence(class_mu, class_logvar, batch, is_cuda):
 
     # calculate var inverse for each group using group vars
     #for nodeidx, graphidx in enumerate(labels_batch):
-    for i in range(len(batch)):
-        group_label = batch[i].item()
+    for i in range(1):
+        group_label = 1
 
         # remove 0 values from variances
         class_var[i][class_var[i] == float(0)] = 1e-6
@@ -38,8 +37,8 @@ def accumulate_group_evidence(class_mu, class_logvar, batch, is_cuda):
         var_dict[group_label] = 1 / var_dict[group_label]
 
     # calculate mu for each group
-    for i in range(len(batch)):
-        group_label = batch[i].item()
+    for i in range(1):
+        group_label = 1
 
         if group_label in mu_dict.keys():
             mu_dict[group_label] += class_mu[i] * (1 / class_var[i])
@@ -58,8 +57,8 @@ def accumulate_group_evidence(class_mu, class_logvar, batch, is_cuda):
         group_mu = group_mu.cuda()
         group_var = group_var.cuda()
 
-    for i in range(len(batch)):
-        group_label = batch[i].item()
+    for i in range(1):
+        group_label = 1
 
         group_mu[i] = mu_dict[group_label]
         group_var[i] = var_dict[group_label]
