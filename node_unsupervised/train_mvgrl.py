@@ -3,7 +3,7 @@ import scipy.sparse as sp
 import torch
 import torch.nn as nn
 from utils import sparse_mx_to_torch_sparse_tensor
-from node.dataset import load
+from dataset import load
 
 
 # Borrowed from https://github.com/PetarV-/DGI
