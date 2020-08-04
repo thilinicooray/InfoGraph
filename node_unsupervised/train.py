@@ -93,7 +93,7 @@ def train(dataset, verbose=False):
 
 
         model.eval()
-        embeds= model.get_embeddings(features, adj)
+        embeds= model.get_embeddings(features_current, adj_current)
         train_embs = embeds[idx_train]
         test_embs = embeds[idx_test]
 
