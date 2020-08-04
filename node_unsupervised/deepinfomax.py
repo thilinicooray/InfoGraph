@@ -133,9 +133,9 @@ class GcnInfomax(nn.Module):
 
       with torch.no_grad():
           node_mu, node_logvar, _, _ = self.encoder(feat, adj)
-          node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
+          #node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
 
-      return node_latent_embeddings
+      return node_mu
 
 
   def adj_recon(self, node_latent, edge_index):
