@@ -127,9 +127,9 @@ class GcnInfomax(nn.Module):
 
   def get_embeddings(self, feat, adj):
 
-      with torch.no_grad():
-          node_mu, node_logvar, _, _ = self.encoder(feat, adj)
-          node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
+      #with torch.no_grad():
+      node_mu, node_logvar, _, _ = self.encoder(feat, adj)
+      node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
 
       return node_latent_embeddings
 
