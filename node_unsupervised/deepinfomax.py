@@ -31,14 +31,14 @@ class GcnInfomax(nn.Module):
     self.alpha = alpha
     self.beta = beta
     self.gamma = gamma
-    self.prior = args.prior
+    #self.prior = args.prior
 
     self.embedding_dim = mi_units = hidden_dim * num_gc_layers
     self.encoder = Encoder(dataset_num_features, hidden_dim, num_gc_layers)
     self.decoder = Decoder(hidden_dim, hidden_dim, dataset_num_features)
 
-    self.local_d = FF(self.embedding_dim)
-    self.global_d = FF(self.embedding_dim)
+    #self.local_d = FF(self.embedding_dim)
+    #self.global_d = FF(self.embedding_dim)
 
 
     self.init_emb()
