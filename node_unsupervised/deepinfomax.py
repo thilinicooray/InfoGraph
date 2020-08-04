@@ -35,7 +35,7 @@ class GcnInfomax(nn.Module):
 
     self.embedding_dim = mi_units = hidden_dim * num_gc_layers
     self.encoder = Encoder(dataset_num_features, hidden_dim, num_gc_layers)
-    self.decoder = Decoder(hidden_dim, hidden_dim, dataset_num_features)
+    self.decoder = Decoder(hidden_dim, dataset_num_features)
 
     #self.local_d = FF(self.embedding_dim)
     #self.global_d = FF(self.embedding_dim)
