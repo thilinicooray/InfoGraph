@@ -64,8 +64,6 @@ def train(dataset, verbose=False):
         lbl = lbl.cuda()
         idx_train = idx_train.cuda()
         idx_test = idx_test.cuda()
-        adj = torch.FloatTensor(adj).cuda()
-        features = torch.FloatTensor(features).cuda()
 
     xent = nn.CrossEntropyLoss()
     cnt_wait = 0
@@ -74,11 +72,14 @@ def train(dataset, verbose=False):
 
     for epoch in range(nb_epochs):
 
+        adj_current = torch.FloatTensor(adj).cuda()
+        features_current = torch.FloatTensor(features).cuda()
+
         model.train()
         optimiser.zero_grad()
 
         #logits, __, __ = model(bf, shuf_fts, ba, bd, sparse, None, None, None)
-        recon_loss, kl_class, kl_node = model(features, adj)
+        recon_loss, kl_class, kl_node = model(features_current, adj_current)
 
         loss = recon_loss + kl_class + kl_node
 
