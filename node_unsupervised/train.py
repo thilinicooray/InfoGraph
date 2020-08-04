@@ -144,6 +144,7 @@ def train(dataset, verbose=True):
     if verbose:
         print('Loading {}th epoch'.format(best_t))
     model.load_state_dict(torch.load('model.pkl'))
+    model.eval()
 
     if sparse:
         adj = sparse_mx_to_torch_sparse_tensor(sp.coo_matrix(adj))
