@@ -115,12 +115,16 @@ class GcnInfomax(nn.Module):
     mi_loss = local_global_loss_disen(node_latent_embeddings, class_latent_embeddings, edge_index, batch, measure)
     mi_loss.backward(retain_graph=True)'''
 
-    reconstructed_node = self.decoder(node_latent_embeddings)
+    #reconstructed_node = self.decoder(node_latent_embeddings)
 
     #check input feat first
     #print('recon ', x[0],reconstructed_node[0])
-    reconstruction_error =  100000*mse_loss(reconstructed_node, x.view(-1, x.size(-1)))
+    #reconstruction_error =  100000*mse_loss(reconstructed_node, x.view(-1, x.size(-1)))
+    reconstruction_error = self.adj_recon(node_latent_embeddings, edge_index)
+
     reconstruction_error.backward()
+
+    print('losses ', reconstruction_error, node_kl_divergence_loss)
 
 
     return reconstruction_error.item() ,  node_kl_divergence_loss.item()
@@ -132,6 +136,23 @@ class GcnInfomax(nn.Module):
           node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
 
       return node_latent_embeddings
+
+
+  def adj_recon(self, node_latent, edge_index):
+
+      node_view = node_latent.view(4, -1, node_latent.size(-1))
+
+      node_t = node_view.permute(0,2,1)
+
+      recon_adj = torch.sigmoid(torch.bmm(node_view, node_t))
+
+      print('2 adj ', recon_adj.size(), edge_index.size())
+
+      loss = F.binary_cross_entropy_with_logits(recon_adj, edge_index)
+
+      return loss
+
+
 
 if __name__ == '__main__':
     
