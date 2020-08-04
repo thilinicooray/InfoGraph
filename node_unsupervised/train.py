@@ -139,7 +139,7 @@ def train(dataset, verbose=True):
                 print('Early stopping!')
             break
 
-        break
+        #break
 
     if verbose:
         print('Loading {}th epoch'.format(best_t))
