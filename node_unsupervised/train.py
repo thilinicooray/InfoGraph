@@ -129,17 +129,17 @@ def train(dataset, verbose=True):
         model.eval()
 
         if sparse:
-            adj = sparse_mx_to_torch_sparse_tensor(sp.coo_matrix(adj))
-            diff = sparse_mx_to_torch_sparse_tensor(sp.coo_matrix(diff))
+            adj1 = sparse_mx_to_torch_sparse_tensor(sp.coo_matrix(adj))
+            diff1 = sparse_mx_to_torch_sparse_tensor(sp.coo_matrix(diff))
 
-        features = torch.FloatTensor(features[np.newaxis])
-        adj = torch.FloatTensor(adj[np.newaxis])
-        diff = torch.FloatTensor(diff[np.newaxis])
-        features = features.cuda()
-        adj = adj.cuda()
-        diff = diff.cuda()
+        features1 = torch.FloatTensor(features[np.newaxis])
+        adj1 = torch.FloatTensor(adj[np.newaxis])
+        diff1 = torch.FloatTensor(diff[np.newaxis])
+        features1 = features1.cuda()
+        adj1 = adj1.cuda()
+        diff1 = diff1.cuda()
 
-        embeds = model.get_embeddings(features, adj)
+        embeds = model.get_embeddings(features1, adj1)
         train_embs = embeds[0, idx_train]
         test_embs = embeds[0, idx_test]
 
