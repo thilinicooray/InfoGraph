@@ -88,6 +88,8 @@ class Encoder(torch.nn.Module):
 
     def forward(self, x, edge_index):
 
+        print('input size ', x.size(), edge_index.size())
+
 
         xs = []
         for i in range(self.num_gc_layers):
