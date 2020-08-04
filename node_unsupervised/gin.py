@@ -48,7 +48,7 @@ class GCN(nn.Module):
         if sparse:
             out = torch.unsqueeze(torch.spmm(adj, torch.squeeze(seq_fts, 0)), 0)
         else:
-            out = torch.bmm(adj, seq_fts)
+            out = torch.mm(adj, seq_fts)
         if self.bias is not None:
             out += self.bias
         return self.act(out)
