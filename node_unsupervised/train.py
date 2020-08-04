@@ -139,6 +139,8 @@ def train(dataset, verbose=True):
                 print('Early stopping!')
             break
 
+        break
+
     if verbose:
         print('Loading {}th epoch'.format(best_t))
     model.load_state_dict(torch.load('model.pkl'))
@@ -147,16 +149,16 @@ def train(dataset, verbose=True):
         adj = sparse_mx_to_torch_sparse_tensor(sp.coo_matrix(adj))
         diff = sparse_mx_to_torch_sparse_tensor(sp.coo_matrix(diff))
 
-    features = torch.FloatTensor(features)
-    adj = torch.FloatTensor(adj)
-    diff = torch.FloatTensor(diff)
+    features = torch.FloatTensor(features[np.newaxis])
+    adj = torch.FloatTensor(adj[np.newaxis])
+    diff = torch.FloatTensor(diff[np.newaxis])
     features = features.cuda()
     adj = adj.cuda()
     diff = diff.cuda()
 
     embeds = model.get_embeddings(features, adj)
-    train_embs = embeds[idx_train]
-    test_embs = embeds[idx_test]
+    train_embs = embeds[0, idx_train]
+    test_embs = embeds[0, idx_test]
 
     train_lbls = labels[idx_train]
     test_lbls = labels[idx_test]
