@@ -124,7 +124,7 @@ def train(dataset, verbose=True):
         optimiser.step()
 
         if verbose:
-            print('Epoch: {0}, Loss: {1:0.4f}'.format(epoch, loss.item()))
+            print('Epoch: {0}, Loss: {1:0.4f}'.format(epoch, loss))
 
         if loss < best:
             best = loss

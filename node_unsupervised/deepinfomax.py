@@ -56,12 +56,8 @@ class GcnInfomax(nn.Module):
 
     # batch_size = data.num_graphs
 
-    print('came to model', x.size())
-
 
     node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index)
-
-    print('got mu var')
 
     '''print('node mu', node_mu)
 
@@ -82,8 +78,6 @@ class GcnInfomax(nn.Module):
         class_mu.data, class_logvar.data, batch, True
     )
 
-    print('accumulated mu', grouped_mu.size())
-
     #print('grouped_mu', grouped_mu)
 
     #print('grouped_logvar', grouped_logvar)
@@ -95,16 +89,12 @@ class GcnInfomax(nn.Module):
     node_kl_divergence_loss = 0.00001*node_kl_divergence_loss
     node_kl_divergence_loss.backward(retain_graph=True)
 
-    print('node_kl_divergence_loss done')
-
     # kl-divergence error for class latent space
     class_kl_divergence_loss = torch.mean(
         - 0.5 * torch.sum(1 + grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp())
     )
     class_kl_divergence_loss = 0.00001*class_kl_divergence_loss
     class_kl_divergence_loss.backward(retain_graph=True)
-
-    print('class_kl_divergence_loss done')
 
     # reconstruct samples
     """
@@ -114,13 +104,9 @@ class GcnInfomax(nn.Module):
     node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
 
 
-    print('got node embedding ', node_latent_embeddings.size())
-
     class_latent_embeddings = group_wise_reparameterize(
         training=True, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
     )
-
-    print('got cls embedding ', class_latent_embeddings.size())
 
     #print('class_latent_embeddings', class_latent_embeddings)
 
@@ -131,15 +117,12 @@ class GcnInfomax(nn.Module):
 
     reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
 
-    print('reconstructed_node ', reconstructed_node.size())
     #check input feat first
     #print('recon ', x[0],reconstructed_node[0])
     reconstruction_error =  100000*mse_loss(reconstructed_node, x.view(-1, x.size(-1)))
     reconstruction_error.backward()
 
-    print('reconstruction_error done ')
 
-    
     return reconstruction_error.item() , class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
 
   def get_embeddings(self, feat, adj):
