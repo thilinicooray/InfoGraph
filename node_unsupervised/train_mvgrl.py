@@ -243,6 +243,7 @@ def train(dataset, verbose=False):
     if verbose:
         print('Loading {}th epoch'.format(best_t))
     model.load_state_dict(torch.load('model.pkl'))
+    model.eval()
 
     if sparse:
         adj = sparse_mx_to_torch_sparse_tensor(sp.coo_matrix(adj))
@@ -255,7 +256,9 @@ def train(dataset, verbose=False):
     adj = adj.cuda()
     diff = diff.cuda()
 
-    embeds, _ = model.embed(features, adj, diff, sparse, None)
+    with torch.no_grad():
+
+        embeds, _ = model.embed(features, adj, diff, sparse, None)
     train_embs = embeds[0, idx_train]
     test_embs = embeds[0, idx_test]
 
