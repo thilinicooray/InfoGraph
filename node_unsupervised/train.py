@@ -109,25 +109,21 @@ def train(dataset, verbose=False):
     model.load_state_dict(torch.load('model.pkl'))
     print('model loaded')
     model.eval()
-    print('model eval mode')
 
     if sparse:
         adj = sparse_mx_to_torch_sparse_tensor(sp.coo_matrix(adj))
         diff = sparse_mx_to_torch_sparse_tensor(sp.coo_matrix(diff))
 
 
-    print('sparse')
 
     features = torch.FloatTensor(features[np.newaxis])
-    print('feat')
     adj = torch.FloatTensor(adj[np.newaxis])
     diff = torch.FloatTensor(diff[np.newaxis])
     features = features.cuda()
     adj = adj.cuda()
     diff = diff.cuda()
-    print('after cuda var')
 
-    embeds= model.get_embeddings(features, adj, diff)
+    embeds= model.get_embeddings(features, adj)
     train_embs = embeds[0, idx_train]
     test_embs = embeds[0, idx_test]
 
