@@ -67,8 +67,10 @@ class GcnInfomax(nn.Module):
 
     print('class_logvar', class_logvar)'''
 
+    batch = torch.ones(x.size(0)).cuda()
+
     grouped_mu, grouped_logvar = accumulate_group_evidence(
-        class_mu.data, class_logvar.data, True
+        class_mu.data, class_logvar.data, batch, True
     )
 
     print('grouped_mu', grouped_mu)
@@ -96,7 +98,7 @@ class GcnInfomax(nn.Module):
     """
     node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
     class_latent_embeddings = group_wise_reparameterize(
-        training=True, mu=grouped_mu, logvar=grouped_logvar,  cuda=True
+        training=True, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
     )
 
     print('class_latent_embeddings', class_latent_embeddings)
