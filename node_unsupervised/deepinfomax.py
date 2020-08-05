@@ -8,7 +8,7 @@ import json
 import random
 # from core.encoders import *
 
-from torch_geometric.datasets import CitationFull
+#from torch_geometric.datasets import CitationFull
 from torch_geometric.data import DataLoader
 from torch_geometric.nn import global_mean_pool, global_add_pool, global_max_pool
 import sys
@@ -146,106 +146,3 @@ class GcnInfomax(nn.Module):
 
       return loss
 
-if __name__ == '__main__':
-    
-    args = arg_parse()
-
-    seed = 97
-    epochs = 30
-    #epochs = int(args.num_epochs)
-
-    print('seed ', seed, 'epochs ', epochs)
-
-
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
-
-    print('init seed, seed ', torch.initial_seed(), seed)
-
-    accuracies = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
-
-    log_interval = 1
-    batch_size = 128
-    #lr = args.lr
-    lr = 0.000001
-    DS = args.DS
-    path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', DS)
-    # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
-
-    dataset = CitationFull(path, name=DS).shuffle()
-    try:
-        dataset_num_features = dataset.num_features
-    except:
-        dataset_num_features = 1
-
-    if not dataset_num_features:
-        dataset_num_features = 1
-
-    dataloader = DataLoader(dataset, batch_size=batch_size)
-
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = GcnInfomax(args.hidden_dim, args.num_gc_layers).to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-    #scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
-
-    print('================')
-    print('lr: {}'.format(lr))
-    print('num_features: {}'.format(dataset_num_features))
-    print('hidden_dim: {}'.format(args.hidden_dim))
-    print('num_gc_layers: {}'.format(args.num_gc_layers))
-    print('================')
-
-
-    '''model.eval()
-    emb, y = model.get_embeddings(dataloader)
-    res = evaluate_embedding(emb, y)
-    accuracies['logreg'].append(res[0])
-    accuracies['svc'].append(res[1])
-    accuracies['linearsvc'].append(res[2])
-    accuracies['randomforest'].append(res[3])'''
-
-    model.train()
-    for epoch in range(1, epochs+1):
-        recon_loss_all = 0
-        kl_class_loss_all = 0
-        kl_node_loss_all = 0
-        mi_loss_all = 0
-        #model.train()
-        for data in dataloader:
-            data = data.to(device)
-            optimizer.zero_grad()
-            recon_loss, kl_class, kl_node = model(data.x, data.edge_index, data.batch, data.num_graphs)
-            recon_loss_all += recon_loss
-            kl_class_loss_all += kl_class
-            kl_node_loss_all += kl_node
-            optimizer.step()
-
-        print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(dataloader),
-                                                                                           kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
-        #used during finetune phase
-        '''if epoch % log_interval == 0:
-            model.eval()
-            emb, y = model.get_embeddings(dataloader)
-            res = evaluate_embedding(emb, y)
-            accuracies['logreg'].append(res[0])
-            accuracies['svc'].append(res[1])
-            accuracies['linearsvc'].append(res[2])
-            accuracies['randomforest'].append(res[3])
-            print(accuracies)'''
-
-
-    model.eval()
-    
-    emb, y = model.get_embeddings(dataloader)
-    res = evaluate_embedding(emb, y)
-    accuracies['logreg'].append(res[0])
-    accuracies['svc'].append(res[1])
-    accuracies['linearsvc'].append(res[2])
-    accuracies['randomforest'].append(res[3])
-    print(accuracies)
-
-    with open('unsupervised.log', 'a+') as f:
-        s = json.dumps(accuracies)
-        f.write('{},{},{},{},{},{}\n'.format(args.DS, args.num_gc_layers, epochs, log_interval, lr, s))
