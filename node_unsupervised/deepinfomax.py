@@ -157,8 +157,6 @@ class GcnInfomax(nn.Module):
       pos_weight = float(adj.shape[0] * adj.shape[0] - adj.sum()) / adj.sum()
       norm = adj.shape[0] * adj.shape[0] / float((adj.shape[0] * adj.shape[0] - adj.sum()) * 2)
 
-      print(pos_weight, norm)
-
 
       recon_adj = torch.sigmoid(torch.mm(node_latent, node_latent.t()))
 
