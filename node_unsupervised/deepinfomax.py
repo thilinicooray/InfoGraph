@@ -76,9 +76,9 @@ class GcnInfomax(nn.Module):
 
     batch = torch.ones(node_mu.size(0)).cuda()
 
-    grouped_mu, grouped_logvar = accumulate_group_evidence(
+    '''grouped_mu, grouped_logvar = accumulate_group_evidence(
         class_mu.data, class_logvar.data, batch, True
-    )
+    )'''
 
     #print('grouped_mu', grouped_mu)
 
@@ -102,8 +102,8 @@ class GcnInfomax(nn.Module):
     class_kl_divergence_loss = class_kl_divergence_loss
     class_kl_divergence_loss.backward(retain_graph=True)'''
 
-    class_kl_divergence_loss = -0.5 / n_nodes * torch.mean(torch.sum(
-        1 + 2 * grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp().pow(2), 1))
+    '''class_kl_divergence_loss = -0.5 / n_nodes * torch.mean(torch.sum(
+        1 + 2 * grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp().pow(2), 1))'''
 
     # reconstruct samples
     """
@@ -113,9 +113,9 @@ class GcnInfomax(nn.Module):
     node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
 
 
-    class_latent_embeddings = group_wise_reparameterize(
+    '''class_latent_embeddings = group_wise_reparameterize(
         training=True, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
-    )
+    )'''
 
     #print('class_latent_embeddings', class_latent_embeddings)
 
@@ -124,7 +124,7 @@ class GcnInfomax(nn.Module):
     mi_loss = local_global_loss_disen(node_latent_embeddings, class_latent_embeddings, edge_index, batch, measure)
     mi_loss.backward(retain_graph=True)'''
 
-    reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
+    #reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
 
     #check input feat first
     #print('recon ', x[0],reconstructed_node[0])
@@ -133,16 +133,16 @@ class GcnInfomax(nn.Module):
 
 
 
-    reconstruction_error =  self.adj_recon(reconstructed_node, edge_index)
+    reconstruction_error =  self.adj_recon(node_latent_embeddings, edge_index)
 
 
 
     #reconstruction_error.backward()
 
-    print('recon, classkl, node kl', reconstruction_error.item(), class_kl_divergence_loss.item(), node_kl_divergence_loss.item())
+    print('recon, classkl, node kl', reconstruction_error.item(),  node_kl_divergence_loss.item())
 
 
-    return reconstruction_error + class_kl_divergence_loss + node_kl_divergence_loss
+    return reconstruction_error + node_kl_divergence_loss
 
   def get_embeddings(self, feat, adj):
 
@@ -161,7 +161,7 @@ class GcnInfomax(nn.Module):
       recon_adj = torch.sigmoid(torch.mm(node_latent, node_latent.t()))
 
       #loss = norm* F.binary_cross_entropy_with_logits(recon_adj, adj, pos_weight=pos_weight)
-      loss = F.binary_cross_entropy_with_logits(recon_adj, adj, pos_weight=pos_weight)
+      loss = norm* F.binary_cross_entropy_with_logits(recon_adj, adj, pos_weight=pos_weight)
 
       return loss
 

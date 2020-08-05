@@ -114,10 +114,10 @@ class Encoder(torch.nn.Module):
         node_latent_space_mu = torch.relu(self.convs[j](x, edge_index))
         node_latent_space_logvar = torch.relu(self.convs[j+1](x, edge_index))
 
-        class_latent_space_mu = torch.relu(self.convs[j+2](x, edge_index))
-        class_latent_space_logvar = torch.relu(self.convs[j+3](x, edge_index))
+        #class_latent_space_mu = torch.relu(self.convs[j+2](x, edge_index))
+        #class_latent_space_logvar = torch.relu(self.convs[j+3](x, edge_index))
 
-        return node_latent_space_mu, node_latent_space_logvar, class_latent_space_mu, class_latent_space_logvar
+        return node_latent_space_mu, node_latent_space_logvar, None, None
 
 
 class Decoder(torch.nn.Module):
