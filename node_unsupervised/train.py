@@ -86,50 +86,20 @@ def train(dataset, verbose=True):
 
     for epoch in range(nb_epochs):
 
-        idx = np.random.randint(0, adj.shape[-1] - sample_size + 1, batch_size)
-        ba, bd, bf = [], [], []
-        for i in idx:
-            ba.append(adj[i: i + sample_size, i: i + sample_size])
-            bd.append(diff[i: i + sample_size, i: i + sample_size])
-            bf.append(features[i: i + sample_size])
-
-        ba = np.array(ba).reshape(batch_size, sample_size, sample_size)
-        bd = np.array(bd).reshape(batch_size, sample_size, sample_size)
-        bf = np.array(bf).reshape(batch_size, sample_size, ft_size)
-
-        if sparse:
-            ba = sparse_mx_to_torch_sparse_tensor(sp.coo_matrix(ba))
-            bd = sparse_mx_to_torch_sparse_tensor(sp.coo_matrix(bd))
-        else:
-            ba = torch.FloatTensor(ba)
-            bd = torch.FloatTensor(bd)
-
-        bf = torch.FloatTensor(bf)
-        idx = np.random.permutation(sample_size)
-        shuf_fts = bf[:, idx, :]
-
-        if torch.cuda.is_available():
-            bf = bf.cuda()
-            ba = ba.cuda()
-            bd = bd.cuda()
-            shuf_fts = shuf_fts.cuda()
+        feat_in = torch.FloatTensor(features).cuda()
+        adj_in = torch.FloatTensor(adj).cuda()
 
         model.train()
         optimiser.zero_grad()
 
-        recon_loss1, kl_class1, kl_node1 = model(bf, ba)
-        recon_loss2, kl_class2, kl_node2 = model(bf, bd)
+        loss = model(feat_in, adj_in)
 
-        recon_loss = recon_loss1 + recon_loss2
-        kl_node = kl_node1 + kl_node2
-        kl_class = kl_class1 + kl_class2
-
-        loss = recon_loss + kl_node + kl_class
+        loss.backward()
 
         optimiser.step()
 
         if verbose:
-            print('Epoch: {0}, Loss: {1:0.4f}'.format(epoch, loss))
+            print('Epoch: {0}, Loss: {1:0.4f}'.format(epoch, loss.item()))
 
         model.eval()
 
@@ -137,9 +107,9 @@ def train(dataset, verbose=True):
             adj1 = sparse_mx_to_torch_sparse_tensor(sp.coo_matrix(adj))
             diff1 = sparse_mx_to_torch_sparse_tensor(sp.coo_matrix(diff))
 
-        features1 = torch.FloatTensor(features[np.newaxis])
-        adj1 = torch.FloatTensor(adj[np.newaxis])
-        diff1 = torch.FloatTensor(diff[np.newaxis])
+        features1 = torch.FloatTensor(features)
+        adj1 = torch.FloatTensor(adj)
+        diff1 = torch.FloatTensor(diff)
         features1 = features1.cuda()
         adj1 = adj1.cuda()
         diff1 = diff1.cuda()
@@ -147,8 +117,8 @@ def train(dataset, verbose=True):
         embeds1 = model.get_embeddings(features1, diff1)
         embeds2 = model.get_embeddings(features1, adj1)
         embeds = embeds1 + embeds2
-        train_embs = embeds[0, idx_train]
-        test_embs = embeds[0, idx_test]
+        train_embs = embeds[idx_train]
+        test_embs = embeds[idx_test]
 
         train_lbls = labels[idx_train]
         test_lbls = labels[idx_test]

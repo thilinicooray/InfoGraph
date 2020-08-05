@@ -67,10 +67,12 @@ class GcnInfomax(nn.Module):
 
     print('class_logvar', class_logvar)'''
 
-    node_mu = node_mu.view(-1, node_mu.size(-1))
+    '''node_mu = node_mu.view(-1, node_mu.size(-1))
     node_logvar = node_logvar.view(-1, node_logvar.size(-1))
     class_mu = class_mu.view(-1, class_mu.size(-1))
-    class_logvar = class_logvar.view(-1, class_logvar.size(-1))
+    class_logvar = class_logvar.view(-1, class_logvar.size(-1))'''
+
+    n_nodes = node_mu.size(0)
 
     batch = torch.ones(node_mu.size(0)).cuda()
 
@@ -83,18 +85,25 @@ class GcnInfomax(nn.Module):
     #print('grouped_logvar', grouped_logvar)
 
     # kl-divergence error for style latent space
-    node_kl_divergence_loss = torch.mean(
+    '''node_kl_divergence_loss = torch.mean(
         - 0.5 * torch.sum(1 + node_logvar - node_mu.pow(2) - node_logvar.exp())
     )
     node_kl_divergence_loss = node_kl_divergence_loss
-    node_kl_divergence_loss.backward(retain_graph=True)
+    node_kl_divergence_loss.backward(retain_graph=True)'''
+
+    node_kl_divergence_loss = -0.5 / n_nodes * torch.mean(torch.sum(
+        1 + 2 * node_logvar - node_mu.pow(2) - node_logvar.exp().pow(2), 1))
+
 
     # kl-divergence error for class latent space
-    class_kl_divergence_loss = torch.mean(
+    '''class_kl_divergence_loss = torch.mean(
         - 0.5 * torch.sum(1 + grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp())
     )
     class_kl_divergence_loss = class_kl_divergence_loss
-    class_kl_divergence_loss.backward(retain_graph=True)
+    class_kl_divergence_loss.backward(retain_graph=True)'''
+
+    class_kl_divergence_loss = -0.5 / n_nodes * torch.mean(torch.sum(
+        1 + 2 * grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp().pow(2), 1))
 
     # reconstruct samples
     """
@@ -120,11 +129,18 @@ class GcnInfomax(nn.Module):
     #check input feat first
     #print('recon ', x[0],reconstructed_node[0])
     #reconstruction_error =  100000*mse_loss(reconstructed_node, x.view(-1, x.size(-1)))
+
+
+
+
     reconstruction_error =  self.adj_recon(node_latent_embeddings+class_latent_embeddings, edge_index)
-    reconstruction_error.backward()
 
 
-    return reconstruction_error.item() , class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
+
+    #reconstruction_error.backward()
+
+
+    return reconstruction_error + class_kl_divergence_loss + node_kl_divergence_loss
 
   def get_embeddings(self, feat, adj):
 
@@ -132,9 +148,14 @@ class GcnInfomax(nn.Module):
           node_mu, node_logvar, _, _ = self.encoder(feat, adj)
           node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
 
-      return node_mu
+      return node_latent_embeddings
 
-  def adj_recon(self, node_latent, edge_index):
+  def adj_recon(self, node_latent, adj):
+
+      pos_weight = float(adj.shape[0] * adj.shape[0] - adj.sum()) / adj.sum()
+      norm = adj.shape[0] * adj.shape[0] / float((adj.shape[0] * adj.shape[0] - adj.sum()) * 2)
+
+
 
       node_view = node_latent.view(4, -1, node_latent.size(-1))
 
@@ -142,7 +163,7 @@ class GcnInfomax(nn.Module):
 
       recon_adj = torch.sigmoid(torch.bmm(node_view, node_t))
 
-      loss = F.binary_cross_entropy_with_logits(recon_adj, edge_index)
+      loss = norm* F.binary_cross_entropy_with_logits(recon_adj, adj, pos_weight=pos_weight)
 
       return loss
 
