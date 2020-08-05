@@ -133,11 +133,13 @@ class GcnInfomax(nn.Module):
 
 
 
-    reconstruction_error =  self.adj_recon(node_latent_embeddings+class_latent_embeddings, edge_index)
+    reconstruction_error =  self.adj_recon(reconstructed_node, edge_index)
 
 
 
     #reconstruction_error.backward()
+
+    print('recon, classkl, node kl', reconstruction_error.item(), class_kl_divergence_loss.item(), node_kl_divergence_loss.item())
 
 
     return reconstruction_error + class_kl_divergence_loss + node_kl_divergence_loss
