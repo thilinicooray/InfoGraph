@@ -155,13 +155,10 @@ class GcnInfomax(nn.Module):
       pos_weight = float(adj.shape[0] * adj.shape[0] - adj.sum()) / adj.sum()
       norm = adj.shape[0] * adj.shape[0] / float((adj.shape[0] * adj.shape[0] - adj.sum()) * 2)
 
+      print(pos_weight, norm)
 
 
-      node_view = node_latent.view(4, -1, node_latent.size(-1))
-
-      node_t = node_view.permute(0,2,1)
-
-      recon_adj = torch.sigmoid(torch.bmm(node_view, node_t))
+      recon_adj = torch.sigmoid(torch.mm(node_latent, node_latent.t()))
 
       loss = norm* F.binary_cross_entropy_with_logits(recon_adj, adj, pos_weight=pos_weight)
 
