@@ -160,7 +160,8 @@ class GcnInfomax(nn.Module):
 
       recon_adj = torch.sigmoid(torch.mm(node_latent, node_latent.t()))
 
-      loss = norm* F.binary_cross_entropy_with_logits(recon_adj, adj, pos_weight=pos_weight)
+      #loss = norm* F.binary_cross_entropy_with_logits(recon_adj, adj, pos_weight=pos_weight)
+      loss = F.binary_cross_entropy_with_logits(recon_adj, adj, pos_weight=pos_weight)
 
       return loss
 
