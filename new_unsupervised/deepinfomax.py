@@ -218,9 +218,9 @@ class GcnInfomax(nn.Module):
           pos_edge_index (LongTensor): The positive edges to train against.
       """
 
-      org_adj = to_dense_adj(edge_index, batch)
-      pos_weight = float(z.size(0) * z.size(0) - org_adj.sum()) / org_adj.sum()
-      norm = z.size(0) * z.size(0) / float((z.size(0) * z.size(0) - org_adj.sum()) * 2)
+      #org_adj = to_dense_adj(edge_index, batch)
+      pos_weight = float(z.size(0) * z.size(0) - edge_index.size(0)) / edge_index.size(0)
+      norm = z.size(0) * z.size(0) / float((z.size(0) * z.size(0) - edge_index.size(0)) * 2)
 
 
 
