@@ -56,8 +56,6 @@ class Encoder(torch.nn.Module):
     def __init__(self, num_features, dim, num_gc_layers):
         super(Encoder, self).__init__()
 
-        print('dim ', dim)
-
         # num_features = dataset.num_features
         # dim = 32
         self.num_gc_layers = num_gc_layers

@@ -114,6 +114,8 @@ def train(dataset, verbose=True):
             bd = bd.cuda()
             shuf_fts = shuf_fts.cuda()
 
+        print('diff ', bd.size(), ba.size())
+
         model.train()
         optimiser.zero_grad()
 
