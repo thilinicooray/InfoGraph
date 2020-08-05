@@ -238,6 +238,49 @@ def train(dataset, verbose=True):
                 print('Early stopping!')
             break
 
+        model.eval()
+
+        features1 = torch.FloatTensor(features[np.newaxis])
+        adj1 = torch.FloatTensor(adj[np.newaxis])
+        diff1 = torch.FloatTensor(diff[np.newaxis])
+        features1 = features1.cuda()
+        adj1 = adj1.cuda()
+        diff1 = diff1.cuda()
+
+        with torch.no_grad():
+
+            embeds, _ = model.embed(features1, adj1, diff1, sparse, None)
+        train_embs = embeds[0, idx_train]
+        test_embs = embeds[0, idx_test]
+
+        train_lbls = labels[idx_train]
+        test_lbls = labels[idx_test]
+
+        accs = []
+        wd = 0.01 if dataset == 'citeseer' else 0.0
+
+        for _ in range(50):
+            log = LogReg(hid_units, nb_classes)
+            opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=wd)
+            log.cuda()
+            for _ in range(300):
+                log.train()
+                opt.zero_grad()
+
+                logits = log(train_embs)
+                loss = xent(logits, train_lbls)
+
+                loss.backward()
+                opt.step()
+
+            logits = log(test_embs)
+            preds = torch.argmax(logits, dim=1)
+            acc = torch.sum(preds == test_lbls).float() / test_lbls.shape[0]
+            accs.append(acc * 100)
+
+        accs = torch.stack(accs)
+        print(accs.mean().item(), accs.std().item())
+
 
     if verbose:
         print('Loading {}th epoch'.format(best_t))
