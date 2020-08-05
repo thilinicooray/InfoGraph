@@ -133,7 +133,7 @@ class Decoder(torch.nn.Module):
         ]))
 
     def forward(self, node_latent_space):
-        x = torch.cat((node_latent_space), dim=1)
+        x = node_latent_space
 
         x = self.linear_model(x)
 
