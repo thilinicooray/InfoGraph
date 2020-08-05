@@ -114,12 +114,10 @@ def train(dataset, verbose=True):
             bd = bd.cuda()
             shuf_fts = shuf_fts.cuda()
 
-        print('diff ', bd.size(), ba.size())
-
         model.train()
         optimiser.zero_grad()
 
-        recon_loss, kl_class, kl_node = model(bf, ba)
+        recon_loss, kl_class, kl_node = model(bf, bd)
 
         loss = recon_loss + kl_node + kl_class
 
@@ -141,7 +139,7 @@ def train(dataset, verbose=True):
         adj1 = adj1.cuda()
         diff1 = diff1.cuda()
 
-        embeds = model.get_embeddings(features1, adj1)
+        embeds = model.get_embeddings(features1, diff1)
         train_embs = embeds[0, idx_train]
         test_embs = embeds[0, idx_test]
 
@@ -204,7 +202,7 @@ def train(dataset, verbose=True):
     adj = adj.cuda()
     diff = diff.cuda()
 
-    embeds = model.get_embeddings(features, adj)
+    embeds = model.get_embeddings(features, diff)
     train_embs = embeds[0, idx_train]
     test_embs = embeds[0, idx_test]
 
