@@ -89,7 +89,7 @@ class GcnInfomax(nn.Module):
     '''class_kl_divergence_loss = torch.mean(
         - 0.5 * torch.sum(1 + grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp())
     )'''
-    class_kl_divergence_loss = -0.5 / n_nodes * torch.mean(torch.sum(
+    class_kl_divergence_loss = -0.5 / num_graphs * torch.mean(torch.sum(
         1 + 2 * grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp().pow(2), 1))
 
     #print('class kl unwei ', class_kl_divergence_loss)
