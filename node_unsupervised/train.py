@@ -35,7 +35,7 @@ def train(dataset, verbose=True):
     patience = 20
     lr = 0.001
     l2_coef = 0.0
-    hid_units = 512
+    hid_units = 32
     num_layers = 1
     sparse = False
 
