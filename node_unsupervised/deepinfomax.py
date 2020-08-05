@@ -124,16 +124,16 @@ class GcnInfomax(nn.Module):
     mi_loss = local_global_loss_disen(node_latent_embeddings, class_latent_embeddings, edge_index, batch, measure)
     mi_loss.backward(retain_graph=True)'''
 
-    #reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
+    reconstructed_node = self.decoder(node_latent_embeddings)
 
     #check input feat first
     #print('recon ', x[0],reconstructed_node[0])
-    #reconstruction_error =  100000*mse_loss(reconstructed_node, x.view(-1, x.size(-1)))
+    reconstruction_error =  mse_loss(reconstructed_node, x)
 
 
 
 
-    reconstruction_error =  self.adj_recon(node_latent_embeddings, edge_index)
+    #reconstruction_error =  self.adj_recon(node_latent_embeddings, edge_index)
 
 
 
