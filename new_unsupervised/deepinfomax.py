@@ -56,49 +56,44 @@ class GcnInfomax(nn.Module):
 
   def forward(self, x, edge_index, batch, num_graphs):
 
+    n_nodes = x.size(0)
+
     # batch_size = data.num_graphs
 
     node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index, batch)
 
 
-    '''n_digits = 4
-    #print('before ', node_mu)
-    node_mu = (node_mu * 10**n_digits).round() / (10**n_digits)
-    node_logvar = (node_logvar * 10**n_digits).round() / (10**n_digits)
-    class_mu = (class_mu * 10**n_digits).round() / (10**n_digits)
-    class_logvar = (class_logvar * 10**n_digits).round() / (10**n_digits)'''
 
-
-    #print('direct out ', node_mu[0,:5], node_logvar[0,:5], class_mu[0,:5], class_logvar[0,:5], batch)
 
 
     grouped_mu, grouped_logvar = accumulate_group_evidence(
         class_mu.data, class_logvar.data, batch, True
     )
 
-    #print('grouped ', grouped_mu[0,:5], grouped_logvar[0,:5])
 
-
-    #print('after ', node_mu)
 
 
     # kl-divergence error for style latent space
-    node_kl_divergence_loss = torch.mean(
+    '''node_kl_divergence_loss = torch.mean(
         - 0.5 * torch.sum(1 + node_logvar - node_mu.pow(2) - node_logvar.exp())
-    )
-    #print('node kl unwei ', node_kl_divergence_loss, node_logvar, node_mu)
+    )'''
+
+    node_kl_divergence_loss = -0.5 / n_nodes * torch.mean(torch.sum(
+        1 + 2 * node_logvar - node_mu.pow(2) - node_logvar.exp().pow(2), 1))
 
 
-    node_kl_divergence_loss = 0.0000001*node_kl_divergence_loss *num_graphs
-    #print('node kl wei ', node_kl_divergence_loss)
+    node_kl_divergence_loss = node_kl_divergence_loss *num_graphs
 
 
     # kl-divergence error for class latent space
-    class_kl_divergence_loss = torch.mean(
+    '''class_kl_divergence_loss = torch.mean(
         - 0.5 * torch.sum(1 + grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp())
-    )
+    )'''
+    class_kl_divergence_loss = -0.5 / n_nodes * torch.mean(torch.sum(
+        1 + 2 * grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp().pow(2), 1))
+
     #print('class kl unwei ', class_kl_divergence_loss)
-    class_kl_divergence_loss = 0.0000001* class_kl_divergence_loss * num_graphs
+    class_kl_divergence_loss = class_kl_divergence_loss * num_graphs
     #print('class kl wei ', class_kl_divergence_loss)
 
 
@@ -116,16 +111,8 @@ class GcnInfomax(nn.Module):
     reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, edge_index)
     
     #reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
-    reconstruction_error = 0.01* self.recon_loss(reconstructed_node, edge_index, batch) * num_graphs
+    reconstruction_error = self.recon_loss(reconstructed_node, edge_index, batch) * num_graphs
 
-
-    #print(reconstruction_error.item(), class_kl_divergence_loss.item(), node_kl_divergence_loss.item())
-
-    '''n_digits = 9
-    #print('before ', node_mu)
-    reconstruction_error = (reconstruction_error * 10**n_digits).round() / (10**n_digits)
-    class_kl_divergence_loss = (class_kl_divergence_loss * 10**n_digits).round() / (10**n_digits)
-    node_kl_divergence_loss = (node_kl_divergence_loss * 10**n_digits).round() / (10**n_digits)'''
 
     class_kl_divergence_loss.backward(retain_graph=True)
     node_kl_divergence_loss.backward(retain_graph=True)
@@ -168,6 +155,12 @@ class GcnInfomax(nn.Module):
 
       #recon_adj = self.edge_recon(z, edge_index)
 
+
+
+
+
+
+
       a, idx_tensor = to_dense_batch(z, batch)
       a_t = a.permute(0, 2, 1)
 
@@ -178,6 +171,10 @@ class GcnInfomax(nn.Module):
       #print('inner pro', rec.size())
 
       org_adj = to_dense_adj(edge_index, batch)
+
+
+      #pos_weight = torch.Tensor([float(org_adj.size[:,1] * adj.shape[0] - adj.sum()) / adj.sum()])
+      #norm = adj.shape[0] * adj.shape[0] / float((adj.shape[0] * adj.shape[0] - adj.sum()) * 2)
 
 
       #print('new' ,rec, 'org', org_adj)
@@ -292,8 +289,8 @@ if __name__ == '__main__':
     #for seed in range(80,101):
 
     seed = 52
-    epochs = 24
-    #epochs = int(args.num_epochs)
+    #epochs = 24
+    epochs = int(args.num_epochs)
 
     #for epochs in range(20,41):
 
