@@ -157,8 +157,7 @@ def train(dataset, verbose=True):
             classifier.fit(train_embs.cpu().numpy(), train_lbls.cpu().numpy())
             accs.append(accuracy_score(test_lbls.cpu().numpy(), classifier.predict(test_embs.cpu().numpy())))
 
-        accs = torch.stack(accs)
-        print(accs.mean().item(), accs.std().item())
+        print(np.mean(accs), np.std(accs))
 
 
 
