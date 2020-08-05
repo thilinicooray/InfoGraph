@@ -117,7 +117,12 @@ def train(dataset, verbose=True):
         model.train()
         optimiser.zero_grad()
 
-        recon_loss, kl_class, kl_node = model(bf, bd)
+        recon_loss1, kl_class1, kl_node1 = model(bf, ba)
+        recon_loss2, kl_class2, kl_node2 = model(bf, bd)
+
+        recon_loss = recon_loss1 + recon_loss2
+        kl_node = kl_node1 + kl_node2
+        kl_class = kl_class1 + kl_class2
 
         loss = recon_loss + kl_node + kl_class
 
@@ -139,7 +144,9 @@ def train(dataset, verbose=True):
         adj1 = adj1.cuda()
         diff1 = diff1.cuda()
 
-        embeds = model.get_embeddings(features1, diff1)
+        embeds1 = model.get_embeddings(features1, diff1)
+        embeds2 = model.get_embeddings(features1, adj1)
+        embeds = embeds1 + embeds2
         train_embs = embeds[0, idx_train]
         test_embs = embeds[0, idx_test]
 
