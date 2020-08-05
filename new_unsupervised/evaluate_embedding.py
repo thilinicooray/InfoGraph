@@ -14,7 +14,7 @@ from sklearn import preprocessing
 from sklearn.metrics import accuracy_score
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
-import seaborn as sns
+'''import seaborn as sns
 
 import os
 
@@ -38,7 +38,7 @@ def draw_plot(datadir, DS, embeddings, fname, max_nodes=None):
     df['x0'], df['x1'], df['Y'] = x[:,0], x[:,1], y
     sns.pairplot(x_vars=['x0'], y_vars=['x1'], data=df, hue="Y", size=5)
     plt.legend()
-    plt.savefig(fname)
+    plt.savefig(fname)'''
 
 class LogReg(nn.Module):
     def __init__(self, ft_in, nb_classes):

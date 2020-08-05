@@ -1,5 +1,5 @@
 import os.path as osp
-from tqdm import tqdm
+#from tqdm import tqdm
 from collections import OrderedDict
 
 import torch
@@ -121,7 +121,7 @@ class Decoder(torch.nn.Module):
 
         return x
 
-
+'''
 
 class Net(torch.nn.Module):
     def __init__(self):
@@ -231,3 +231,4 @@ if __name__ == '__main__':
             tmp = np.mean(accuracies, axis=1)
             print(percentage, DS, np.argmax(tmp), np.max(tmp), np.std(accuracies[np.argmax(tmp)]))
             input()
+'''
