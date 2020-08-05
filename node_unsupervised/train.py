@@ -129,7 +129,7 @@ def train(dataset, verbose=True):
         accs = []
         wd = 0.01 if dataset == 'citeseer' else 0.0
 
-        '''for _ in range(50):
+        for _ in range(50):
             log = LogReg(hid_units, nb_classes)
             opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=wd)
             log.cuda()
@@ -149,15 +149,15 @@ def train(dataset, verbose=True):
             accs.append(acc * 100)
 
         accs = torch.stack(accs)
-        print(accs.mean().item(), accs.std().item())'''
+        print(accs.mean().item(), accs.std().item())
 
-        for _ in range(50):
+        '''for _ in range(50):
             classifier = SVC(C=10)
 
             classifier.fit(train_embs.cpu().numpy(), train_lbls.cpu().numpy())
             accs.append(accuracy_score(test_lbls.cpu().numpy(), classifier.predict(test_embs.cpu().numpy())))
 
-        print(np.mean(accs), np.std(accs))
+        print(np.mean(accs), np.std(accs))'''
 
 
 
