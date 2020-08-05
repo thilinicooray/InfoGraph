@@ -1,5 +1,4 @@
 import os.path as osp
-from tqdm import tqdm
 from collections import OrderedDict
 
 import torch
@@ -203,50 +202,3 @@ def test(loader):
         correct += pred.eq(data.y).sum().item()
     return correct / len(loader.dataset)
 
-if __name__ == '__main__':
-
-    for percentage in [ 1.]:
-        for DS in [sys.argv[1]]:
-            if 'REDDIT' in DS:
-                epochs = 200
-            else:
-                epochs = 100
-            path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', DS)
-            accuracies = [[] for i in range(epochs)]
-            #kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
-            dataset = TUDataset(path, name=DS) #.shuffle()
-            num_graphs = len(dataset)
-            print('Number of graphs', len(dataset))
-            dataset = dataset[:int(num_graphs * percentage)]
-            dataset = dataset.shuffle()
-
-            kf = KFold(n_splits=10, shuffle=True, random_state=None)
-            for train_index, test_index in kf.split(dataset):
-
-                # x_train, x_test = x[train_index], x[test_index]
-                # y_train, y_test = y[train_index], y[test_index]
-                train_dataset = [dataset[int(i)] for i in list(train_index)]
-                test_dataset = [dataset[int(i)] for i in list(test_index)]
-                print('len(train_dataset)', len(train_dataset))
-                print('len(test_dataset)', len(test_dataset))
-
-                train_loader = DataLoader(train_dataset, batch_size=128)
-                test_loader = DataLoader(test_dataset, batch_size=128)
-                # print('train', len(train_loader))
-                # print('test', len(test_loader))
-
-                device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-                model = Net().to(device)
-                optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-
-                for epoch in range(1, epochs+1):
-                    train_loss = train(epoch)
-                    train_acc = test(train_loader)
-                    test_acc = test(test_loader)
-                    accuracies[epoch-1].append(test_acc)
-                    tqdm.write('Epoch: {:03d}, Train Loss: {:.7f}, '
-                          'Train Acc: {:.7f}, Test Acc: {:.7f}'.format(epoch, train_loss,
-                                                                       train_acc, test_acc))
-            tmp = np.mean(accuracies, axis=1)
-            print(percentage, DS, np.argmax(tmp), np.max(tmp), np.std(accuracies[np.argmax(tmp)]))
-            input()
