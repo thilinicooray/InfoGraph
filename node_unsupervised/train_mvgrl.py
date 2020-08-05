@@ -147,7 +147,7 @@ def train(dataset, verbose=True):
     patience = 20
     lr = 0.001
     l2_coef = 0.0
-    hid_units = 512
+    hid_units = 32
     sparse = False
 
     adj, diff, features, labels, idx_train, idx_val, idx_test = load(dataset)
