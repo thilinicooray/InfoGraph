@@ -82,7 +82,7 @@ class GcnInfomax(nn.Module):
         1 + 2 * node_logvar - node_mu.pow(2) - node_logvar.exp().pow(2), 1))
 
 
-    node_kl_divergence_loss = node_kl_divergence_loss 
+    node_kl_divergence_loss = node_kl_divergence_loss
 
 
     # kl-divergence error for class latent space
@@ -111,7 +111,7 @@ class GcnInfomax(nn.Module):
     reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, edge_index)
     
     #reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
-    reconstruction_error = self.recon_loss(reconstructed_node, edge_index, batch)
+    reconstruction_error = self.recon_loss1(reconstructed_node, edge_index, batch)
 
 
     class_kl_divergence_loss.backward(retain_graph=True)
@@ -218,6 +218,10 @@ class GcnInfomax(nn.Module):
           pos_edge_index (LongTensor): The positive edges to train against.
       """
 
+      org_adj = to_dense_adj(edge_index, batch)
+      pos_weight = float(z.size(0) * z.size(0) - org_adj.sum()) / org_adj.sum()
+      norm = z.size(0) * z.size(0) / float((z.size(0) * z.size(0) - org_adj.sum()) * 2)
+
 
 
       recon_adj = self.edge_recon(z, edge_index)
@@ -235,7 +239,7 @@ class GcnInfomax(nn.Module):
                             self.edge_recon(z, neg_edge_index) +
                             EPS).mean()
 
-      return pos_loss + neg_loss
+      return norm * (pos_loss * pos_weight + neg_loss)
 
       #loss = F.binary_cross_entropy_with_logits(rec, org_adj)
 
