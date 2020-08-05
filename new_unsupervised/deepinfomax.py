@@ -156,11 +156,6 @@ class GcnInfomax(nn.Module):
       #recon_adj = self.edge_recon(z, edge_index)
 
 
-
-
-
-
-
       a, idx_tensor = to_dense_batch(z, batch)
       a_t = a.permute(0, 2, 1)
 
@@ -173,8 +168,8 @@ class GcnInfomax(nn.Module):
       org_adj = to_dense_adj(edge_index, batch)
 
 
-      #pos_weight = torch.Tensor([float(org_adj.size[:,1] * adj.shape[0] - adj.sum()) / adj.sum()])
-      #norm = adj.shape[0] * adj.shape[0] / float((adj.shape[0] * adj.shape[0] - adj.sum()) * 2)
+      pos_weight = float(z.size(0) * z.size(0) - org_adj.sum()) / org_adj.sum()
+      norm = z.size(0) * z.size(0) / float((z.size(0) * z.size(0) - org_adj.sum()) * 2)
 
 
       #print('new' ,rec, 'org', org_adj)
@@ -205,7 +200,7 @@ class GcnInfomax(nn.Module):
 
       return pos_loss + neg_loss'''
 
-      loss = F.binary_cross_entropy_with_logits(rec, org_adj)
+      loss = norm * F.binary_cross_entropy_with_logits(rec, org_adj, pos_weight=pos_weight)
 
       return loss
 
