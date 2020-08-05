@@ -141,7 +141,7 @@ class LogReg(nn.Module):
         return ret
 
 
-def train(dataset, verbose=False):
+def train(dataset, verbose=True):
 
     nb_epochs = 3000
     patience = 20
