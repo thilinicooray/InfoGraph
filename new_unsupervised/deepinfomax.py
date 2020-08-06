@@ -118,7 +118,7 @@ class GcnInfomax(nn.Module):
     #node_kl_divergence_loss.backward(retain_graph=True)
     #reconstruction_error.backward()
 
-    loss = class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error
+    loss = class_kl_divergence_loss + node_kl_divergence_loss + 1e-6*reconstruction_error
 
     loss.backward()
 
