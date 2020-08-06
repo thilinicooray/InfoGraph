@@ -81,7 +81,7 @@ class Encoder(torch.nn.Module):
         y = np.concatenate(y, 0)
         return ret, y
 
-
+'''
 
 class Net(torch.nn.Module):
     def __init__(self):
@@ -190,4 +190,4 @@ if __name__ == '__main__':
                                                                        train_acc, test_acc))
             tmp = np.mean(accuracies, axis=1)
             print(percentage, DS, np.argmax(tmp), np.max(tmp), np.std(accuracies[np.argmax(tmp)]))
-            input()
+            input() '''
