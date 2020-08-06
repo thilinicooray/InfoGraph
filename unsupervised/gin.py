@@ -45,7 +45,7 @@ class Encoder(torch.nn.Module):
 
     def forward(self, x, edge_index, batch):
 
-        x = torch.ones((batch.shape[0],5)).double().to('cuda')
+        x = torch.ones((batch.shape[0],5)).to('cuda')
         if x is None:
             x = torch.ones((batch.shape[0], 1)).to(device)
 
