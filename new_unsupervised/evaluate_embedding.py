@@ -101,7 +101,7 @@ def svc_classify(x, y, search):
     #for i in range(100):
     #for C in [0.001, 0.01,0.1,1,10,100,1000, 10000, 100000]:
 
-    kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=80)
+    kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=1234)
     accuracies = []
     for train_index, test_index in kf.split(x, y):
 
@@ -112,7 +112,7 @@ def svc_classify(x, y, search):
             params = {'C':[0.001, 0.01,0.1,1,10,100,1000]}
             classifier = GridSearchCV(SVC(), params, cv=5, scoring='accuracy', verbose=0)
         else:
-            classifier = SVC(decision_function_shape='ovo', C=10000)
+            classifier = SVC( C=10000)
         classifier.fit(x_train, y_train)
         accuracies.append(accuracy_score(y_test, classifier.predict(x_test)))
 

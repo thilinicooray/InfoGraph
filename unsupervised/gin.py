@@ -75,8 +75,6 @@ class Encoder(torch.nn.Module):
                     x = torch.ones((batch.shape[0],1)).to(device)
                 x, _ = self.forward(x, edge_index, batch)
 
-                print('outtt', x)
-
                 ret.append(x.cpu().numpy())
                 y.append(data.y.cpu().numpy())
         ret = np.concatenate(ret, 0)
