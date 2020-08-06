@@ -56,6 +56,8 @@ class GcnInfomax(nn.Module):
   def forward(self, x, edge_index, batch, num_graphs):
 
     # batch_size = data.num_graphs
+
+    x = torch.ones((batch.shape[0],5)).double().to(device)
     if x is None:
         x = torch.ones(batch.shape[0]).to(device)
 
@@ -101,6 +103,8 @@ if __name__ == '__main__':
         dataset_num_features = dataset.num_features
     except:
         dataset_num_features = 1
+
+    dataset_num_features = 5
 
     dataloader = DataLoader(dataset, batch_size=batch_size)
 
