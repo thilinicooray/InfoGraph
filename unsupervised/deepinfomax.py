@@ -90,7 +90,7 @@ if __name__ == '__main__':
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
     accuracies = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
-    epochs = 25
+    epochs = 50
     log_interval = 1
     batch_size = 128
     lr = args.lr
@@ -141,7 +141,7 @@ if __name__ == '__main__':
             optimizer.step()
         print('Epoch {}, Loss {}'.format(epoch, loss_all / len(dataloader)))
 
-        '''if epoch % log_interval == 0:
+        if epoch % log_interval == 0:
             model.eval()
             emb, y = model.encoder.get_embeddings(dataloader)
             res = evaluate_embedding(emb, y)
@@ -149,16 +149,16 @@ if __name__ == '__main__':
             accuracies['svc'].append(res[1])
             accuracies['linearsvc'].append(res[2])
             accuracies['randomforest'].append(res[3])
-            print(accuracies)'''
+            print(accuracies)
 
-    model.eval()
+    '''model.eval()
     emb, y = model.encoder.get_embeddings(dataloader)
     res = evaluate_embedding(emb, y)
     accuracies['logreg'].append(res[0])
     accuracies['svc'].append(res[1])
     accuracies['linearsvc'].append(res[2])
     accuracies['randomforest'].append(res[3])
-    print(accuracies)
+    print(accuracies)'''
 
     with open('unsupervised.log', 'a+') as f:
         s = json.dumps(accuracies)
