@@ -291,7 +291,7 @@ if __name__ == '__main__':
 
     #for seed in range(80,101):
 
-    seed = 52
+    seed = 0
     #epochs = 37
     epochs = int(args.num_epochs)
 
