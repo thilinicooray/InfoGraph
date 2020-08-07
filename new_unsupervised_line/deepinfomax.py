@@ -375,6 +375,9 @@ if __name__ == '__main__':
 
     dataset_line = TUDataset(path_line, name=DS, pre_transform=LineGraph())
 
+    print('1' , dataset)
+    print('2' , dataset_line)
+
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     try:
         dataset_num_features = dataset.num_features
