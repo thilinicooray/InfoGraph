@@ -292,7 +292,7 @@ class GcnInfomax(nn.Module):
 
               x, edge_index, batch = data.x, data.edge_index, data.batch
 
-              x = torch.ones((batch.shape[0],5)).double().to(device)
+              x = torch.ones((batch.shape[0],5)).to(device)
               __, _, class_mu, class_logvar = self.encoder(x, edge_index, batch)
 
               grouped_mu, grouped_logvar = accumulate_group_evidence(
@@ -310,7 +310,7 @@ class GcnInfomax(nn.Module):
 
               x_line, edge_index_line, batch_line = data_line.x, data_line.edge_index, data_line.batch
 
-              x_line = torch.ones((batch_line.shape[0],5)).double().to(device)
+              x_line = torch.ones((batch_line.shape[0],5)).to(device)
               __, _, class_mu_line, class_logvar_line = self.line_encoder(x_line, edge_index_line, batch_line)
 
               grouped_mu_line, grouped_logvar_line = accumulate_group_evidence(
@@ -386,7 +386,7 @@ if __name__ == '__main__':
     dataloader = DataLoader(dataset, batch_size=batch_size)
 
 
-    model = GcnInfomax(args.hidden_dim, args.num_gc_layers).double().to(device)
+    model = GcnInfomax(args.hidden_dim, args.num_gc_layers).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     #scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
 
@@ -420,8 +420,8 @@ if __name__ == '__main__':
 
 
             #if data.x is None:
-            data.x = torch.ones((data.batch.shape[0], 5)).double().to(device)
-            data_line.x = torch.ones((data_line.batch.shape[0], 5)).double().to(device)
+            data.x = torch.ones((data.batch.shape[0], 5)).to(device)
+            data_line.x = torch.ones((data_line.batch.shape[0], 5)).to(device)
 
             optimizer.zero_grad()
             loss = model(data.x, data.edge_index, data.batch, data.num_graphs, data_line.x, data_line.edge_index, data_line.batch, data_line.num_graphs,)
