@@ -416,10 +416,10 @@ if __name__ == '__main__':
         model.train()
         for data in dataloader:
 
-
-            data_line = LineGraph()(data.clone()).to(device)
-
             data = data.to(device)
+            data_line = LineGraph()(data.clone())
+
+
 
 
             #if data.x is None:
