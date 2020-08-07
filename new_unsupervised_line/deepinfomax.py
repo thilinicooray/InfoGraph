@@ -368,7 +368,7 @@ if __name__ == '__main__':
     #lr = 0.000001
     DS = args.DS
     path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', DS)
-    path_line = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', DS)
+    path_line = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data_linegraph', DS)
     # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
 
     dataset = TUDataset(path, name=DS)
