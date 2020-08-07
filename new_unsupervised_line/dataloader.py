@@ -151,7 +151,6 @@ class TUDataset(InMemoryDataset):
 
     def __getitem__(self, idx):
 
-        print ('came here')
         r"""Gets the data object at index :obj:`idx` and transforms it (in case
         a :obj:`self.transform` is given).
         In case :obj:`idx` is a slicing object, *e.g.*, :obj:`[2:5]`, a list, a
@@ -161,10 +160,8 @@ class TUDataset(InMemoryDataset):
             data = self.get(self.indices()[idx])
             #data = data if self.transform is None else self.transform(data)
             data_line = self.current_transform(data)
-            print ('came here inside')
-            return data, data_line
+            return (data, data_line)
         else:
-            print ('came here out')
             return self.index_select(idx)
 
     def __repr__(self):

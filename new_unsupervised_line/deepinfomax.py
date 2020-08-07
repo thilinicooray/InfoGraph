@@ -415,7 +415,9 @@ if __name__ == '__main__':
         kl_node_loss_all = 0
         mi_loss_all = 0
         model.train()
-        for data, data_line in dataloader:
+        for data in dataloader:
+
+            print('data ', data)
 
             data = data.to(device)
             #data_line = LineGraph()(data)
