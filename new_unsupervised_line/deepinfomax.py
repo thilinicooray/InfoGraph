@@ -285,9 +285,10 @@ class GcnInfomax(nn.Module):
       with torch.no_grad():
           for data in loader:
 
-              data = data.to(device)
 
-              data_line = LineGraph()(data)
+
+              data_line = LineGraph()(data).to(device)
+              data = data.to(device)
 
 
               x, edge_index, batch = data.x, data.edge_index, data.batch
@@ -414,9 +415,11 @@ if __name__ == '__main__':
         mi_loss_all = 0
         model.train()
         for data in dataloader:
-            data = data.to(device)
 
-            data_line = LineGraph()(data)
+
+            data_line = LineGraph()(data).to(device)
+
+            data = data.to(device)
 
 
             #if data.x is None:
