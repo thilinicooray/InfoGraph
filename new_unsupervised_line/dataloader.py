@@ -26,4 +26,4 @@ class ConcatDataset(torch.utils.data.Dataset):
         return items_map
 
     def __len__(self):
-        return min(len(d) for k, d in self.dataset_map.items())
+        return len(self.dataset_map['node'])
