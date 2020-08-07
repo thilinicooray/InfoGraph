@@ -9,8 +9,8 @@ import random
 import os
 # from core.encoders import *
 
-#from torch_geometric.datasets import TUDataset
-from dataloader import TUDataset
+from torch_geometric.datasets import TUDataset
+from dataloader import ConcatDataset
 from torch_geometric.data import DataLoader
 from torch_geometric.nn import global_mean_pool, global_add_pool, global_max_pool
 from torch_geometric.utils import negative_sampling, remove_self_loops, add_self_loops, to_dense_adj, to_dense_batch
@@ -368,9 +368,12 @@ if __name__ == '__main__':
     #lr = 0.000001
     DS = args.DS
     path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', DS)
+    path_line = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', DS)
     # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
 
-    dataset = TUDataset(path, name=DS).shuffle()
+    dataset = TUDataset(path, name=DS)
+
+    dataset_line = TUDataset(path_line, name=DS, pre_transform=LineGraph())
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     try:
@@ -385,7 +388,10 @@ if __name__ == '__main__':
     #dataset_num_features = 5
         #input_feat = torch.ones((batch_size, 1)).to(device)
 
-    dataloader = DataLoader(dataset, batch_size=batch_size)
+    dataloader = DataLoader(ConcatDataset(
+        dataset,
+        dataset_line
+    ), batch_size=batch_size)
 
 
     model = GcnInfomax(args.hidden_dim, args.num_gc_layers).to(device)
