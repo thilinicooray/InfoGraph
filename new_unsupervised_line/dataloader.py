@@ -150,6 +150,8 @@ class TUDataset(InMemoryDataset):
         torch.save((self.data, self.slices), self.processed_paths[0])
 
     def __getitem__(self, idx):
+
+        print ('came here')
         r"""Gets the data object at index :obj:`idx` and transforms it (in case
         a :obj:`self.transform` is given).
         In case :obj:`idx` is a slicing object, *e.g.*, :obj:`[2:5]`, a list, a
