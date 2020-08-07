@@ -389,7 +389,7 @@ if __name__ == '__main__':
     #dataset_num_features = 5
         #input_feat = torch.ones((batch_size, 1)).to(device)
 
-    datasetf = torch.utils.data.TensorDataset(dataset, dataset_line)
+    #datasetf = torch.utils.data.TensorDataset(dataset, dataset_line)
 
     #dataloader = DataLoader(ConcatDataset({'node':dataset, 'line':dataset_line}), batch_size=batch_size)
     dataloader1 = DataLoader(dataset, batch_size=batch_size)
