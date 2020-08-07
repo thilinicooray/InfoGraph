@@ -9,7 +9,7 @@ from torch_geometric.io import read_tu_data
 from torch_geometric.transforms import LineGraph
 
 
-class ConcatDataset(InMemoryDataset):
+class ConcatDataset(torch.utils.data.Dataset):
     def __init__(self, *datasets):
         self.datasets = datasets
 
