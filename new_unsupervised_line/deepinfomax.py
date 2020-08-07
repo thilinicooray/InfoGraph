@@ -416,8 +416,7 @@ if __name__ == '__main__':
         for data in dataloader:
             data = data.to(device)
 
-            #data_line = LineGraph()(data)
-            data_line = data
+            data_line = LineGraph()(data)
 
 
             #if data.x is None:
