@@ -417,7 +417,7 @@ if __name__ == '__main__':
         for data in dataloader:
 
 
-            data_line = LineGraph()(data).to(device)
+            data_line = LineGraph()(data.clone()).to(device)
 
             data = data.to(device)
 
