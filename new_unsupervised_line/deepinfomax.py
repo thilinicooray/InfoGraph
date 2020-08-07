@@ -392,7 +392,8 @@ if __name__ == '__main__':
     datasetf = torch.utils.data.TensorDataset(dataset, dataset_line)
 
     #dataloader = DataLoader(ConcatDataset({'node':dataset, 'line':dataset_line}), batch_size=batch_size)
-    dataloader = DataLoader(datasetf, batch_size=batch_size)
+    dataloader1 = DataLoader(dataset, batch_size=batch_size)
+    dataloader2 = DataLoader(dataset_line, batch_size=batch_size)
 
 
     model = GcnInfomax(args.hidden_dim, args.num_gc_layers).to(device)
@@ -422,7 +423,8 @@ if __name__ == '__main__':
         kl_node_loss_all = 0
         mi_loss_all = 0
         model.train()
-        for data in dataloader:
+        #for data in dataloader:
+        for i, data in enumerate(zip(dataloader1, dataloader2)):
 
             print('data ', data)
 
