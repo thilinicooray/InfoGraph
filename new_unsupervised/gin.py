@@ -93,7 +93,7 @@ class Decoder(torch.nn.Module):
             ('relu_final', ReLU()),
         ]))
 
-    def forward(self, node_latent_space, class_latent_space):
+    def forward(self, node_latent_space, class_latent_space, edge_index):
         x = torch.cat((node_latent_space, class_latent_space), dim=1)
 
         x = torch.softmax(self.linear_model(x), dim=-1)
