@@ -9,7 +9,8 @@ import random
 import os
 # from core.encoders import *
 
-from torch_geometric.datasets import TUDataset
+#from torch_geometric.datasets import TUDataset
+from dataloader import TUDataset
 from torch_geometric.data import DataLoader
 from torch_geometric.nn import global_mean_pool, global_add_pool, global_max_pool
 from torch_geometric.utils import negative_sampling, remove_self_loops, add_self_loops, to_dense_adj, to_dense_batch
@@ -283,11 +284,11 @@ class GcnInfomax(nn.Module):
       ret = []
       y = []
       with torch.no_grad():
-          for data in loader:
+          for data, data_line in loader:
 
 
 
-              data_line = LineGraph()(data).to(device)
+              #data_line = LineGraph()(data).to(device)
               data = data.to(device)
 
 
@@ -414,10 +415,10 @@ if __name__ == '__main__':
         kl_node_loss_all = 0
         mi_loss_all = 0
         model.train()
-        for data in dataloader:
+        for data, data_line in dataloader:
 
             data = data.to(device)
-            data_line = LineGraph()(data.clone())
+            #data_line = LineGraph()(data)
 
 
 
