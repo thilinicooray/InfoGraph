@@ -375,8 +375,6 @@ if __name__ == '__main__':
 
     dataset_line = TUDataset(path_line, name=DS, pre_transform=LineGraph())
 
-    print('1' , dataset)
-    print('2' , dataset_line)
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     try:
@@ -391,10 +389,7 @@ if __name__ == '__main__':
     #dataset_num_features = 5
         #input_feat = torch.ones((batch_size, 1)).to(device)
 
-    dataloader = DataLoader(ConcatDataset(
-        dataset,
-        dataset_line
-    ), batch_size=batch_size)
+    dataloader = DataLoader(ConcatDataset({'node':dataset, 'line':dataset_line}), batch_size=batch_size)
 
 
     model = GcnInfomax(args.hidden_dim, args.num_gc_layers).to(device)
