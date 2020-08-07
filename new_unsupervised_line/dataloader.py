@@ -14,7 +14,11 @@ class ConcatDataset(InMemoryDataset):
         self.datasets = datasets
 
     def __getitem__(self, i):
-        return tuple(d[i] for d in self.datasets)
+        items =  tuple(d[i] for d in self.datasets)
+
+        print('items ', items)
+
+        return items
 
     def __len__(self):
         return min(len(d) for d in self.datasets)
