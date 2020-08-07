@@ -161,8 +161,10 @@ class TUDataset(InMemoryDataset):
             data = self.get(self.indices()[idx])
             #data = data if self.transform is None else self.transform(data)
             data_line = self.current_transform(data)
+            print ('came here inside')
             return data, data_line
         else:
+            print ('came here out')
             return self.index_select(idx)
 
     def __repr__(self):
