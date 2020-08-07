@@ -262,7 +262,7 @@ class GcnInfomax(nn.Module):
 
                 #print(x, edge_index, data.x)
                 #x = torch.rand(data.batch.shape[0], 5).to(device)
-                x = torch.ones((batch.shape[0],5)).double().to(device)
+                x = torch.ones((batch.shape[0],5)).to(device)
                 #print('eval train', x.type())
                 __, _, class_mu, class_logvar = self.encoder(x, edge_index, batch)
 
@@ -341,7 +341,7 @@ if __name__ == '__main__':
     dataloader = DataLoader(dataset, batch_size=batch_size)
 
 
-    model = GcnInfomax(args.hidden_dim, args.num_gc_layers).double().to(device)
+    model = GcnInfomax(args.hidden_dim, args.num_gc_layers).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     #scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
 
@@ -373,7 +373,7 @@ if __name__ == '__main__':
 
 
             #if data.x is None:
-            data.x = torch.ones((data.batch.shape[0], 5)).double().to(device)
+            data.x = torch.ones((data.batch.shape[0], 5)).to(device)
 
             optimizer.zero_grad()
             recon_loss, kl_class, kl_node = model(data.x, data.edge_index, data.batch, data.num_graphs)
