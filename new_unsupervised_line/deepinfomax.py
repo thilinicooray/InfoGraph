@@ -10,8 +10,8 @@ import os
 # from core.encoders import *
 
 from torch_geometric.datasets import TUDataset
-from dataloader import ConcatDataset
-from torch_geometric.data import DataLoader
+from dataloader import ConcatDataset, DataLoader
+#from torch_geometric.data import DataLoader
 from torch_geometric.nn import global_mean_pool, global_add_pool, global_max_pool
 from torch_geometric.utils import negative_sampling, remove_self_loops, add_self_loops, to_dense_adj, to_dense_batch
 from torch_geometric.transforms import LineGraph
@@ -389,11 +389,7 @@ if __name__ == '__main__':
     #dataset_num_features = 5
         #input_feat = torch.ones((batch_size, 1)).to(device)
 
-    #datasetf = torch.utils.data.TensorDataset(dataset, dataset_line)
-
-    #dataloader = DataLoader(ConcatDataset({'node':dataset, 'line':dataset_line}), batch_size=batch_size)
-    dataloader1 = DataLoader(dataset, batch_size=batch_size)
-    dataloader2 = DataLoader(dataset_line, batch_size=batch_size)
+    dataloader = DataLoader(ConcatDataset({'node':dataset, 'line':dataset_line}), batch_size=batch_size)
 
 
     model = GcnInfomax(args.hidden_dim, args.num_gc_layers).to(device)
@@ -423,8 +419,7 @@ if __name__ == '__main__':
         kl_node_loss_all = 0
         mi_loss_all = 0
         model.train()
-        #for data in dataloader:
-        for i, data in enumerate(zip(dataloader1, dataloader2)):
+        for data in dataloader:
 
             print('data ', data)
 
