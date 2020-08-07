@@ -17,6 +17,8 @@ def arg_parse():
             help='Number of graph convolution layers before each pooling')
     parser.add_argument('--hidden-dim', dest='hidden_dim', type=int, default=32,
             help='')
+    parser.add_argument('--batch_size', dest='batch_size', type=int, default=128,
+                        help='')
 
     return parser.parse_args()
 
