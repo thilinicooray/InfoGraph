@@ -39,19 +39,14 @@ class RandomSampler(torch.utils.data.Sampler):
         generator (Generator): Generator used in sampling.
     """
 
-    g_cpu = torch.Generator()
-    g_cpu.manual_seed(1234)
 
-    def __init__(self, data_source, replacement=False, num_samples=None, generator=g_cpu):
+    def __init__(self, data_source, perm_gen, replacement=False, num_samples=None, generator=g_cpu):
         self.data_source = data_source
         self.replacement = replacement
         self._num_samples = num_samples
         self.generator = generator
+        self.perm_gen = perm_gen
 
-        random.seed(1234)
-        np.random.seed(1234)
-        torch.manual_seed(1234)
-        torch.cuda.manual_seed(1234)
 
         if not isinstance(self.replacement, bool):
             raise TypeError("replacement should be a boolean value, but got "
@@ -77,7 +72,7 @@ class RandomSampler(torch.utils.data.Sampler):
         if self.replacement:
             rand_tensor = torch.randint(high=n, size=(self.num_samples,), dtype=torch.int64, generator=self.generator)
             return iter(rand_tensor.tolist())
-        return iter(torch.randperm(n, generator=self.generator).tolist())
+        return iter(self.perm_gen.tolist())
 
     def __len__(self):
         return self.num_samples
@@ -397,11 +392,17 @@ if __name__ == '__main__':
             #dataset_num_features = 5
             #input_feat = torch.ones((batch_size, 1)).to(device)
 
-        rand_sampler = RandomSampler(dataset)
-        rand_sampler_lineg = RandomSampler(dataset_lineg)
+
+        g_cpu = torch.Generator()
+        g_cpu.manual_seed(1234)
+        datasetsize = len(dataset)
+        perm = torch.randperm(datasetsize, generator=g_cpu)
+
+        rand_sampler = RandomSampler(dataset, perm)
+        #rand_sampler_lineg = RandomSampler(dataset_lineg)
 
         dataloader = DataLoader(dataset, batch_size=batch_size, sampler=rand_sampler)
-        dataloader_lineg = DataLoader(dataset_lineg, batch_size=batch_size, sampler=rand_sampler_lineg)
+        dataloader_lineg = DataLoader(dataset_lineg, batch_size=batch_size, sampler=rand_sampler)
 
 
         model = GcnInfomax(args.hidden_dim, args.num_gc_layers).double().to(device)
