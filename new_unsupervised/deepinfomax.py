@@ -90,6 +90,9 @@ class GcnInfomax(nn.Module):
         self.encoder = Encoder(dataset_num_features, hidden_dim, num_gc_layers)
         self.decoder = Decoder(hidden_dim, hidden_dim, dataset_num_features)
 
+        self.encoder_lineg = Encoder(dataset_num_features, hidden_dim, num_gc_layers)
+        self.decoder_lineg = Decoder(hidden_dim, hidden_dim, dataset_num_features)
+
         self.local_d = FF(self.embedding_dim)
         self.global_d = FF(self.embedding_dim)
 
@@ -105,7 +108,7 @@ class GcnInfomax(nn.Module):
                     m.bias.data.fill_(0.0)
 
 
-    def forward(self, x, edge_index, batch, num_graphs):
+    def forward(self, x, edge_index, batch, num_graphs, x_lineg, edge_index_lineg, batch_lineg, num_graphs_lineg):
 
         n_nodes = x.size(0)
 
@@ -113,21 +116,12 @@ class GcnInfomax(nn.Module):
 
         node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index, batch)
 
-
-
-
-
         grouped_mu, grouped_logvar = accumulate_group_evidence(
             class_mu.data, class_logvar.data, batch, True
         )
 
 
-
-
-        # kl-divergence error for style latent space
-        '''node_kl_divergence_loss = torch.mean(
-            - 0.5 * torch.sum(1 + node_logvar - node_mu.pow(2) - node_logvar.exp())
-        )'''
+        # kl-divergence error for node latent space
 
         node_kl_divergence_loss = -0.5 / n_nodes * torch.mean(torch.sum(
             1 + 2 * node_logvar - node_mu.pow(2) - node_logvar.exp().pow(2), 1))
@@ -137,15 +131,11 @@ class GcnInfomax(nn.Module):
 
 
         # kl-divergence error for class latent space
-        '''class_kl_divergence_loss = torch.mean(
-            - 0.5 * torch.sum(1 + grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp())
-        )'''
+
         class_kl_divergence_loss = -0.5 / n_nodes * torch.mean(torch.sum(
             1 + 2 * grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp().pow(2), 1))
 
-        #print('class kl unwei ', class_kl_divergence_loss)
         class_kl_divergence_loss = class_kl_divergence_loss
-        #print('class kl wei ', class_kl_divergence_loss)
 
 
         # reconstruct samples
@@ -161,20 +151,67 @@ class GcnInfomax(nn.Module):
 
         reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, edge_index)
 
-        #reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
         reconstruction_error = self.recon_loss1(reconstructed_node, edge_index, batch)
 
+        loss_node =  class_kl_divergence_loss + node_kl_divergence_loss + 1e-7*reconstruction_error
 
-        #class_kl_divergence_loss.backward(retain_graph=True)
-        #node_kl_divergence_loss.backward(retain_graph=True)
-        #reconstruction_error.backward()
 
-        loss =  class_kl_divergence_loss + node_kl_divergence_loss + 1e-7*reconstruction_error
+        ####################################################################################################
+
+
+        n_nodes_lineg = x_lineg.size(0)
+
+        # batch_size = data.num_graphs
+
+        node_mu_lineg, node_logvar_lineg, class_mu_lineg, class_logvar_lineg = self.encoder_lineg(x_lineg, edge_index_lineg, batch_lineg)
+
+        grouped_mu_lineg, grouped_logvar_lineg = accumulate_group_evidence(
+            class_mu_lineg.data, class_logvar_lineg.data, batch_lineg, True
+        )
+
+
+        # kl-divergence error for node latent space
+
+        node_kl_divergence_loss_lineg = -0.5 / n_nodes_lineg * torch.mean(torch.sum(
+            1 + 2 * node_logvar_lineg - node_mu_lineg.pow(2) - node_logvar_lineg.exp().pow(2), 1))
+
+
+        node_kl_divergence_loss_lineg = node_kl_divergence_loss_lineg
+
+
+        # kl-divergence error for class latent space
+
+        class_kl_divergence_loss_lineg = -0.5 / n_nodes_lineg * torch.mean(torch.sum(
+            1 + 2 * grouped_logvar_lineg - grouped_mu_lineg.pow(2) - grouped_logvar_lineg.exp().pow(2), 1))
+
+        class_kl_divergence_loss_lineg = class_kl_divergence_loss_lineg
+
+
+        # reconstruct samples
+        """
+        sampling from group mu and logvar for each graph in mini-batch differently makes
+        the decoder consider class latent embeddings as random noise and ignore them 
+        """
+        node_latent_embeddings_lineg = reparameterize(training=True, mu=node_mu_lineg, logvar=node_logvar_lineg)
+        class_latent_embeddings_lineg = group_wise_reparameterize(
+            training=True, mu=grouped_mu_lineg, logvar=grouped_logvar_lineg, labels_batch=batch_lineg, cuda=True
+        )
+
+
+        reconstructed_node_lineg = self.decoder_lineg(node_latent_embeddings_lineg, class_latent_embeddings_lineg, edge_index_lineg)
+
+        reconstruction_error_lineg = self.recon_loss1(reconstructed_node_lineg, edge_index_lineg, batch_lineg)
+
+        loss_lineg = class_kl_divergence_loss_lineg + node_kl_divergence_loss_lineg + 1e-7*reconstruction_error_lineg
+
+        loss = loss_node + loss_lineg
+
 
         loss.backward()
 
 
-        return  1e-7*reconstruction_error.item(), class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
+        return  1e-7*(reconstruction_error.item()+reconstruction_error_lineg.item()), class_kl_divergence_loss.item() \
+        + class_kl_divergence_loss_lineg.item() , node_kl_divergence_loss.item() + node_kl_divergence_loss_lineg.item()
 
 
     def edge_recon(self, z, edge_index, sigmoid=True):
@@ -300,22 +337,29 @@ class GcnInfomax(nn.Module):
 
         #return loss
 
-    def get_embeddings(self, loader):
+    def get_embeddings(self, dataloader, dataloader_lineg):
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         ret = []
         y = []
         with torch.no_grad():
-            for data in loader:
+            for i, data_joint in enumerate(zip(dataloader, dataloader_lineg)):
+
+                data = data_joint[0].to(device)
+
+                data_lineg = data_joint[1].to(device)
+
+
+                #if data.x is None:
+                if not dataset.num_features:
+
+                    data.x = torch.ones((data.batch.shape[0], 5)).double().to(device)
+                    data_lineg.x = torch.ones((data_lineg.batch.shape[0], 5)).double().to(device)
 
                 data.to(device)
-                x, edge_index, batch = data.x, data.edge_index, data.batch
+                x, edge_index, batch, x_lineg, edge_index_lineg, batch_lineg,  = data.x, data.edge_index, data.batch, \
+                                                                                 data_lineg.x, data_lineg.edge_index, data_lineg.batch
 
-                #print(x, edge_index, data.x)
-                #x = torch.rand(data.batch.shape[0], 5).to(device)
-                if not dataset.num_features:
-                    x = torch.ones((batch.shape[0],5)).double().to(device)
-                #print('eval train', x.type())
                 __, _, class_mu, class_logvar = self.encoder(x, edge_index, batch)
 
                 grouped_mu, grouped_logvar = accumulate_group_evidence(
@@ -326,9 +370,25 @@ class GcnInfomax(nn.Module):
                     training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
                 )
 
-                class_emb = global_mean_pool(accumulated_class_latent_embeddings, batch)
+                class_emb_node = global_mean_pool(accumulated_class_latent_embeddings, batch)
+
+                ##########################################################################################
+
+
+                __, _, class_mu_lineg, class_logvar_lineg = self.encoder_lineg(x_lineg, edge_index_lineg, batch_lineg)
+
+                grouped_mu_lineg, grouped_logvar_lineg = accumulate_group_evidence(
+                    class_mu_lineg.data, class_logvar_lineg.data, batch_lineg, True
+                )
+
+                accumulated_class_latent_embeddings_lineg = group_wise_reparameterize(
+                    training=False, mu=grouped_mu_lineg, logvar=grouped_logvar_lineg, labels_batch=batch_lineg, cuda=True
+                )
+
+                class_emb_lineg = global_mean_pool(accumulated_class_latent_embeddings_lineg, batch)
 
                 #print('clz emb ', class_emb[:5,:3])
+                class_emb = class_emb_node + class_emb_lineg
 
 
                 ret.append(class_emb.cpu().numpy())
@@ -376,7 +436,7 @@ if __name__ == '__main__':
         path_lineg = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data_lineg', DS)
         # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
 
-        dataset = TUDataset(path, name=DS, transform=torch_geometric.transforms.LineGraph())
+        dataset = TUDataset(path, name=DS)
         dataset_lineg = TUDataset(path_lineg, name=DS, pre_transform=torch_geometric.transforms.LineGraph())
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -436,20 +496,22 @@ if __name__ == '__main__':
 
             for i, data_joint in enumerate(zip(dataloader, dataloader_lineg)):
 
-                print('outcome', data_joint, data_joint[0].y, data_joint[1].y)
+                #print('outcome', data_joint, data_joint[0].y, data_joint[1].y)
 
-                data = data.to(device)
+                data = data_joint[0].to(device)
 
-                data_lineg = data_lineg.to(device)
+                data_lineg = data_joint[1].to(device)
 
 
                 #if data.x is None:
                 if not dataset.num_features:
 
                     data.x = torch.ones((data.batch.shape[0], 5)).double().to(device)
+                    data_lineg.x = torch.ones((data_lineg.batch.shape[0], 5)).double().to(device)
 
                 optimizer.zero_grad()
-                recon_loss, kl_class, kl_node = model(data.x, data.edge_index, data.batch, data.num_graphs)
+                recon_loss, kl_class, kl_node = model(data.x, data.edge_index, data.batch, data.num_graphs,
+                                                      data_lineg.x, data_lineg.edge_index, data_lineg.batch, data_lineg.num_graphs)
                 recon_loss_all += recon_loss
                 kl_class_loss_all += kl_class
                 kl_node_loss_all += kl_node
@@ -478,7 +540,7 @@ if __name__ == '__main__':
             #used during finetune phase
             if epoch % log_interval == 0:
                 model.eval()
-                emb, y = model.get_embeddings(dataloader)
+                emb, y = model.get_embeddings(dataloader, dataloader_lineg)
                 res = evaluate_embedding(emb, y)
                 accuracies['logreg'].append(res[0])
                 accuracies['svc'].append(res[1])
@@ -490,7 +552,7 @@ if __name__ == '__main__':
         '''model.eval()
     
         #for i in range(5):
-        emb, y = model.get_embeddings(dataloader)
+        emb, y = model.get_embeddings(dataloader, dataloader_lineg)
         res = evaluate_embedding(emb, y)
         accuracies['logreg'].append(res[0])
         accuracies['svc'].append(res[1])
