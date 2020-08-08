@@ -325,8 +325,8 @@ if __name__ == '__main__':
         path_lineg = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data_lineg', DS)
         # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
 
-        dataset = TUDataset(path, name=DS)
-        dataset_lineg = TUDataset(path_lineg, name=DS, pre_transform=torch_geometric.transforms.LineGraph())
+        dataset = TUDataset(path, name=DS).shuffle(seed=1234)
+        dataset_lineg = TUDataset(path_lineg, name=DS, pre_transform=torch_geometric.transforms.LineGraph()).shuffle(seed=1234)
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         try:
@@ -341,8 +341,8 @@ if __name__ == '__main__':
             #dataset_num_features = 5
             #input_feat = torch.ones((batch_size, 1)).to(device)
 
-        dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
-        dataloader_lineg = DataLoader(dataset_lineg, batch_size=batch_size, shuffle=True)
+        dataloader = DataLoader(dataset, batch_size=batch_size)
+        dataloader_lineg = DataLoader(dataset_lineg, batch_size=batch_size)
 
 
         model = GcnInfomax(args.hidden_dim, args.num_gc_layers).double().to(device)
