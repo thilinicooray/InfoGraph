@@ -39,7 +39,10 @@ class RandomSampler(torch.utils.data.Sampler):
         generator (Generator): Generator used in sampling.
     """
 
-    def __init__(self, data_source, replacement=False, num_samples=None, generator=None):
+    g_cpu = torch.Generator()
+    g_cpu.manual_seed(1234)
+
+    def __init__(self, data_source, replacement=False, num_samples=None, generator=g_cpu):
         self.data_source = data_source
         self.replacement = replacement
         self._num_samples = num_samples
