@@ -48,6 +48,11 @@ class RandomSampler(torch.utils.data.Sampler):
         self._num_samples = num_samples
         self.generator = generator
 
+        random.seed(1234)
+        np.random.seed(1234)
+        torch.manual_seed(1234)
+        torch.cuda.manual_seed(1234)
+
         if not isinstance(self.replacement, bool):
             raise TypeError("replacement should be a boolean value, but got "
                             "replacement={}".format(self.replacement))
