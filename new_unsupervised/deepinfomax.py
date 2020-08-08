@@ -40,7 +40,7 @@ class RandomSampler(torch.utils.data.Sampler):
     """
 
 
-    def __init__(self, data_source, perm_gen, replacement=False, num_samples=None, generator=g_cpu):
+    def __init__(self, data_source, perm_gen, replacement=False, num_samples=None, generator=None):
         self.data_source = data_source
         self.replacement = replacement
         self._num_samples = num_samples
