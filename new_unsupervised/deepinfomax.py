@@ -385,7 +385,7 @@ class GcnInfomax(nn.Module):
                     training=False, mu=grouped_mu_lineg, logvar=grouped_logvar_lineg, labels_batch=batch_lineg, cuda=True
                 )
 
-                class_emb_lineg = global_mean_pool(accumulated_class_latent_embeddings_lineg, batch)
+                class_emb_lineg = global_mean_pool(accumulated_class_latent_embeddings_lineg, batch_lineg)
 
                 #print('clz emb ', class_emb[:5,:3])
                 class_emb = class_emb_node + class_emb_lineg
