@@ -26,6 +26,71 @@ from utils import imshow_grid, mse_loss, reparameterize, group_wise_reparameteri
 
 from arguments import arg_parse
 
+class Sampler(object):
+    r"""Base class for all Samplers.
+
+    Every Sampler subclass has to provide an :meth:`__iter__` method, providing a
+    way to iterate over indices of dataset elements, and a :meth:`__len__` method
+    that returns the length of the returned iterators.
+
+    .. note:: The :meth:`__len__` method isn't strictly required by
+              :class:`~torch.utils.data.DataLoader`, but is expected in any
+              calculation involving the length of a :class:`~torch.utils.data.DataLoader`.
+    """
+
+    def __init__(self, data_source):
+        pass
+
+    def __iter__(self):
+        raise NotImplementedError
+
+class RandomSampler(Sampler):
+    r"""Samples elements randomly. If without replacement, then sample from a shuffled dataset.
+    If with replacement, then user can specify :attr:`num_samples` to draw.
+
+    Arguments:
+        data_source (Dataset): dataset to sample from
+        replacement (bool): samples are drawn with replacement if ``True``, default=``False``
+        num_samples (int): number of samples to draw, default=`len(dataset)`. This argument
+            is supposed to be specified only when `replacement` is ``True``.
+        generator (Generator): Generator used in sampling.
+    """
+
+    def __init__(self, data_source, replacement=False, num_samples=None, generator=None):
+        self.data_source = data_source
+        self.replacement = replacement
+        self._num_samples = num_samples
+        self.generator = generator
+
+        if not isinstance(self.replacement, bool):
+            raise TypeError("replacement should be a boolean value, but got "
+                            "replacement={}".format(self.replacement))
+
+        if self._num_samples is not None and not replacement:
+            raise ValueError("With replacement=False, num_samples should not be specified, "
+                             "since a random permute will be performed.")
+
+        if not isinstance(self.num_samples, int) or self.num_samples <= 0:
+            raise ValueError("num_samples should be a positive integer "
+                             "value, but got num_samples={}".format(self.num_samples))
+
+    @property
+    def num_samples(self):
+        # dataset size might change at runtime
+        if self._num_samples is None:
+            return len(self.data_source)
+        return self._num_samples
+
+    def __iter__(self):
+        n = len(self.data_source)
+        if self.replacement:
+            rand_tensor = torch.randint(high=n, size=(self.num_samples,), dtype=torch.int64, generator=self.generator)
+            return iter(rand_tensor.tolist())
+        return iter(torch.randperm(n, generator=self.generator).tolist())
+
+    def __len__(self):
+        return self.num_samples
+
 class GcnInfomax(nn.Module):
     def __init__(self, hidden_dim, num_gc_layers, alpha=0.5, beta=1., gamma=.1):
         super(GcnInfomax, self).__init__()
@@ -341,7 +406,7 @@ if __name__ == '__main__':
             #dataset_num_features = 5
             #input_feat = torch.ones((batch_size, 1)).to(device)
 
-        rand_sampler = torch.utils.data.RandomSampler(dataset)
+        rand_sampler = RandomSampler(dataset)
 
         dataloader = DataLoader(dataset, batch_size=batch_size, sampler=rand_sampler)
         dataloader_lineg = DataLoader(dataset_lineg, batch_size=batch_size, sampler=rand_sampler)
