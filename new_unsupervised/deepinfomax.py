@@ -376,7 +376,7 @@ if __name__ == '__main__':
 
             for i, data_joint in enumerate(zip(dataloader, dataloader_lineg)):
 
-                print('outcome', data_joint)
+                print('outcome', data_joint, data_joint[0].y, data_joint[1].y)
 
                 data = data.to(device)
 
