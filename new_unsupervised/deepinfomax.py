@@ -393,9 +393,10 @@ if __name__ == '__main__':
             #input_feat = torch.ones((batch_size, 1)).to(device)
 
         rand_sampler = RandomSampler(dataset)
+        rand_sampler_lineg = RandomSampler(dataset_lineg)
 
         dataloader = DataLoader(dataset, batch_size=batch_size, sampler=rand_sampler)
-        dataloader_lineg = DataLoader(dataset_lineg, batch_size=batch_size, sampler=rand_sampler)
+        dataloader_lineg = DataLoader(dataset_lineg, batch_size=batch_size, sampler=rand_sampler_lineg)
 
 
         model = GcnInfomax(args.hidden_dim, args.num_gc_layers).double().to(device)
