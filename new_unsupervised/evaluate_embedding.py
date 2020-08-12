@@ -16,10 +16,10 @@ from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-def draw_plot(datadir, DS, embeddings, fname, max_nodes=None):
-    return
-    graphs = read_graphfile(datadir, DS, max_nodes=max_nodes)
-    labels = [graph.graph['label'] for graph in graphs]
+def draw_plot(labels, embeddings, fname, max_nodes=None):
+    #return
+    #graphs = read_graphfile(datadir, DS, max_nodes=max_nodes)
+    #labels = [graph.graph['label'] for graph in graphs]
 
     labels = preprocessing.LabelEncoder().fit_transform(labels)
     x, y = np.array(embeddings), np.array(labels)

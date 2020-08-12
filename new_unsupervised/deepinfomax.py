@@ -20,7 +20,7 @@ from torch import optim
 from cortex_DIM.nn_modules.mi_networks import MIFCNet, MI1x1ConvNet
 from losses import *
 from gin import Encoder, Decoder
-from evaluate_embedding import evaluate_embedding
+from evaluate_embedding import evaluate_embedding, draw_plot
 from model import *
 from utils import imshow_grid, mse_loss, reparameterize, group_wise_reparameterize, accumulate_group_evidence
 
@@ -118,12 +118,12 @@ class GcnInfomax(nn.Module):
         #node_kl_divergence_loss.backward(retain_graph=True)
         #reconstruction_error.backward()
 
-        loss =  class_kl_divergence_loss + 20*node_kl_divergence_loss + 1e-7*reconstruction_error
+        loss =  class_kl_divergence_loss + node_kl_divergence_loss + 1e-7*reconstruction_error
 
         loss.backward()
 
 
-        return  1e-7*reconstruction_error.item(), class_kl_divergence_loss.item() , 20*node_kl_divergence_loss.item()
+        return  1e-7*reconstruction_error.item(), class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
 
 
     def edge_recon(self, z, edge_index, sigmoid=True):
@@ -363,13 +363,13 @@ if __name__ == '__main__':
         accuracies['linearsvc'].append(res[2])
         accuracies['randomforest'].append(res[3])'''
 
-        #model.train()
+        model.train()
         for epoch in range(1, epochs+1):
             recon_loss_all = 0
             kl_class_loss_all = 0
             kl_node_loss_all = 0
             mi_loss_all = 0
-            model.train()
+            #model.train()
             for data in dataloader:
                 data = data.to(device)
 
@@ -407,7 +407,7 @@ if __name__ == '__main__':
             #print('\n\n', losses, '\n')
 
             #used during finetune phase
-            if epoch % log_interval == 0:
+            '''if epoch % log_interval == 0:
                 model.eval()
                 emb, y = model.get_embeddings(dataloader)
                 res = evaluate_embedding(emb, y)
@@ -415,10 +415,10 @@ if __name__ == '__main__':
                 accuracies['svc'].append(res[1])
                 accuracies['linearsvc'].append(res[2])
                 accuracies['randomforest'].append(res[3])
-                print(accuracies)
+                print(accuracies)'''
 
 
-        '''model.eval()
+        model.eval()
     
         #for i in range(5):
         emb, y = model.get_embeddings(dataloader)
@@ -427,7 +427,9 @@ if __name__ == '__main__':
         accuracies['svc'].append(res[1])
         accuracies['linearsvc'].append(res[2])
         accuracies['randomforest'].append(res[3])
-        print(accuracies)'''
+        print(accuracies)
+
+        draw_plot(y, emb, 'imdb_m_normal.png')
 
         with open('unsupervised.log', 'a+') as f:
             s = json.dumps(accuracies)
