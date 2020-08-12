@@ -38,7 +38,7 @@ class D_net_gauss(nn.Module):
         x = F.relu(x)
         x = F.dropout(self.lin2(x), p=0.2, training=self.training)
         x = F.relu(x)
-        return F.sigmoid(self.lin3(x))
+        return torch.sigmoid(self.lin3(x))
 
 class GcnInfomax(nn.Module):
     def __init__(self, hidden_dim, num_gc_layers, alpha=0.5, beta=1., gamma=.1):
