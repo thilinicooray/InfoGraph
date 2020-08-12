@@ -225,7 +225,7 @@ class GcnInfomax(nn.Module):
                               self.edge_recon(z, neg_edge_index) +
                               EPS).mean()
 
-        return norm*(pos_loss + neg_loss)
+        return norm*(pos_loss*pos_weight + neg_loss)
 
         #loss = F.binary_cross_entropy_with_logits(rec, org_adj)
 
