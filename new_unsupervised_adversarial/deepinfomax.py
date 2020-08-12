@@ -300,8 +300,8 @@ if __name__ == '__main__':
         #batch_size = 128
         batch_size = args.batch_size
         #lr = args.lr
-        gen_lr = 0.0001
-        reg_lr = 0.00005
+        gen_lr = 0.001
+        reg_lr = 0.0005
 
         EPS = 1e-15
 
