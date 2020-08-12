@@ -78,8 +78,8 @@ class GcnInfomax(nn.Module):
             - 0.5 * torch.sum(1 + node_logvar - node_mu.pow(2) - node_logvar.exp())
         )'''
 
-        node_kl_divergence_loss = (-0.5 / n_nodes) * torch.mean(torch.sum(
-            1 + 2 * node_logvar - node_mu.pow(2) - node_logvar.exp().pow(2), 1)) * num_graphs
+        node_kl_divergence_loss = -0.5 / n_nodes * torch.mean(torch.sum(
+            1 + 2 * node_logvar - node_mu.pow(2) - node_logvar.exp().pow(2), 1))
 
 
         node_kl_divergence_loss = node_kl_divergence_loss
@@ -89,8 +89,8 @@ class GcnInfomax(nn.Module):
         '''class_kl_divergence_loss = torch.mean(
             - 0.5 * torch.sum(1 + grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp())
         )'''
-        class_kl_divergence_loss = (-0.5 / n_nodes) * torch.mean(torch.sum(
-            1 + 2 * grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp().pow(2), 1)) * num_graphs
+        class_kl_divergence_loss = -0.5 / n_nodes * torch.mean(torch.sum(
+            1 + 2 * grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp().pow(2), 1))
 
         #print('class kl unwei ', class_kl_divergence_loss)
         class_kl_divergence_loss = class_kl_divergence_loss
@@ -111,19 +111,19 @@ class GcnInfomax(nn.Module):
         reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, edge_index)
 
         #reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
-        reconstruction_error = self.recon_loss1(reconstructed_node, edge_index, batch) * num_graphs
+        reconstruction_error = self.recon_loss1(reconstructed_node, edge_index, batch)
 
 
         #class_kl_divergence_loss.backward(retain_graph=True)
         #node_kl_divergence_loss.backward(retain_graph=True)
         #reconstruction_error.backward()
 
-        loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error
+        loss =  class_kl_divergence_loss + 20*node_kl_divergence_loss + 1e-7*reconstruction_error
 
         loss.backward()
 
 
-        return  reconstruction_error.item(), class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
+        return  1e-7*reconstruction_error.item(), class_kl_divergence_loss.item() , 20*node_kl_divergence_loss.item()
 
 
     def edge_recon(self, z, edge_index, sigmoid=True):
@@ -243,7 +243,7 @@ class GcnInfomax(nn.Module):
                               self.edge_recon(z, neg_edge_index) +
                               EPS).mean()
 
-        return norm*(pos_loss + neg_loss)
+        return norm*(pos_loss*pos_weight + neg_loss)
 
         #loss = F.binary_cross_entropy_with_logits(rec, org_adj)
 
@@ -290,7 +290,8 @@ if __name__ == '__main__':
 
     args = arg_parse()
 
-    for seed in [32,42,52,62,72]:
+    #for seed in [32,42,52,62,72]:
+    for seed in [52]:
 
         #seed = 42
         #epochs = 37
