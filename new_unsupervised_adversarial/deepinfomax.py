@@ -385,7 +385,7 @@ if __name__ == '__main__':
 
                 #encode to z
                 X_sample = model.decoder(z_sample, grouped_class) #decode to X reconstruction
-                recon_loss = 1e-5*model.recon_loss1(X_sample, data.edge_index, data.batch)
+                recon_loss = model.recon_loss1(X_sample, data.edge_index, data.batch)
                 recon_loss_all += recon_loss.item()
 
                 recon_loss.backward()
