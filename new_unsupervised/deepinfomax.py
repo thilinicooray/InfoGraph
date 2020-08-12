@@ -429,7 +429,7 @@ if __name__ == '__main__':
         accuracies['randomforest'].append(res[3])
         print(accuracies)
 
-        draw_plot(y, emb, 'imdb_m_normal.png')
+        draw_plot(y, emb, 'imdb_b_normal.png')
 
         with open('unsupervised.log', 'a+') as f:
             s = json.dumps(accuracies)
