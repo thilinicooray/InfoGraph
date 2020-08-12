@@ -396,10 +396,10 @@ if __name__ == '__main__':
                 ## true prior is random normal (randn)
                 ## this is constraining the Z-projection to be normal!
                 model.encoder.eval()
-                z_real_gauss_node = Variable(torch.randn(data.batch.shape[0], args.hidden_dim) * 5.).cuda()
+                z_real_gauss_node = Variable(torch.randn(data.batch.shape[0], args.hidden_dim) * 5.).double().cuda()
                 D_real_gauss_node = model.node_discriminator(z_real_gauss_node)
 
-                z_real_gauss_class = Variable(torch.randn(data.num_graphs, args.hidden_dim) * 5.).cuda()
+                z_real_gauss_class = Variable(torch.randn(data.num_graphs, args.hidden_dim) * 5.).double().cuda()
                 z_real_gauss_class_exp = expand_group_rep(z_real_gauss_class, data.batch, data.batch.shape[0], args.hidden_dim)
 
 
