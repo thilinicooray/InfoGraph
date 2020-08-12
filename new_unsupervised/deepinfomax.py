@@ -118,12 +118,12 @@ class GcnInfomax(nn.Module):
         #node_kl_divergence_loss.backward(retain_graph=True)
         #reconstruction_error.backward()
 
-        loss =  class_kl_divergence_loss + node_kl_divergence_loss + 1e-7*reconstruction_error
+        loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error
 
         loss.backward()
 
 
-        return  1e-7*reconstruction_error.item(), class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
+        return  reconstruction_error.item(), class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
 
 
     def edge_recon(self, z, edge_index, sigmoid=True):
@@ -243,7 +243,7 @@ class GcnInfomax(nn.Module):
                               self.edge_recon(z, neg_edge_index) +
                               EPS).mean()
 
-        return norm*(pos_loss*pos_weight + neg_loss)
+        return norm*(pos_loss + neg_loss)
 
         #loss = F.binary_cross_entropy_with_logits(rec, org_adj)
 
