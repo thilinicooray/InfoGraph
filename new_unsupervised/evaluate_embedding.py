@@ -24,7 +24,7 @@ def draw_plot(labels, embeddings, fname, max_nodes=None):
     labels = preprocessing.LabelEncoder().fit_transform(labels)
     x, y = np.array(embeddings), np.array(labels)
     print('fitting TSNE ...')
-    x = TSNE(n_components=3).fit_transform(x)
+    x = TSNE(n_components=2).fit_transform(x)
 
     plt.close()
     df = pd.DataFrame(columns=['x0', 'x1', 'Y'])
