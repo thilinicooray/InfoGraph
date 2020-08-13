@@ -116,16 +116,10 @@ class GcnInfomax(nn.Module):
 
         #contrastive loss
 
-        node_grouped_mu, node_grouped_logvar = accumulate_group_evidence(
-            node_mu.data, node_logvar.data, batch, True
-        )
 
-        node_group_latent_embeddings = group_wise_reparameterize(
-            training=True, mu=node_grouped_mu, logvar=node_grouped_logvar, labels_batch=batch, cuda=True
-        )
 
         measure='JSD'
-        local_global_loss = local_global_disen_loss_(node_latent_embeddings, node_group_latent_embeddings, class_latent_embeddings, batch, measure)
+        local_global_loss = local_global_loss_(node_latent_embeddings, global_mean_pool(class_latent_embeddings, batch), batch, measure)
 
 
 
@@ -289,29 +283,12 @@ class GcnInfomax(nn.Module):
                     training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
                 )
 
-
-
                 class_emb = global_mean_pool(accumulated_class_latent_embeddings, batch)
-
-                grouped_node_mu, grouped_node_logvar = accumulate_group_evidence(
-                    node_mu.data, node_logvar.data, batch, True
-                )
-
-                accumulated_node_latent_embeddings = group_wise_reparameterize(
-                    training=False, mu=grouped_node_mu, logvar=grouped_node_logvar, labels_batch=batch, cuda=True
-                )
-
-
-
-                acc_node_emb = global_mean_pool(accumulated_node_latent_embeddings, batch)
-
-
-
 
 
                 #print('clz emb ', class_emb[:5,:3])
 
-                ret.append((class_emb + acc_node_emb).cpu().numpy())
+                ret.append(class_emb.cpu().numpy())
                 y.append(data.y.cpu().numpy())
         ret = np.concatenate(ret, 0)
         y = np.concatenate(y, 0)
