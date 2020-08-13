@@ -49,6 +49,8 @@ def local_global_disen_loss_(l_enc, node_g_enc, group_enc, batch, measure):
     E_neg = get_negative_expectation(l_enc * group_enc, measure, average=False).sum()
     E_neg = E_neg / (num_nodes )
 
+    print('negative pos val', E_neg, E_pos)
+
     return E_neg - E_pos
 
 

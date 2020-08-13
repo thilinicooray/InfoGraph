@@ -45,8 +45,7 @@ def accumulate_group_rep(class_mu, batch):
     for i in range(len(batch)):
         group_label = batch[i].item()
 
-        #group_mu[i] = mu_dict[group_label]/mu_count_dict[group_label
-        group_mu[i] = mu_dict[group_label]
+        group_mu[i] = mu_dict[group_label]/mu_count_dict[group_label]
 
 
     # convert group vars into logvars before returning
