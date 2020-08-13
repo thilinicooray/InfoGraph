@@ -289,9 +289,13 @@ class GcnInfomax(nn.Module):
                     training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
                 )
 
+
+
                 class_emb = global_mean_pool(accumulated_class_latent_embeddings, batch)
 
                 #print('clz emb ', class_emb[:5,:3])
+
+                print('data y', data.y, data.y.size(), accumulated_class_latent_embeddings.size())
 
 
                 ret.append(class_emb.cpu().numpy())
