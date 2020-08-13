@@ -279,7 +279,7 @@ class GcnInfomax(nn.Module):
                 if not dataset.num_features:
                     x = torch.ones((batch.shape[0],5)).double().to(device)
                 #print('eval train', x.type())
-                __, _, class_mu, class_logvar = self.encoder(x, edge_index, batch)
+                node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index, batch)
 
                 grouped_mu, grouped_logvar = accumulate_group_evidence(
                     class_mu.data, class_logvar.data, batch, True
@@ -293,12 +293,25 @@ class GcnInfomax(nn.Module):
 
                 class_emb = global_mean_pool(accumulated_class_latent_embeddings, batch)
 
+                grouped_node_mu, grouped_node_logvar = accumulate_group_evidence(
+                    node_mu.data, node_logvar.data, batch, True
+                )
+
+                accumulated_node_latent_embeddings = group_wise_reparameterize(
+                    training=False, mu=grouped_node_mu, logvar=grouped_node_logvar, labels_batch=batch, cuda=True
+                )
+
+
+
+                acc_node_emb = global_mean_pool(accumulated_node_latent_embeddings, batch)
+
+
+
+
+
                 #print('clz emb ', class_emb[:5,:3])
 
-                print('data y', data.y, data.y.size(), accumulated_class_latent_embeddings.size())
-
-
-                ret.append(class_emb.cpu().numpy())
+                ret.append((class_emb + acc_node_emb).cpu().numpy())
                 y.append(data.y.cpu().numpy())
         ret = np.concatenate(ret, 0)
         y = np.concatenate(y, 0)
