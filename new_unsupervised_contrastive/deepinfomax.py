@@ -417,7 +417,7 @@ if __name__ == '__main__':
 
 
 
-            print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {} mi loss'.format(epoch, recon_loss_all / len(dataloader),
+            print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {} mi loss {}'.format(epoch, recon_loss_all / len(dataloader),
                                                                                     kl_class_loss_all / len(dataloader),
                                                                                             kl_node_loss_all / len(dataloader),
                                                                                             mi_loss_all / len(dataloader)))
