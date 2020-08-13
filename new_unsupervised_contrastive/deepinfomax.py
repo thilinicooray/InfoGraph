@@ -131,7 +131,7 @@ class GcnInfomax(nn.Module):
         loss.backward()
 
 
-        return  1e-7*reconstruction_error.item(), class_kl_divergence_loss.item() , node_kl_divergence_loss.item(), local_global_loss.item()
+        return  reconstruction_error.item(), class_kl_divergence_loss.item() , node_kl_divergence_loss.item(), local_global_loss.item()
 
 
     def edge_recon(self, z, edge_index, sigmoid=True):
