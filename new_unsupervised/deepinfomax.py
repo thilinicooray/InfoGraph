@@ -9,6 +9,7 @@ import random
 import os
 # from core.encoders import *
 
+import torch_geometric
 from torch_geometric.datasets import TUDataset
 from torch_geometric.data import DataLoader
 from torch_geometric.nn import global_mean_pool, global_add_pool, global_max_pool
@@ -325,7 +326,7 @@ if __name__ == '__main__':
         path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', DS)
         # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
 
-        dataset = TUDataset(path, name=DS).shuffle()
+        dataset = TUDataset(path, name=DS, pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=88)).shuffle()
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         try:
