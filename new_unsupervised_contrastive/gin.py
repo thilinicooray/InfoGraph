@@ -78,7 +78,7 @@ class Encoder(torch.nn.Module):
         class_latent_space_mu = F.relu(self.class_mu(x))
         class_latent_space_logvar = F.relu(self.class_logvar(x))'''
 
-        return node_latent_space_mu, node_latent_space_logvar, class_latent_space_mu, class_latent_space_logvar
+        return x, node_latent_space_mu, node_latent_space_logvar, class_latent_space_mu, class_latent_space_logvar
 
 
 class Decoder(torch.nn.Module):

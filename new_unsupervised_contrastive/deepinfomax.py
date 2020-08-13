@@ -60,7 +60,7 @@ class GcnInfomax(nn.Module):
 
         # batch_size = data.num_graphs
 
-        node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index, batch)
+        gnn_out, node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index, batch)
 
 
 
@@ -119,7 +119,7 @@ class GcnInfomax(nn.Module):
 
 
         measure='JSD'
-        local_global_loss = local_global_loss_(node_latent_embeddings, global_mean_pool(class_latent_embeddings, batch), batch, measure)
+        local_global_loss = local_global_loss_(gnn_out, global_mean_pool(class_latent_embeddings, batch), batch, measure)
 
 
 
@@ -273,7 +273,7 @@ class GcnInfomax(nn.Module):
                 if not dataset.num_features:
                     x = torch.ones((batch.shape[0],5)).double().to(device)
                 #print('eval train', x.type())
-                node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index, batch)
+                _,_, _, class_mu, class_logvar = self.encoder(x, edge_index, batch)
 
                 grouped_mu, grouped_logvar = accumulate_group_evidence(
                     class_mu.data, class_logvar.data, batch, True
