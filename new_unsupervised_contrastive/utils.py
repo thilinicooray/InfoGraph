@@ -5,55 +5,6 @@ from torch.autograd import Variable
 from mpl_toolkits.axes_grid1 import ImageGrid
 
 
-def expand_group_rep (class_mu, batch, node_count, dim):
-    group_mu = torch.DoubleTensor(node_count, dim)
-
-    group_mu = group_mu.cuda()
-
-    for i in range(len(batch)):
-        group_label = batch[i].item()
-
-        group_mu[i] = class_mu[group_label]
-
-
-    # convert group vars into logvars before returning
-    return Variable(group_mu, requires_grad=True)
-
-
-def accumulate_group_rep(class_mu, batch):
-    mu_dict = {}
-    mu_count_dict = {}
-
-
-    # calculate mu for each group
-    for i in range(len(batch)):
-        group_label = batch[i].item()
-
-        if group_label in mu_dict.keys():
-            mu_dict[group_label] += class_mu[i]
-            mu_count_dict[group_label] += 1
-        else:
-            mu_dict[group_label] = class_mu[i]
-            mu_count_dict[group_label] = 1
-
-
-    # replace individual mu and logvar values for each sample with group mu and logvar
-    group_mu = torch.DoubleTensor(class_mu.size(0), class_mu.size(1))
-
-    group_mu = group_mu.cuda()
-
-    for i in range(len(batch)):
-        group_label = batch[i].item()
-
-        #group_mu[i] = mu_dict[group_label]/mu_count_dict[group_label
-        group_mu[i] = mu_dict[group_label]
-
-
-    # convert group vars into logvars before returning
-    return Variable(group_mu, requires_grad=True)
-
-
-
 def accumulate_group_evidence(class_mu, class_logvar, batch, is_cuda):
     """
     :param class_mu: mu values for class latent embeddings of each sample in the mini-batch
