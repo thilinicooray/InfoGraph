@@ -111,7 +111,7 @@ class GcnInfomax(nn.Module):
         reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, edge_index)
 
         #reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
-        reconstruction_error = self.recon_loss1(reconstructed_node, edge_index, batch)
+        reconstruction_error = 1e-5*self.recon_loss1(reconstructed_node, edge_index, batch)
 
 
         #contrastive loss
@@ -119,7 +119,7 @@ class GcnInfomax(nn.Module):
 
 
         measure='JSD'
-        local_global_loss = local_global_loss_(gnn_out, global_mean_pool(class_latent_embeddings, batch), batch, measure)
+        local_global_loss = local_global_loss_(node_latent_embeddings, global_mean_pool(class_latent_embeddings, batch), batch, measure)
 
 
 
@@ -131,7 +131,7 @@ class GcnInfomax(nn.Module):
         loss.backward()
 
 
-        return  reconstruction_error.item(), class_kl_divergence_loss.item() , node_kl_divergence_loss.item(), local_global_loss.item()
+        return  1e-5*reconstruction_error.item(), class_kl_divergence_loss.item() , node_kl_divergence_loss.item(), local_global_loss.item()
 
 
     def edge_recon(self, z, edge_index, sigmoid=True):
