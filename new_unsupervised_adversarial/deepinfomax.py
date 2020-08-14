@@ -472,7 +472,7 @@ if __name__ == '__main__':
 
                 #optim_Q_gen.zero_grad()
                 G_loss.backward()
-                optim_Q_gen.step()
+                optim_Q_enc.step()
 
 
 
