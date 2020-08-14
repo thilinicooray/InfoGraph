@@ -433,7 +433,7 @@ if __name__ == '__main__':
 
                 D_loss_node = -torch.mean(torch.log(D_real_gauss_node + EPS) + torch.log(1 - D_fake_gauss_node + EPS))
                 D_loss_class = -torch.mean(torch.log(D_real_gauss_class + EPS) + torch.log(1 - D_fake_gauss_class + EPS))
-                D_loss_adj = -torch.mean(torch.log(D_org_adj + EPS) + torch.log(1 - D_fake_adj + EPS))
+                D_loss_adj = -torch.mean(torch.log(D_fake_adj + EPS) + torch.log(1 - D_org_adj + EPS))
 
                 D_loss = D_loss_node + D_loss_class + D_loss_adj
 
@@ -445,20 +445,25 @@ if __name__ == '__main__':
 
                 # Generator
                 model.encoder.train()
+                #model.decoder.train()
 
                 z_fake_gauss_node, z_fake_gauss_class = model.encoder(data.x, data.edge_index, data.batch)
 
                 grouped_z_fake_gauss_class = accumulate_group_rep(
                     z_fake_gauss_class, data.batch
                 )
+                #org_adj = model.decoder(z_fake_gauss_node, grouped_z_fake_gauss_class)
+
 
                 D_fake_gauss_node = model.node_discriminator(z_fake_gauss_node)
                 D_fake_gauss_class = model.class_discriminator(grouped_z_fake_gauss_class)
+                #D_org_gauss_adj = model.adj_discriminator(org_adj)
 
 
 
                 G_loss_node = -torch.mean(torch.log(D_fake_gauss_node + EPS))
                 G_loss_class = -torch.mean(torch.log(D_fake_gauss_class + EPS))
+                #G_loss_class = -torch.mean(torch.log(1- D_fake_gauss_class + EPS))
 
                 G_loss = G_loss_node + G_loss_class
 
