@@ -52,8 +52,8 @@ class GcnInfomax(nn.Module):
 
         self.encoder = Encoder(dataset_num_features, hidden_dim, num_gc_layers)
         self.decoder = Decoder(hidden_dim, hidden_dim, dataset_num_features)
-        self.node_discriminator = D_net_gauss(32, hidden_dim)
-        self.class_discriminator = D_net_gauss(32, hidden_dim)
+        self.node_discriminator = D_net_gauss(hidden_dim, hidden_dim)
+        self.class_discriminator = D_net_gauss(hidden_dim, hidden_dim)
 
 
 
@@ -404,7 +404,7 @@ if __name__ == '__main__':
                 z_real_gauss_class_exp = expand_group_rep(z_real_gauss_class, data.batch, data.batch.shape[0], args.hidden_dim)
 
 
-                D_real_gauss_class = model.class_discriminator(z_real_gauss_class_exp)
+                D_real_gauss_class = model.class_discriminator(z_real_gauss_class)
 
                 z_fake_gauss_node, z_fake_gauss_class = model.encoder(data.x, data.edge_index, data.batch)
 
