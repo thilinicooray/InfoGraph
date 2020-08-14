@@ -35,7 +35,7 @@ class D_net_gauss(nn.Module):
         self.lin2 = nn.Linear(N, N)
         self.lin3 = nn.Linear(N, 1)
     def forward(self, x):
-        x = F.dropout(self.lin1(x), p=0.0, training=self.training)
+        x = self.lin1(x)
         '''x = F.relu(x)
         x = F.dropout(self.lin2(x), p=0.0, training=self.training)'''
         x = F.relu(x)
@@ -52,8 +52,8 @@ class GcnInfomax(nn.Module):
 
         self.encoder = Encoder(dataset_num_features, hidden_dim, num_gc_layers)
         self.decoder = Decoder(hidden_dim, hidden_dim, dataset_num_features)
-        self.node_discriminator = D_net_gauss(hidden_dim, hidden_dim)
-        self.class_discriminator = D_net_gauss(hidden_dim, hidden_dim)
+        self.node_discriminator = D_net_gauss(hidden_dim, 32)
+        self.class_discriminator = D_net_gauss(hidden_dim, 32)
 
 
 
