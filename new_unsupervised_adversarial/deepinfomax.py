@@ -374,9 +374,10 @@ if __name__ == '__main__':
                     data.x = torch.ones((data.batch.shape[0], 5)).double().to(device)
 
 
-                optim_P.zero_grad()
+                '''optim_P.zero_grad()
                 optim_Q_enc.zero_grad()
-                optim_D.zero_grad()
+                optim_D.zero_grad()'''
+                model.zero_grad()
 
                 z_sample, z_class = model.encoder(data.x, data.edge_index, data.batch)
                 grouped_class = accumulate_group_rep(
@@ -452,7 +453,7 @@ if __name__ == '__main__':
 
                 kl_node_loss_all += G_loss.item()
 
-                optim_Q_gen.zero_grad()
+                #optim_Q_gen.zero_grad()
                 G_loss.backward()
                 optim_Q_gen.step()
 
