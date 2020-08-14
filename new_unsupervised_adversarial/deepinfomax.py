@@ -29,7 +29,7 @@ from utils import imshow_grid, mse_loss, reparameterize, group_wise_reparameteri
 from arguments import arg_parse
 
 class D_net_gauss(nn.Module):
-    def __init__(self,N,z_dim):
+    def __init__(self,z_dim, N):
         super(D_net_gauss, self).__init__()
         self.lin1 = nn.Linear(z_dim, N)
         self.lin2 = nn.Linear(N, N)
@@ -54,7 +54,7 @@ class GcnInfomax(nn.Module):
         self.decoder = Decoder(hidden_dim, hidden_dim, dataset_num_features)
         self.node_discriminator = D_net_gauss(hidden_dim, hidden_dim)
         self.class_discriminator = D_net_gauss(hidden_dim, hidden_dim)
-        self.adj_discriminator = D_net_gauss(hidden_dim, hidden_dim)
+        self.adj_discriminator = D_net_gauss(dataset_num_features, hidden_dim)
 
 
 
@@ -420,12 +420,11 @@ if __name__ == '__main__':
                 D_fake_gauss_class = model.class_discriminator(grouped_z_fake_gauss_class)
 
                 #####recon items
-                org_sample = model.decoder(z_fake_gauss_node, grouped_z_fake_gauss_class)
-                org_adj = model.edge_recon(org_sample, data.edge_index)
-                print('org adj', org_adj.size())
+                org_adj = model.decoder(z_fake_gauss_node, grouped_z_fake_gauss_class)
+                #org_adj = model.edge_recon(org_sample, data.edge_index)
 
-                fake_sample = model.decoder(z_real_gauss_node, z_real_gauss_class_exp)
-                fake_adj = model.edge_recon(fake_sample, data.edge_index)
+                fake_adj = model.decoder(z_real_gauss_node, z_real_gauss_class_exp)
+                #fake_adj = model.edge_recon(fake_sample, data.edge_index)
 
                 D_org_adj = model.adj_discriminator(org_adj)
                 D_fake_adj = model.adj_discriminator(fake_adj)
