@@ -377,11 +377,11 @@ if __name__ == '__main__':
                 model.encoder.zero_grad()
                 model.decoder.zero_grad()
 
-                for p in model.class_discriminator.parameters():
+                '''for p in model.class_discriminator.parameters():
                     p.requires_grad = False
 
                 for p in model.node_discriminator.parameters():
-                    p.requires_grad = False
+                    p.requires_grad = False'''
 
 
 
@@ -407,13 +407,13 @@ if __name__ == '__main__':
                 ## this is constraining the Z-projection to be normal!
                 model.encoder.eval()
                 model.class_discriminator.zero_grad()
-                model.node_discriminator.zero_grad()
+                model.class_discriminator.zero_grad()
 
-                for p in model.class_discriminator.parameters():
+                '''for p in model.class_discriminator.parameters():
                     p.requires_grad = True
 
                 for p in model.node_discriminator.parameters():
-                    p.requires_grad = True
+                    p.requires_grad = True'''
 
                 z_real_gauss_node = Variable(torch.randn(data.batch.shape[0], args.hidden_dim) * 5.).double().cuda()
                 D_real_gauss_node = model.node_discriminator(z_real_gauss_node)
