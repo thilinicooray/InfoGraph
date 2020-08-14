@@ -102,7 +102,7 @@ def svc_classify(x, y, search):
         y_train, y_test = y[train_index], y[test_index]
         # x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.1)
         if search:
-            params = {'C':[0.001, 0.01,0.1,1,10,100,1000]}
+            params = {'C':[1,10,100,1000]}
             classifier = GridSearchCV(SVC(), params, cv=5, scoring='accuracy', verbose=0)
         else:
             classifier = SVC(C=1)
@@ -149,7 +149,7 @@ def linearsvc_classify(x, y, search):
         accuracies.append(accuracy_score(y_test, classifier.predict(x_test)))
     return np.mean(accuracies)
 
-def evaluate_embedding(embeddings, labels, search=False):
+def evaluate_embedding(embeddings, labels, search=True):
 
     labels = preprocessing.LabelEncoder().fit_transform(labels)
     x, y = np.array(embeddings), np.array(labels)
