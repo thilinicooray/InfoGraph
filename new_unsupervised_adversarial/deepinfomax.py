@@ -35,9 +35,9 @@ class D_net_gauss(nn.Module):
         self.lin2 = nn.Linear(N, N)
         self.lin3 = nn.Linear(N, 1)
     def forward(self, x):
-        x = F.dropout(self.lin1(x), p=0.2, training=self.training)
+        x = F.dropout(self.lin1(x), p=0.0, training=self.training)
         x = F.relu(x)
-        x = F.dropout(self.lin2(x), p=0.2, training=self.training)
+        x = F.dropout(self.lin2(x), p=0.0, training=self.training)
         x = F.relu(x)
         return torch.sigmoid(self.lin3(x))
 
@@ -302,7 +302,7 @@ if __name__ == '__main__':
         batch_size = args.batch_size
         lr = args.lr
         gen_lr = 1 * lr
-        reg_lr = 1 * lr
+        reg_lr = 0.5 * lr
 
         EPS = 1e-15
 
