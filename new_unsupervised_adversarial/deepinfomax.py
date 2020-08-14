@@ -54,6 +54,7 @@ class GcnInfomax(nn.Module):
         self.decoder = Decoder(hidden_dim, hidden_dim, dataset_num_features)
         self.node_discriminator = D_net_gauss(hidden_dim, hidden_dim)
         self.class_discriminator = D_net_gauss(hidden_dim, hidden_dim)
+        self.adj_discriminator = D_net_gauss(hidden_dim, hidden_dim)
 
 
 
@@ -337,7 +338,8 @@ if __name__ == '__main__':
         optim_Q_gen = torch.optim.Adam(model.encoder.parameters(), lr=reg_lr)
         optim_D = torch.optim.Adam([
             {'params': model.node_discriminator.parameters()},
-            {'params': model.class_discriminator.parameters()}
+            {'params': model.class_discriminator.parameters()},
+            {'params': model.adj_discriminator.parameters()},
             ], lr=reg_lr)
 
 
@@ -397,12 +399,11 @@ if __name__ == '__main__':
                 ## true prior is random normal (randn)
                 ## this is constraining the Z-projection to be normal!
                 model.encoder.eval()
+                model.decoder.eval()
                 z_real_gauss_node = Variable(torch.randn(data.batch.shape[0], args.hidden_dim) * 5.).double().cuda()
                 D_real_gauss_node = model.node_discriminator(z_real_gauss_node)
 
                 z_real_gauss_class = Variable(torch.randn(data.num_graphs, args.hidden_dim) * 5.).double().cuda()
-
-                print('z_real_gauss_class', z_real_gauss_class[:10])
 
                 z_real_gauss_class_exp = expand_group_rep(z_real_gauss_class, data.batch, data.batch.shape[0], args.hidden_dim)
 
@@ -418,12 +419,25 @@ if __name__ == '__main__':
                 D_fake_gauss_node = model.node_discriminator(z_fake_gauss_node)
                 D_fake_gauss_class = model.class_discriminator(grouped_z_fake_gauss_class)
 
+                #####recon items
+                org_sample = model.decoder(z_fake_gauss_node, grouped_z_fake_gauss_class)
+                org_adj = model.edge_recon(org_sample, data.edge_index)
+                print('org adj', org_adj.size())
+
+                fake_sample = model.decoder(z_real_gauss_node, z_real_gauss_class_exp)
+                fake_adj = model.edge_recon(fake_sample, data.edge_index)
+
+                D_org_adj = model.adj_discriminator(org_adj)
+                D_fake_adj = model.adj_discriminator(fake_adj)
+
 
 
                 D_loss_node = -torch.mean(torch.log(D_real_gauss_node + EPS) + torch.log(1 - D_fake_gauss_node + EPS))
                 D_loss_class = -torch.mean(torch.log(D_real_gauss_class + EPS) + torch.log(1 - D_fake_gauss_class + EPS))
+                D_loss_adj = -torch.mean(torch.log(D_org_adj + EPS) + torch.log(1 - D_fake_adj + EPS))
 
-                D_loss = D_loss_node + D_loss_class
+                D_loss = D_loss_node + D_loss_class + D_loss_adj
+
 
                 kl_class_loss_all += D_loss.item()
 
