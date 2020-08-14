@@ -338,7 +338,7 @@ if __name__ == '__main__':
         optim_D = torch.optim.Adam([
             {'params': model.node_discriminator.parameters()},
             {'params': model.class_discriminator.parameters()}
-            ], lr=gen_lr)
+            ], lr=reg_lr)
 
 
 
@@ -470,7 +470,7 @@ if __name__ == '__main__':
 
                 kl_node_loss_all += G_loss.item()
 
-                #optim_Q_gen.zero_grad()
+                optim_Q_gen.zero_grad()
                 G_loss.backward()
                 optim_Q_gen.step()
 
