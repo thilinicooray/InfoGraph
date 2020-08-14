@@ -300,9 +300,9 @@ if __name__ == '__main__':
         log_interval = 1
         #batch_size = 128
         batch_size = args.batch_size
-        #lr = args.lr
-        gen_lr = 0.001
-        reg_lr = 0.0005
+        lr = args.lr
+        gen_lr = 1 * lr
+        reg_lr = 0.5 * lr
 
         EPS = 1e-15
 
