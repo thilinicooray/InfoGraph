@@ -453,7 +453,7 @@ if __name__ == '__main__':
 
                 kl_node_loss_all += G_loss.item()
 
-                #optim_Q_gen.zero_grad()
+                optim_Q_gen.zero_grad()
                 G_loss.backward()
                 optim_Q_gen.step()
 
