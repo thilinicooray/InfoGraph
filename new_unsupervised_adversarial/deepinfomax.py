@@ -374,10 +374,18 @@ if __name__ == '__main__':
                     data.x = torch.ones((data.batch.shape[0], 5)).double().to(device)
 
 
-                '''optim_P.zero_grad()
-                optim_Q_enc.zero_grad()
-                optim_D.zero_grad()'''
-                model.zero_grad()
+                model.encoder.zero_grad()
+                model.decoder.zero_grad()
+
+                for p in model.class_discriminator.parameters():
+                    p.requires_grad = False
+
+                for p in model.node_discriminator.parameters():
+                    p.requires_grad = False
+
+
+
+                #model.zero_grad()
 
                 z_sample, z_class = model.encoder(data.x, data.edge_index, data.batch)
                 grouped_class = accumulate_group_rep(
@@ -398,6 +406,15 @@ if __name__ == '__main__':
                 ## true prior is random normal (randn)
                 ## this is constraining the Z-projection to be normal!
                 model.encoder.eval()
+                model.class_discriminator.zero_grad()
+                model.node_discriminator.zero_grad()
+
+                for p in model.class_discriminator.parameters():
+                    p.requires_grad = True
+
+                for p in model.node_discriminator.parameters():
+                    p.requires_grad = True
+
                 z_real_gauss_node = Variable(torch.randn(data.batch.shape[0], args.hidden_dim) * 5.).double().cuda()
                 D_real_gauss_node = model.node_discriminator(z_real_gauss_node)
 
@@ -453,7 +470,7 @@ if __name__ == '__main__':
 
                 kl_node_loss_all += G_loss.item()
 
-                optim_Q_gen.zero_grad()
+                #optim_Q_gen.zero_grad()
                 G_loss.backward()
                 optim_Q_gen.step()
 
