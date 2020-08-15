@@ -311,7 +311,7 @@ if __name__ == '__main__':
         path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data_degree', DS)
         # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
 
-        dataset = TUDataset(path, name=DS, pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=88)).shuffle()
+        dataset = TUDataset(path, name=DS, pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=3061)).shuffle()
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         try:
@@ -327,6 +327,8 @@ if __name__ == '__main__':
             #input_feat = torch.ones((batch_size, 1)).to(device)
 
         dataloader = DataLoader(dataset, batch_size=batch_size)
+
+        print('Dataset loaded !')
 
 
         model = GcnInfomax(args.hidden_dim, args.num_gc_layers).double().to(device)
