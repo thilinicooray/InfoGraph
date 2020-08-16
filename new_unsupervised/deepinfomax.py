@@ -112,19 +112,19 @@ class GcnInfomax(nn.Module):
         reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, edge_index)
 
         #reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
-        reconstruction_error = self.recon_loss1(reconstructed_node, edge_index, batch)
+        reconstruction_error = 1e-5* self.recon_loss1(reconstructed_node, edge_index, batch)
 
 
         #class_kl_divergence_loss.backward(retain_graph=True)
         #node_kl_divergence_loss.backward(retain_graph=True)
         #reconstruction_error.backward()
 
-        loss =  class_kl_divergence_loss + node_kl_divergence_loss + 1e-7*reconstruction_error
+        loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error
 
         loss.backward()
 
 
-        return  1e-7*reconstruction_error.item(), class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
+        return  reconstruction_error.item(), class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
 
 
     def edge_recon(self, z, edge_index, sigmoid=True):
