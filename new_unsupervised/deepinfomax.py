@@ -112,7 +112,7 @@ class GcnInfomax(nn.Module):
         reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, edge_index)
 
         #reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
-        reconstruction_error = 1e-5* self.recon_loss1(reconstructed_node, edge_index, batch)
+        reconstruction_error = 1e-2* self.recon_loss1(reconstructed_node, edge_index, batch)
 
 
         #class_kl_divergence_loss.backward(retain_graph=True)
@@ -292,7 +292,7 @@ if __name__ == '__main__':
     args = arg_parse()
 
     #for seed in [32,42,52,62,72]:
-    for seed in [52]:
+    for seed in [1234]:
 
         #seed = 42
         #epochs = 37
