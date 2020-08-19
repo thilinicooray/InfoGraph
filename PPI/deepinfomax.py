@@ -540,50 +540,53 @@ if __name__ == '__main__':
                 print('val and test micro F1', val_f1, test_f1)'''
 
 
-        model.eval()
+            model.eval()
 
-        accs = []
+            accs = []
+            best_f1 = 0
+            best_round = 0
 
-        criterion = nn.BCEWithLogitsLoss()
+            criterion = nn.BCEWithLogitsLoss()
 
-        for _ in range(50):
-            log = SimpleClassifier(args.hidden_dim, 128, 121, 0.5)
-            opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0.0)
-            log.double().cuda()
-            log.train()
-            for data in train_dataloader:
+            for round in range(50):
+                log = SimpleClassifier(args.hidden_dim, 128, 121, 0.5)
+                opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0.0)
+                log.double().cuda()
+                log.train()
+                for data in train_dataloader:
 
-                opt.zero_grad()
-                data = data.to(device)
-
-                with torch.no_grad():
-                    z_sample, _ = model.encoder(data.x, data.edge_index, data.batch)
-                logits = log(z_sample)
-                loss = criterion(logits, data.y)
-
-                loss.backward()
-                opt.step()
-
-            log.eval()
-
-            pred_list = []
-            y_list = []
-            with torch.no_grad():
-                for data in val_dataloader:
+                    opt.zero_grad()
                     data = data.to(device)
-                    z_sample, _ = model.encoder(data.x, data.edge_index, data.batch)
-                    pred = log(z_sample) > 0.5
 
-                    pred_list.append(pred.cpu().numpy())
-                    y_list.append(data.y.cpu().numpy())
-            ret = np.concatenate(pred_list, 0)
-            y = np.concatenate(y_list, 0)
-            mi_f1 = micro_f1_val = f1_score(y, ret, average='micro')
+                    with torch.no_grad():
+                        z_sample, _ = model.encoder(data.x, data.edge_index, data.batch)
+                    logits = log(z_sample)
+                    loss = criterion(logits, data.y)
 
-            print('micro f1 ', mi_f1)
+                    loss.backward()
+                    opt.step()
 
-            accs.append(mi_f1)
-            print('micro f1 :', accs)
+                log.eval()
+
+                pred_list = []
+                y_list = []
+                with torch.no_grad():
+                    for data in val_dataloader:
+                        data = data.to(device)
+                        z_sample, _ = model.encoder(data.x, data.edge_index, data.batch)
+                        pred = log(z_sample) > 0.5
+
+                        pred_list.append(pred.cpu().numpy())
+                        y_list.append(data.y.cpu().numpy())
+                ret = np.concatenate(pred_list, 0)
+                y = np.concatenate(y_list, 0)
+                mi_f1  = f1_score(y, ret, average='micro')
+
+                if mi_f1 > best_f1:
+                    best_f1 = mi_f1
+                    best_round = round
+
+            print('best f1 obtained in round:', best_f1, best_round)
 
         #accs = torch.stack(accs)
         #print(accs.mean().item(), accs.std().item())
@@ -591,14 +594,7 @@ if __name__ == '__main__':
 
 
     
-        #for i in range(5):
-        emb, y = model.get_embeddings(dataloader)
-        res = evaluate_embedding(emb, y)
-        accuracies['logreg'].append(res[0])
-        accuracies['svc'].append(res[1])
-        accuracies['linearsvc'].append(res[2])
-        accuracies['randomforest'].append(res[3])
-        print(accuracies)
+
 
         #draw_plot(y, emb, 'imdb_b_normal.png')
 
