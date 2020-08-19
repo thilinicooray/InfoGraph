@@ -257,9 +257,6 @@ class GcnInfomax(nn.Module):
 
                 class_emb = global_mean_pool(grouped_mu, batch)
 
-                print('y ', data.y.size(), data.y[0])
-
-
                 ret.append(class_emb.cpu().numpy())
                 y.append(data.y.cpu().numpy())
         ret = np.concatenate(ret, 0)
