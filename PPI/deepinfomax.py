@@ -274,6 +274,8 @@ def test(train_z, train_y, val_z, val_y,test_z, test_y,  solver='lbfgs',
     log_reg = LogisticRegression(solver=solver, multi_class=multi_class)
     clf = MultiOutputClassifier(log_reg)
 
+    print('train ', train_z.shape, train_y.shape)
+
     clf.fit(train_z,train_y)
 
     predict_val = clf.predict(val_z)
