@@ -422,7 +422,7 @@ if __name__ == '__main__':
 
                 #encode to z
                 X_sample = model.decoder(z_sample, grouped_class) #decode to X reconstruction
-                recon_loss = 1e-7*model.recon_loss1(X_sample, data.edge_index, data.batch)
+                recon_loss = model.recon_loss1(X_sample, data.edge_index, data.batch)
                 recon_loss_all += recon_loss.item()
 
                 recon_loss.backward()
@@ -551,19 +551,18 @@ if __name__ == '__main__':
             opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0.0)
             log.double().cuda()
             log.train()
-            for _ in range(50):
-                for data in train_dataloader:
+            for data in train_dataloader:
 
-                    opt.zero_grad()
-                    data = data.to(device)
+                opt.zero_grad()
+                data = data.to(device)
 
-                    with torch.no_grad():
-                        z_sample, _ = model.encoder(data.x, data.edge_index, data.batch)
-                    logits = log(z_sample)
-                    loss = criterion(logits, data.y)
+                with torch.no_grad():
+                    z_sample, _ = model.encoder(data.x, data.edge_index, data.batch)
+                logits = log(z_sample)
+                loss = criterion(logits, data.y)
 
-                    loss.backward()
-                    opt.step()
+                loss.backward()
+                opt.step()
 
             log.eval()
 
@@ -584,9 +583,10 @@ if __name__ == '__main__':
             print('micro f1 ', mi_f1)
 
             accs.append(mi_f1)
+            print('micro f1 :', accs)
 
-        accs = torch.stack(accs)
-        print(accs.mean().item(), accs.std().item())
+        #accs = torch.stack(accs)
+        #print(accs.mean().item(), accs.std().item())
 
 
 
