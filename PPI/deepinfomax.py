@@ -57,7 +57,7 @@ class GcnInfomax(nn.Module):
         self.prior = args.prior
 
         self.encoder = Encoder(dataset_num_features, hidden_dim, num_gc_layers)
-        self.decoder = Decoder(hidden_dim, hidden_dim, dataset_num_features)
+        self.decoder = Decoder(hidden_dim, hidden_dim, 10)
         self.node_discriminator = D_net_gauss(hidden_dim, hidden_dim)
         self.class_discriminator = D_net_gauss(hidden_dim, hidden_dim)
 
@@ -347,9 +347,9 @@ if __name__ == '__main__':
 
         #dataset = TUDataset(path, name=DS, pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=88)).shuffle()
 
-        train_dataset = PPI(path, split='train', pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=500)).shuffle()
-        val_dataset = PPI(path, split='val', pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=500))
-        test_dataset = PPI(path, split='train', pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=500))
+        train_dataset = PPI(path, split='train', pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=1000)).shuffle()
+        val_dataset = PPI(path, split='val', pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=1000))
+        test_dataset = PPI(path, split='train', pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=1000))
 
 
 
@@ -423,8 +423,8 @@ if __name__ == '__main__':
                 #encode to z
                 X_sample = model.decoder(z_sample, grouped_class) #decode to X reconstruction
                 recon_loss_adj = model.recon_loss1(X_sample, data.edge_index, data.batch)
-                recon_loss_node = mse_loss(X_sample, data.x)
-                recon_loss = recon_loss_adj + recon_loss_node
+                #recon_loss_node = mse_loss(X_sample, data.x)
+                recon_loss = recon_loss_adj 
                 recon_loss_all += recon_loss.item()
 
                 recon_loss.backward()
