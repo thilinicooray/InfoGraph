@@ -552,7 +552,7 @@ if __name__ == '__main__':
             print('Logistic regression started!')
 
             for round in range(300):
-                log = SimpleClassifier(32, args.hidden_dim, 121, 0.5)
+                log = SimpleClassifier(args.hidden_dim, args.hidden_dim, 121, 0.5)
                 opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0.0)
                 log.double().cuda()
                 log.train()
@@ -562,12 +562,9 @@ if __name__ == '__main__':
                     data = data.to(device)
 
                     with torch.no_grad():
-                        z_sample, z_class = model.encoder(data.x, data.edge_index, data.batch)
-                        grouped_class = accumulate_group_rep(
-                            z_class, data.batch
-                        )
-                        X_sample = model.decoder(z_sample, grouped_class)
-                    logits = log(X_sample)
+                        z_sample, z_class, entangled_rep = model.encoder(data.x, data.edge_index, data.batch)
+
+                    logits = log(entangled_rep)
                     loss = criterion(logits, data.y)
 
                     loss.backward()
@@ -580,12 +577,9 @@ if __name__ == '__main__':
                 with torch.no_grad():
                     for data in val_dataloader:
                         data = data.to(device)
-                        z_sample, z_class = model.encoder(data.x, data.edge_index, data.batch)
-                        grouped_class = accumulate_group_rep(
-                            z_class, data.batch
-                        )
-                        X_sample = model.decoder(z_sample, grouped_class)
-                        pred = log(X_sample) > 0.5
+                        z_sample, z_class, entangled_rep = model.encoder(data.x, data.edge_index, data.batch)
+
+                        pred = log(entangled_rep) > 0.5
 
                         pred_list.append(pred.cpu().numpy())
                         y_list.append(data.y.cpu().numpy())
