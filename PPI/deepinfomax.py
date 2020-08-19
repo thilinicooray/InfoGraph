@@ -347,9 +347,9 @@ if __name__ == '__main__':
 
         #dataset = TUDataset(path, name=DS, pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=88)).shuffle()
 
-        train_dataset = PPI(path, split='train', pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=100)).shuffle()
-        val_dataset = PPI(path, split='val', pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=100))
-        test_dataset = PPI(path, split='train', pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=100))
+        train_dataset = PPI(path, split='train', pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=1000)).shuffle()
+        val_dataset = PPI(path, split='val', pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=1000))
+        test_dataset = PPI(path, split='train', pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=1000))
 
 
 
