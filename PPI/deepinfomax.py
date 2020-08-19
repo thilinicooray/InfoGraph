@@ -547,6 +547,7 @@ if __name__ == '__main__':
             best_round = 0
 
             criterion = nn.BCEWithLogitsLoss()
+            print('Logistic regression started!')
 
             for round in range(50):
                 log = SimpleClassifier(args.hidden_dim, 128, 121, 0.5)
