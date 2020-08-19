@@ -315,7 +315,7 @@ if __name__ == '__main__':
 
         losses = {'recon':[], 'node_kl':[], 'class_kl': []}
 
-        log_interval = 1
+        log_interval = 10
         #batch_size = 128
         batch_size = args.batch_size
         lr = args.lr
