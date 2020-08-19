@@ -272,13 +272,18 @@ def test(train_z, train_y, val_z, val_y,test_z, test_y,  solver='lbfgs',
     task."""
 
     from sklearn.metrics import f1_score
+    from sklearn.multioutput import MultiOutputClassifier
 
-    clf = LogisticRegression(solver=solver, multi_class=multi_class, *args,
-                             **kwargs).fit(train_z,
-                                           train_y)
+    log_reg = LogisticRegression(solver=solver, multi_class=multi_class, *args,
+                             **kwargs)
+    clf = MultiOutputClassifier(log_reg).fit(train_z,
+                                             train_y)
+
 
 
     predict_val = clf.predict(val_z)
+
+    print('pred val ', predict_val, val_y)
 
     micro_f1_val = f1_score(val_y, predict_val, average='micro')
 
