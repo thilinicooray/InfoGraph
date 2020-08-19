@@ -232,7 +232,7 @@ class GcnInfomax(nn.Module):
                               self.edge_recon(z, neg_edge_index) +
                               EPS).mean()
 
-        return norm*(pos_loss + neg_loss)
+        return norm*(pos_loss*pos_weight + neg_loss)
 
         #loss = F.binary_cross_entropy_with_logits(rec, org_adj)
 
@@ -424,7 +424,7 @@ if __name__ == '__main__':
                 X_sample = model.decoder(z_sample, grouped_class) #decode to X reconstruction
                 recon_loss_adj = model.recon_loss1(X_sample, data.edge_index, data.batch)
                 #recon_loss_node = mse_loss(X_sample, data.x)
-                recon_loss = recon_loss_adj 
+                recon_loss = recon_loss_adj
                 recon_loss_all += recon_loss.item()
 
                 recon_loss.backward()
