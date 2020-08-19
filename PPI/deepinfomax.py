@@ -261,7 +261,7 @@ class GcnInfomax(nn.Module):
         return ret, y
 
 def test(train_z, train_y, val_z, val_y,test_z, test_y,  solver='lbfgs',
-         multi_class='multinomial', *args, **kwargs):
+         multi_class='ovr', *args, **kwargs):
     r"""Evaluates latent space quality via a logistic regression downstream
     task."""
 
@@ -406,7 +406,7 @@ if __name__ == '__main__':
 
                 #encode to z
                 X_sample = model.decoder(z_sample, grouped_class) #decode to X reconstruction
-                recon_loss = model.recon_loss1(X_sample, data.edge_index, data.batch)
+                recon_loss = 1e-7*model.recon_loss1(X_sample, data.edge_index, data.batch)
                 recon_loss_all += recon_loss.item()
 
                 recon_loss.backward()
