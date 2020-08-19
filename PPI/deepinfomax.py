@@ -11,6 +11,7 @@ import os
 
 from sklearn.metrics import f1_score
 from sklearn.multioutput import MultiOutputClassifier
+from sklearn import preprocessing
 
 import torch_geometric
 from torch_geometric.datasets import PPI
@@ -267,16 +268,20 @@ def test(train_z, train_y, val_z, val_y,test_z, test_y,  solver='lbfgs',
     log_reg = LogisticRegression(solver=solver, multi_class=multi_class)
     clf = MultiOutputClassifier(log_reg)
 
+    scaler = preprocessing.StandardScaler().fit(train_z)
 
-    clf.fit(train_z,train_y)
+    updated = scaler.transform(train_z)
 
-    predict_val = clf.predict(val_z)
+
+    clf.fit(updated,train_y)
+
+    predict_val = clf.predict(scaler.transform(val_z))
 
     print('pred val ', predict_val, val_y)
 
     micro_f1_val = f1_score(val_y, predict_val, average='micro')
 
-    predict_test = clf.predict(test_z)
+    predict_test = clf.predict(scaler.transform(test_z))
 
     micro_f1_test = f1_score(test_y, predict_test, average='micro')
 
