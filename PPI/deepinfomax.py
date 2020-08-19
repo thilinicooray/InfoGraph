@@ -250,17 +250,10 @@ class GcnInfomax(nn.Module):
 
 
                 #print('eval train', x.type())
-                __, class_mu = self.encoder(x, edge_index, batch)
-
-                grouped_mu = accumulate_group_rep(
-                    class_mu.data,  batch
-                )
+                node_mu, _ = self.encoder(x, edge_index, batch)
 
 
-
-                class_emb = global_mean_pool(grouped_mu, batch)
-
-                ret.append(class_emb.cpu().numpy())
+                ret.append(node_mu.cpu().numpy())
                 y.append(data.y.cpu().numpy())
         ret = np.concatenate(ret, 0)
         y = np.concatenate(y, 0)
@@ -274,7 +267,6 @@ def test(train_z, train_y, val_z, val_y,test_z, test_y,  solver='lbfgs',
     log_reg = LogisticRegression(solver=solver, multi_class=multi_class)
     clf = MultiOutputClassifier(log_reg)
 
-    print('train ', train_z.shape, train_y.shape)
 
     clf.fit(train_z,train_y)
 
