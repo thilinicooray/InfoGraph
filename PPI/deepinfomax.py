@@ -285,6 +285,22 @@ def test(train_z, train_y, val_z, val_y,test_z, test_y,  solver='lbfgs',
 
     return micro_f1_val, micro_f1_test
 
+
+class SimpleClassifier(nn.Module):
+    def __init__(self, in_dim, hid_dim, out_dim, dropout):
+        super(SimpleClassifier, self).__init__()
+        layers = [
+            nn.Linear(in_dim, hid_dim),
+            nn.ReLU(),
+            nn.Dropout(dropout, inplace=True),
+            nn.Linear(hid_dim, out_dim)
+        ]
+        self.main = nn.Sequential(*layers)
+
+    def forward(self, x):
+        logits = self.main(x)
+        return torch.sigmoid(logits)
+
 if __name__ == '__main__':
 
     args = arg_parse()
@@ -506,7 +522,7 @@ if __name__ == '__main__':
             #print('\n\n', losses, '\n')
 
             #used during finetune phase
-            if epoch % log_interval == 0:
+            '''if epoch % log_interval == 0:
                 model.eval()
                 #first train logistic regressor
                 #put it eval mode
@@ -521,10 +537,59 @@ if __name__ == '__main__':
                 test_emb, test_y = model.get_embeddings(test_dataloader)
                 val_f1, test_f1 = test(train_emb, train_y, val_emb, val_y,test_emb, test_y)
 
-                print('val and test micro F1', val_f1, test_f1)
+                print('val and test micro F1', val_f1, test_f1)'''
 
 
-        '''model.eval()
+        model.eval()
+
+        accs = []
+
+        criterion = nn.BCEWithLogitsLoss()
+
+        for _ in range(50):
+            log = SimpleClassifier(args.hidden_dim, 128, 121, 0.5)
+            opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0.0)
+            log.cuda()
+            log.train()
+            for _ in range(50):
+                for data in train_dataloader:
+
+                    opt.zero_grad()
+                    data = data.to(device)
+
+                    with torch.no_grad():
+                        z_sample, _ = model.encoder(data.x, data.edge_index, data.batch)
+                    logits = log(z_sample)
+                    loss = criterion(logits, data.y)
+
+                    loss.backward()
+                    opt.step()
+
+            log.eval()
+
+            pred_list = []
+            y_list = []
+            with torch.no_grad():
+                for data in val_dataloader:
+                    data = data.to(device)
+                    z_sample, _ = model.encoder(data.x, data.edge_index, data.batch)
+                    pred = log(z_sample) > 0.5
+
+                    pred_list.append(pred.cpu().numpy())
+                    y_list.append(data.y.cpu().numpy())
+            ret = np.concatenate(pred_list, 0)
+            y = np.concatenate(y_list, 0)
+            mi_f1 = micro_f1_val = f1_score(y, ret, average='micro')
+
+            print('micro f1 ', mi_f1)
+
+            accs.append(mi_f1)
+
+        accs = torch.stack(accs)
+        print(accs.mean().item(), accs.std().item())
+
+
+
     
         #for i in range(5):
         emb, y = model.get_embeddings(dataloader)
@@ -533,7 +598,7 @@ if __name__ == '__main__':
         accuracies['svc'].append(res[1])
         accuracies['linearsvc'].append(res[2])
         accuracies['randomforest'].append(res[3])
-        print(accuracies)'''
+        print(accuracies)
 
         #draw_plot(y, emb, 'imdb_b_normal.png')
 
