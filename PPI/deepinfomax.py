@@ -549,7 +549,7 @@ if __name__ == '__main__':
         for _ in range(50):
             log = SimpleClassifier(args.hidden_dim, 128, 121, 0.5)
             opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0.0)
-            log.cuda()
+            log.double().cuda()
             log.train()
             for _ in range(50):
                 for data in train_dataloader:
