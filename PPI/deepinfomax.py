@@ -261,7 +261,7 @@ class GcnInfomax(nn.Module):
         return ret, y
 
 def test(train_z, train_y, val_z, val_y,test_z, test_y,  solver='lbfgs',
-         multi_class='auto', *args, **kwargs):
+         multi_class='multinomial', *args, **kwargs):
     r"""Evaluates latent space quality via a logistic regression downstream
     task."""
 
