@@ -299,7 +299,7 @@ class SimpleClassifier(nn.Module):
 
     def forward(self, x):
         logits = self.main(x)
-        return torch.sigmoid(logits)
+        return logits
 
 if __name__ == '__main__':
 
