@@ -564,7 +564,7 @@ if __name__ == '__main__':
                     with torch.no_grad():
                         z_sample, z_class, entangled_rep = model.encoder(data.x, data.edge_index, data.batch)
 
-                    logits = log(entangled_rep)
+                    logits = log(entangled_rep + z_sample)
                     loss = criterion(logits, data.y)
 
                     loss.backward()
@@ -579,7 +579,7 @@ if __name__ == '__main__':
                         data = data.to(device)
                         z_sample, z_class, entangled_rep = model.encoder(data.x, data.edge_index, data.batch)
 
-                        pred = log(entangled_rep) >= 0.5
+                        pred = log(entangled_rep + z_sample) >= 0.5
 
                         pred_list.append(pred.cpu().numpy())
                         y_list.append(data.y.cpu().numpy())
