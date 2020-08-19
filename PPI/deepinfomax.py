@@ -271,12 +271,10 @@ def test(train_z, train_y, val_z, val_y,test_z, test_y,  solver='lbfgs',
     r"""Evaluates latent space quality via a logistic regression downstream
     task."""
 
-    log_reg = LogisticRegression(solver=solver, multi_class=multi_class, *args,
-                             **kwargs)
-    clf = MultiOutputClassifier(log_reg).fit(train_z,
-                                             train_y)
+    log_reg = LogisticRegression(solver=solver, multi_class=multi_class)
+    clf = MultiOutputClassifier(log_reg)
 
-
+    clf.fit(train_z,train_y)
 
     predict_val = clf.predict(val_z)
 
