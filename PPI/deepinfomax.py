@@ -552,7 +552,7 @@ if __name__ == '__main__':
             print('Logistic regression started!')
 
             for round in range(300):
-                log = SimpleClassifier(args.hidden_dim, args.hidden_dim, 121, 0.5)
+                log = SimpleClassifier(args.hidden_dim*2, args.hidden_dim, 121, 0.5)
                 opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0.0)
                 log.double().cuda()
                 log.train()
@@ -564,7 +564,7 @@ if __name__ == '__main__':
                     with torch.no_grad():
                         z_sample, z_class, entangled_rep = model.encoder(data.x, data.edge_index, data.batch)
 
-                    logits = log(entangled_rep + z_sample)
+                    logits = log(torch.cat([entangled_rep,  z_sample],-1))
                     loss = criterion(logits, data.y)
 
                     loss.backward()
@@ -579,7 +579,7 @@ if __name__ == '__main__':
                         data = data.to(device)
                         z_sample, z_class, entangled_rep = model.encoder(data.x, data.edge_index, data.batch)
 
-                        pred = log(entangled_rep + z_sample) >= 0.5
+                        pred = log(torch.cat([entangled_rep,  z_sample],-1)) >= 0.5
 
                         pred_list.append(pred.cpu().numpy())
                         y_list.append(data.y.cpu().numpy())
