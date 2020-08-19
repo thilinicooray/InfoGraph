@@ -265,7 +265,7 @@ def test(train_z, train_y, val_z, val_y,test_z, test_y,  solver='lbfgs',
     r"""Evaluates latent space quality via a logistic regression downstream
     task."""
 
-    log_reg = LogisticRegression(solver=solver, multi_class=multi_class)
+    log_reg = LogisticRegression(solver=solver, multi_class=multi_class, max_iter=15000)
     clf = MultiOutputClassifier(log_reg)
 
     scaler = preprocessing.StandardScaler().fit(train_z)
