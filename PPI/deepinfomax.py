@@ -57,7 +57,7 @@ class GcnInfomax(nn.Module):
         self.prior = args.prior
 
         self.encoder = Encoder(dataset_num_features, hidden_dim, num_gc_layers)
-        self.decoder = Decoder(hidden_dim, hidden_dim, 10)
+        self.decoder = Decoder(hidden_dim, hidden_dim, 32)
         self.node_discriminator = D_net_gauss(hidden_dim, hidden_dim)
         self.class_discriminator = D_net_gauss(hidden_dim, hidden_dim)
 
@@ -552,7 +552,7 @@ if __name__ == '__main__':
             print('Logistic regression started!')
 
             for round in range(300):
-                log = SimpleClassifier(args.hidden_dim, args.hidden_dim, 121, 0.5)
+                log = SimpleClassifier(32, args.hidden_dim, 121, 0.5)
                 opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0.0)
                 log.double().cuda()
                 log.train()
@@ -562,8 +562,12 @@ if __name__ == '__main__':
                     data = data.to(device)
 
                     with torch.no_grad():
-                        z_sample, _ = model.encoder(data.x, data.edge_index, data.batch)
-                    logits = log(z_sample)
+                        z_sample, z_class = model.encoder(data.x, data.edge_index, data.batch)
+                        grouped_class = accumulate_group_rep(
+                            z_class, data.batch
+                        )
+                        X_sample = model.decoder(z_sample, grouped_class)
+                    logits = log(X_sample)
                     loss = criterion(logits, data.y)
 
                     loss.backward()
@@ -576,8 +580,12 @@ if __name__ == '__main__':
                 with torch.no_grad():
                     for data in val_dataloader:
                         data = data.to(device)
-                        z_sample, _ = model.encoder(data.x, data.edge_index, data.batch)
-                        pred = log(z_sample) > 0.5
+                        z_sample, z_class = model.encoder(data.x, data.edge_index, data.batch)
+                        grouped_class = accumulate_group_rep(
+                            z_class, data.batch
+                        )
+                        X_sample = model.decoder(z_sample, grouped_class)
+                        pred = log(X_sample) > 0.5
 
                         pred_list.append(pred.cpu().numpy())
                         y_list.append(data.y.cpu().numpy())
