@@ -277,8 +277,6 @@ def test(train_z, train_y, val_z, val_y,test_z, test_y,  solver='lbfgs',
 
     predict_val = clf.predict(scaler.transform(val_z))
 
-    print('pred val ', predict_val, val_y)
-
     micro_f1_val = f1_score(val_y, predict_val, average='micro')
 
     predict_test = clf.predict(scaler.transform(test_z))
