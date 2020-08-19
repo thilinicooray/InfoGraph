@@ -9,6 +9,9 @@ import random
 import os
 # from core.encoders import *
 
+from sklearn.metrics import f1_score
+from sklearn.multioutput import MultiOutputClassifier
+
 import torch_geometric
 from torch_geometric.datasets import PPI
 from torch_geometric.data import DataLoader
@@ -267,9 +270,6 @@ def test(train_z, train_y, val_z, val_y,test_z, test_y,  solver='lbfgs',
          multi_class='auto', *args, **kwargs):
     r"""Evaluates latent space quality via a logistic regression downstream
     task."""
-
-    from sklearn.metrics import f1_score
-    from sklearn.multioutput import MultiOutputClassifier
 
     log_reg = LogisticRegression(solver=solver, multi_class=multi_class, *args,
                              **kwargs)
