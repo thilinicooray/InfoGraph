@@ -704,9 +704,11 @@ if __name__ == '__main__':
 
                     logits = log(z_sample)
 
-                    tot = F.softmax(torch.sum(data_new.y, 0))
+                    tot = torch.sum(data_new.y, 0)
 
-                    print('tot', tot, tot.size(), data_new.y.size())
+                    val = tot / torch.sum(tot)
+
+                    print('tot', val, val.size(), data_new.y.size())
 
                     pos_weight = torch.ones((data_new.y.size(1))).cuda()- F.softmax (torch.sum(data_new.y, 0),0)
 
