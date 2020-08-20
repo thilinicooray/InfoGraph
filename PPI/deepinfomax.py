@@ -703,7 +703,11 @@ if __name__ == '__main__':
                     z_sample, z_class, entangled_rep = model.encoder(data_new.x, data_new.edge_index, data_new.batch)
 
                     logits = log(z_sample)
-                    loss = criterion(logits, data_new.y)
+
+                    pos_weight = torch.ones((data_new.y.size(1))).cuda()- F.softmax (torch.sum(data_new.y, 0),0)
+
+                    print('pos weight', pos_weight)
+                    loss = criterion(logits, data_new.y, pos_weight=pos_weight)
 
                     loss.backward()
                     opt.step()
