@@ -265,7 +265,7 @@ class GcnInfomax(nn.Module):
 
 
     # Borrowed from https://github.com/fanyun-sun/InfoGraph
-    def pos_neg_loss_(self, pos_adj, neg_adj, batch, measure='JSD'):
+    def pos_neg_loss_(self, pos_adj, neg_adj, pos_weight, batch, measure='JSD'):
         '''
         Args:
             l: Local feature map.
@@ -327,7 +327,7 @@ class GcnInfomax(nn.Module):
 
         neg_recon_adj = self.edge_recon(z, neg_edge_index)
 
-        loss = self.pos_neg_loss_(recon_adj, neg_recon_adj, batch)
+        loss = norm*self.pos_neg_loss_(recon_adj, neg_recon_adj, pos_weight, batch)
 
         return loss
 
@@ -397,6 +397,15 @@ class SimpleClassifier(nn.Module):
             nn.Linear(hid_dim, out_dim)
         ]
         self.main = nn.Sequential(*layers)
+
+        for m in self.modules():
+            self.weights_init(m)
+
+    def weights_init(self, m):
+        if isinstance(m, nn.Linear):
+            torch.nn.init.xavier_uniform_(m.weight.data)
+            if m.bias is not None:
+                m.bias.data.fill_(0.0)
 
     def forward(self, x):
         logits = self.main(x)
