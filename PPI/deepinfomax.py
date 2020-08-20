@@ -704,7 +704,7 @@ if __name__ == '__main__':
 
                     logits = log(z_sample)
 
-                    tot = torch.sum(data_new.y, 0)
+                    tot = F.softmax(torch.sum(data_new.y, 0))
 
                     print('tot', tot, tot.size(), data_new.y.size())
 
