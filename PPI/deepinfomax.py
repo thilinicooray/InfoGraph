@@ -652,7 +652,7 @@ if __name__ == '__main__':
                 print('val and test micro F1', val_f1, test_f1)'''
 
 
-            '''model.eval()
+            model.eval()
 
             accs = []
             best_f1 = 0
@@ -702,13 +702,13 @@ if __name__ == '__main__':
                     best_f1 = mi_f1
                     best_round = round
 
-            print('best f1 obtained in round:', best_f1, best_round)'''
+            print('best f1 obtained in round:', best_f1, best_round)
 
         #accs = torch.stack(accs)
         #print(accs.mean().item(), accs.std().item())
 
 
-        model.eval()
+        '''model.eval()
 
         accs = []
         best_f1 = 0
@@ -760,7 +760,7 @@ if __name__ == '__main__':
                 best_f1 = mi_f1
                 best_round = round
 
-        print('best f1 obtained in round:', best_f1, best_round)
+        print('best f1 obtained in round:', best_f1, best_round)'''
 
 
 
@@ -769,6 +769,6 @@ if __name__ == '__main__':
 
         #draw_plot(y, emb, 'imdb_b_normal.png')
 
-        with open('unsupervised.log', 'a+') as f:
+        '''with open('unsupervised.log', 'a+') as f:
             s = json.dumps(accuracies)
-            f.write('{},{},{},{},{},{}\n'.format(args.DS, args.num_gc_layers, epochs, log_interval, lr, s))
+            f.write('{},{},{},{},{},{}\n'.format(args.DS, args.num_gc_layers, epochs, log_interval, lr, s))'''
