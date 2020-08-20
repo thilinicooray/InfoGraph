@@ -679,7 +679,7 @@ if __name__ == '__main__':
                 print('val and test micro F1', val_f1, test_f1)'''
 
 
-            '''model.eval()
+            model.eval()
 
             accs = []
             best_f1 = 0
@@ -729,13 +729,13 @@ if __name__ == '__main__':
                     best_f1 = mi_f1
                     best_round = round
 
-            print('best f1 obtained in round:', best_f1, best_round)'''
+            print('best f1 obtained in round:', best_f1, best_round)
 
         #accs = torch.stack(accs)
         #print(accs.mean().item(), accs.std().item())
 
 
-        model.eval()
+        '''model.eval()
 
         accs = []
         best_f1 = 0
@@ -787,7 +787,7 @@ if __name__ == '__main__':
                 best_f1 = mi_f1
                 best_round = round
 
-        print('best f1 obtained in round:', best_f1, best_round)
+        print('best f1 obtained in round:', best_f1, best_round)'''
 
 
 
