@@ -4,7 +4,7 @@ from collections import OrderedDict
 
 import torch
 import torch.nn.functional as F
-from torch.nn import Sequential, Linear, ReLU, Tanh
+from torch.nn import Sequential, Linear, ReLU, Tanh, Sigmoid
 from torch_geometric.datasets import TUDataset
 from torch_geometric.data import DataLoader
 from torch_geometric.nn import GINConv, global_add_pool
@@ -92,7 +92,7 @@ class Decoder(torch.nn.Module):
             ('relu_1', ReLU()),
 
             ('linear_2', torch.nn.Linear(in_features=node_dim, out_features=feat_size, bias=True)),
-            ('relu_final', ReLU())
+            ('relu_final', Sigmoid())
         ]))
 
     def forward(self, node_latent_space, class_latent_space):
