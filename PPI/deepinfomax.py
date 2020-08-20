@@ -706,9 +706,9 @@ if __name__ == '__main__':
 
                     tot = torch.sum(data_new.y, 0)
 
-                    val = (torch.sum(tot)- tot) / torch.sum(tot)
+                    val = (torch.sum(tot)- tot)
 
-                    pos_weight = val
+                    pos_weight = val/ torch.sum(val)
 
                     print('pos weight', pos_weight)
 
