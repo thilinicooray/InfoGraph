@@ -652,7 +652,7 @@ if __name__ == '__main__':
                 print('val and test micro F1', val_f1, test_f1)'''
 
 
-            model.eval()
+            '''model.eval()
 
             accs = []
             best_f1 = 0
@@ -702,10 +702,65 @@ if __name__ == '__main__':
                     best_f1 = mi_f1
                     best_round = round
 
-            print('best f1 obtained in round:', best_f1, best_round)
+            print('best f1 obtained in round:', best_f1, best_round)'''
 
         #accs = torch.stack(accs)
         #print(accs.mean().item(), accs.std().item())
+
+
+        model.eval()
+
+        accs = []
+        best_f1 = 0
+        best_round = 0
+
+        criterion = nn.BCEWithLogitsLoss()
+        print('Logistic regression started!')
+
+        log = SimpleClassifier(args.hidden_dim, args.hidden_dim, 121, 0.5)
+        opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0.0)
+        log.double().cuda()
+
+        for round in range(300):
+
+            log.train()
+            for data_new in train_dataloader:
+
+                opt.zero_grad()
+                data_new = data_new.to(device)
+
+                z_sample, z_class, entangled_rep = model.encoder(data_new.x, data_new.edge_index, data_new.batch)
+
+                logits = log(z_sample)
+                loss = criterion(logits, data_new.y)
+
+                loss.backward()
+                opt.step()
+
+            log.eval()
+
+            pred_list = []
+            y_list = []
+            with torch.no_grad():
+                for data_val in val_dataloader:
+                    data_val = data_val.to(device)
+                    z_sample, z_class, entangled_rep = model.encoder(data_val.x, data_val.edge_index, data_val.batch)
+
+                    pred = log(z_sample) >= 0.5
+
+                    pred_list.append(pred.cpu().numpy())
+                    y_list.append(data_val.y.cpu().numpy())
+            ret = np.concatenate(pred_list, 0)
+            y = np.concatenate(y_list, 0)
+            mi_f1  = f1_score(y, ret, average='micro')
+
+            print('current f1 ', round, mi_f1)
+
+            if mi_f1 > best_f1:
+                best_f1 = mi_f1
+                best_round = round
+
+        print('best f1 obtained in round:', best_f1, best_round)
 
 
 
