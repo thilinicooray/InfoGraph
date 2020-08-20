@@ -685,7 +685,7 @@ if __name__ == '__main__':
             best_f1 = 0
             best_round = 0
 
-            criterion = nn.BCEWithLogitsLoss()
+
             print('Logistic regression started!')
 
             log = SimpleClassifier(args.hidden_dim, args.hidden_dim, 121, 0.5)
@@ -704,10 +704,16 @@ if __name__ == '__main__':
 
                     logits = log(z_sample)
 
+                    tot = torch.sum(data_new.y, 0)
+
+                    print('tot', tot, tot.size(), data_new.y.size())
+
                     pos_weight = torch.ones((data_new.y.size(1))).cuda()- F.softmax (torch.sum(data_new.y, 0),0)
 
                     print('pos weight', pos_weight)
-                    loss = criterion(logits, data_new.y, pos_weight=pos_weight)
+
+                    criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
+                    loss = criterion(logits, data_new.y )
 
                     loss.backward()
                     opt.step()
