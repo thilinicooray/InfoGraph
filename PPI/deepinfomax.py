@@ -228,12 +228,12 @@ class GcnInfomax(nn.Module):
         pos_edge_index, _ = remove_self_loops(edge_index)
         pos_edge_index, _ = add_self_loops(pos_edge_index)
 
-        neg_edge_index = negative_sampling(pos_edge_index, z.size(0)) #random thingggg
+        neg_edge_index = negative_sampling(pos_edge_index, z.size(0), num_neg_samples=pos_edge_index.size(1)*2) #random thingggg
         neg_loss = -torch.log(1 -
                               self.edge_recon(z, neg_edge_index) +
                               EPS).sum()
 
-        neg_loss = neg_loss / (edge_index.size(1))
+        neg_loss = neg_loss / (pos_edge_index.size(1)*2)
 
         return norm*(pos_loss*pos_weight + neg_loss)
 
