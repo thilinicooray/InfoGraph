@@ -745,7 +745,7 @@ if __name__ == '__main__':
         print('Logistic regression started!')
 
         log = SimpleClassifier(args.hidden_dim, args.hidden_dim, 121, 0.5)
-        opt = torch.optim.Adam(log.parameters(), lr=1e-1, weight_decay=0.0)
+        opt = torch.optim.Adam(log.parameters(), lr=5e-2, weight_decay=0.0)
         log.double().cuda()
 
         for round in range(300):
