@@ -551,10 +551,12 @@ if __name__ == '__main__':
             criterion = nn.BCEWithLogitsLoss()
             print('Logistic regression started!')
 
+            log = SimpleClassifier(args.hidden_dim*2, args.hidden_dim, 121, 0.5)
+            opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0.0)
+            log.double().cuda()
+
             for round in range(300):
-                log = SimpleClassifier(args.hidden_dim*2, args.hidden_dim, 121, 0.5)
-                opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0.0)
-                log.double().cuda()
+
                 log.train()
                 for data in train_dataloader:
 
