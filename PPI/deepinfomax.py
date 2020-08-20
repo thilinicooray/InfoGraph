@@ -265,7 +265,7 @@ class GcnInfomax(nn.Module):
 
 
     # Borrowed from https://github.com/fanyun-sun/InfoGraph
-    def pos_neg_loss_(self, pos_adj, neg_adj, pos_weight, batch, measure='JSD'):
+    def pos_neg_loss_(self, pos_adj, neg_adj, pos_count, neg_count, batch, measure='JSD'):
         '''
         Args:
             l: Local feature map.
@@ -277,9 +277,32 @@ class GcnInfomax(nn.Module):
         '''
 
 
-        E_pos = self.get_positive_expectation(pos_adj, measure, average=False).mean()
-        E_neg = self.get_negative_expectation(neg_adj, measure, average=False).mean()
+        E_pos = (self.get_positive_expectation(pos_adj, measure, average=False).sum())/pos_count
+        E_neg = (self.get_negative_expectation(neg_adj, measure, average=False).sum())/neg_count
         return E_neg - E_pos
+
+    def get_negative_edges(self, edge_idx, node_count):
+
+        print('negative edge calculation started!')
+
+        negative_edges = [[],[]]
+
+        full_adj = torch.ones((node_count, node_count)).cuda()
+
+        for i in edge_idx[0]:
+            for j in edge_idx[1]:
+                full_adj[i][j] = 0
+
+        for k in range(node_count):
+            for l in range(node_count):
+                if full_adj[k][l]:
+                    negative_edges[0].append(k)
+                    negative_edges[1].append(l)
+
+        print('negative edge calculation done!')
+
+        return torch.stack(negative_edges, 0)
+
 
 
 
@@ -323,11 +346,13 @@ class GcnInfomax(nn.Module):
         pos_edge_index, _ = remove_self_loops(edge_index)
         pos_edge_index, _ = add_self_loops(pos_edge_index)
 
-        neg_edge_index = negative_sampling(pos_edge_index, z.size(0), num_neg_samples=pos_edge_index.size(1))
+        #neg_edge_index = negative_sampling(pos_edge_index, z.size(0), num_neg_samples=pos_edge_index.size(1))
+
+        neg_edge_index = self.get_negative_edges(edge_index, z.size(0))
 
         neg_recon_adj = self.edge_recon(z, neg_edge_index)
 
-        loss = norm*self.pos_neg_loss_(recon_adj, neg_recon_adj, pos_weight, batch)
+        loss = norm*self.pos_neg_loss_(recon_adj, neg_recon_adj, edge_index.size(1), neg_edge_index.size(1), batch)
 
         return loss
 
