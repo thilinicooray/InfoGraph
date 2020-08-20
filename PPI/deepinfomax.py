@@ -584,7 +584,7 @@ if __name__ == '__main__':
                         pred = log(z_sample) >= 0.5
 
                         pred_list.append(pred.cpu().numpy())
-                        y_list.append(data.y.cpu().numpy())
+                        y_list.append(data_val.y.cpu().numpy())
                 ret = np.concatenate(pred_list, 0)
                 y = np.concatenate(y_list, 0)
                 mi_f1  = f1_score(y, ret, average='micro')
