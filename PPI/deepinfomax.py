@@ -197,6 +197,91 @@ class GcnInfomax(nn.Module):
 
         return loss
 
+    def get_positive_expectation(self, p_samples, measure, average=True):
+        """Computes the positive part of a divergence / difference.
+        Args:
+            p_samples: Positive samples.
+            measure: Measure to compute for.
+            average: Average the result over samples.
+        Returns:
+            torch.Tensor
+        """
+        log_2 = np.log(2.)
+
+        if measure == 'GAN':
+            Ep = - F.softplus(-p_samples)
+        elif measure == 'JSD':
+            Ep = log_2 - F.softplus(- p_samples)
+        elif measure == 'X2':
+            Ep = p_samples ** 2
+        elif measure == 'KL':
+            Ep = p_samples + 1.
+        elif measure == 'RKL':
+            Ep = -torch.exp(-p_samples)
+        elif measure == 'DV':
+            Ep = p_samples
+        elif measure == 'H2':
+            Ep = 1. - torch.exp(-p_samples)
+        elif measure == 'W1':
+            Ep = p_samples
+
+        if average:
+            return Ep.mean()
+        else:
+            return Ep
+
+
+    # Borrowed from https://github.com/fanyun-sun/InfoGraph
+    def get_negative_expectation(self, q_samples, measure, average=True):
+        """Computes the negative part of a divergence / difference.
+        Args:
+            q_samples: Negative samples.
+            measure: Measure to compute for.
+            average: Average the result over samples.
+        Returns:
+            torch.Tensor
+        """
+        log_2 = np.log(2.)
+
+        if measure == 'GAN':
+            Eq = F.softplus(-q_samples) + q_samples
+        elif measure == 'JSD':
+            Eq = F.softplus(-q_samples) + q_samples - log_2
+        elif measure == 'X2':
+            Eq = -0.5 * ((torch.sqrt(q_samples ** 2) + 1.) ** 2)
+        elif measure == 'KL':
+            Eq = torch.exp(q_samples)
+        elif measure == 'RKL':
+            Eq = q_samples - 1.
+        elif measure == 'H2':
+            Eq = torch.exp(q_samples) - 1.
+        elif measure == 'W1':
+            Eq = q_samples
+
+        if average:
+            return Eq.mean()
+        else:
+            return Eq
+
+
+    # Borrowed from https://github.com/fanyun-sun/InfoGraph
+    def pos_neg_loss_(self, pos_adj, neg_adj, batch, measure='JSD'):
+        '''
+        Args:
+            l: Local feature map.
+            g: Global features.
+            measure: Type of f-divergence. For use with mode `fd`
+            mode: Loss mode. Fenchel-dual `fd`, NCE `nce`, or Donsker-Vadadhan `dv`.
+        Returns:
+            torch.Tensor: Loss.
+        '''
+
+
+        E_pos = self.get_positive_expectation(pos_adj, measure, average=False).mean()
+        E_neg = self.get_negative_expectation(neg_adj, measure, average=False).mean()
+        return E_neg - E_pos
+
+
 
     def recon_loss1(self, z, edge_index, batch, num_graphs):
 
@@ -219,7 +304,7 @@ class GcnInfomax(nn.Module):
         recon_adj = self.edge_recon(z, edge_index)
 
 
-        pos_loss = -torch.log(
+        '''pos_loss = -torch.log(
             recon_adj + EPS).sum()
 
         pos_loss = pos_loss / edge_index.size(1)
@@ -228,14 +313,27 @@ class GcnInfomax(nn.Module):
         pos_edge_index, _ = remove_self_loops(edge_index)
         pos_edge_index, _ = add_self_loops(pos_edge_index)
 
-        neg_edge_index = negative_sampling(pos_edge_index, z.size(0), num_neg_samples=pos_edge_index.size(1)*2) #random thingggg
+        neg_edge_index = negative_sampling(pos_edge_index, z.size(0), num_neg_samples=pos_edge_index.size(1)) #random thingggg
         neg_loss = -torch.log(1 -
                               self.edge_recon(z, neg_edge_index) +
                               EPS).sum()
 
-        neg_loss = neg_loss / (pos_edge_index.size(1)*2)
+        neg_loss = neg_loss / (pos_edge_index.size(1))'''
 
-        return norm*(pos_loss*pos_weight + neg_loss)
+        pos_edge_index, _ = remove_self_loops(edge_index)
+        pos_edge_index, _ = add_self_loops(pos_edge_index)
+
+        neg_edge_index = negative_sampling(pos_edge_index, z.size(0), num_neg_samples=pos_edge_index.size(1))
+
+        neg_recon_adj = self.edge_recon(z, neg_edge_index)
+
+        loss = self.pos_neg_loss_(recon_adj, neg_recon_adj, batch)
+
+        return loss
+
+
+
+        #return norm*(pos_loss*pos_weight + neg_loss)
 
         #loss = F.binary_cross_entropy_with_logits(rec, org_adj)
 
