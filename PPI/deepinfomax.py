@@ -710,9 +710,7 @@ if __name__ == '__main__':
 
                     pos_weight = val
 
-                    print('pos weight', pos_weight)
-
-                    criterion = nn.BCEWithLogitsLoss()
+                    criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
                     loss = criterion(logits, data_new.y )
 
                     loss.backward()
