@@ -706,11 +706,9 @@ if __name__ == '__main__':
 
                     tot = torch.sum(data_new.y, 0)
 
-                    val = tot / torch.sum(tot)
+                    val = torch.ones((data_new.y.size(1))).cuda() - tot / torch.sum(tot)
 
-                    print('tot', val, val.size(), data_new.y.size())
-
-                    pos_weight = torch.ones((data_new.y.size(1))).cuda()- F.softmax (torch.sum(data_new.y, 0),0)
+                    pos_weight = val
 
                     print('pos weight', pos_weight)
 
