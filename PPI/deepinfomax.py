@@ -235,7 +235,7 @@ class GcnInfomax(nn.Module):
 
         neg_loss = neg_loss / (edge_index.size(1))
 
-        return norm*(pos_loss + neg_loss)
+        return norm*(pos_loss*pos_weight + neg_loss)
 
         #loss = F.binary_cross_entropy_with_logits(rec, org_adj)
 
