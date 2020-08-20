@@ -704,15 +704,15 @@ if __name__ == '__main__':
 
                     logits = log(z_sample)
 
-                    tot = torch.sum(data_new.y, 0)
+                    '''tot = torch.sum(data_new.y, 0)
 
                     val = (torch.sum(tot)- tot)
 
                     pos_weight = val/ torch.sum(val)
 
-                    print('pos weight', pos_weight)
+                    print('pos weight', pos_weight)'''
 
-                    criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
+                    criterion = nn.BCEWithLogitsLoss()
                     loss = criterion(logits, data_new.y )
 
                     loss.backward()
