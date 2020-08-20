@@ -706,7 +706,7 @@ if __name__ == '__main__':
 
                     tot = torch.sum(data_new.y, 0)
 
-                    val = torch.ones((data_new.y.size(1))).cuda() - tot / torch.sum(tot)
+                    val = (torch.sum(tot)- tot) / torch.sum(tot)
 
                     pos_weight = val
 
