@@ -212,8 +212,8 @@ class GcnInfomax(nn.Module):
         """
 
         #org_adj = to_dense_adj(edge_index, batch)
-        pos_weight = float(z.size(0) * z.size(0) - edge_index.size(0)) / edge_index.size(0)
-        norm = z.size(0) * z.size(0) / float((z.size(0) * z.size(0) - edge_index.size(0)) * 2)
+        pos_weight = float(z.size(0) * z.size(0) - edge_index.size(1)) / edge_index.size(1)
+        norm = z.size(0) * z.size(0) / float((z.size(0) * z.size(0) - edge_index.size(1)) * 2)
 
 
         recon_adj = self.edge_recon(z, edge_index)
@@ -222,18 +222,18 @@ class GcnInfomax(nn.Module):
         pos_loss = -torch.log(
             recon_adj + EPS).sum()
 
-        pos_loss = pos_loss / edge_index.size(0)
+        pos_loss = pos_loss / edge_index.size(1)
 
         # Do not include self-loops in negative samples
         pos_edge_index, _ = remove_self_loops(edge_index)
         pos_edge_index, _ = add_self_loops(pos_edge_index)
 
-        neg_edge_index = negative_sampling(pos_edge_index, z.size(0), num_neg_samples=z.size(0)*z.size(0)) #random thingggg
+        neg_edge_index = negative_sampling(pos_edge_index, z.size(0)) #random thingggg
         neg_loss = -torch.log(1 -
                               self.edge_recon(z, neg_edge_index) +
                               EPS).sum()
 
-        neg_loss = neg_loss / (edge_index.size(0) * (num_graphs - 1))
+        neg_loss = neg_loss / (edge_index.size(1) * (num_graphs - 1))
 
         return norm*(pos_loss + neg_loss)
 
