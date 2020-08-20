@@ -233,7 +233,7 @@ class GcnInfomax(nn.Module):
                               self.edge_recon(z, neg_edge_index) +
                               EPS).sum()
 
-        neg_loss = neg_loss / (edge_index.size(1) * (num_graphs - 1))
+        neg_loss = neg_loss / (edge_index.size(1))
 
         return norm*(pos_loss + neg_loss)
 
