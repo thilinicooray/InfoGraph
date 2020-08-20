@@ -568,6 +568,8 @@ if __name__ == '__main__':
                     logits = log(z_sample)
                     loss = criterion(logits, data_new.y)
 
+                    print('logreg loss', loss.item())
+
                     loss.backward()
                     opt.step()
 
