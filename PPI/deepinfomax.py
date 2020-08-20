@@ -690,7 +690,7 @@ if __name__ == '__main__':
                         data_val = data_val.to(device)
                         z_sample, z_class, entangled_rep = model.encoder(data_val.x, data_val.edge_index, data_val.batch)
 
-                        pred = log(z_sample) >= 0.5
+                        pred = torch.sigmoid(log(z_sample)) >= 0.5
 
                         pred_list.append(pred.cpu().numpy())
                         y_list.append(data_val.y.cpu().numpy())
@@ -746,7 +746,7 @@ if __name__ == '__main__':
                     data_val = data_val.to(device)
                     z_sample, z_class, entangled_rep = model.encoder(data_val.x, data_val.edge_index, data_val.batch)
 
-                    pred = log(z_sample) >= 0.5
+                    pred = torch.sigmoid(log(z_sample)) >= 0.5
 
                     pred_list.append(pred.cpu().numpy())
                     y_list.append(data_val.y.cpu().numpy())
