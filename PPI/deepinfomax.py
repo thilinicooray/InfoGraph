@@ -283,6 +283,8 @@ class GcnInfomax(nn.Module):
 
     def get_negative_edges(self, edge_idx, node_count):
 
+        #too expensive and time consuming
+
         print('negative edge calculation started!')
 
         negative_edges = [[],[]]
@@ -298,6 +300,7 @@ class GcnInfomax(nn.Module):
                 if full_adj[k][l]:
                     negative_edges[0].append(k)
                     negative_edges[1].append(l)
+
 
         print('negative edge calculation done!')
 
@@ -346,9 +349,8 @@ class GcnInfomax(nn.Module):
         pos_edge_index, _ = remove_self_loops(edge_index)
         pos_edge_index, _ = add_self_loops(pos_edge_index)
 
-        #neg_edge_index = negative_sampling(pos_edge_index, z.size(0), num_neg_samples=pos_edge_index.size(1))
+        neg_edge_index = negative_sampling(pos_edge_index, z.size(0), num_neg_samples=pos_edge_index.size(1))
 
-        neg_edge_index = self.get_negative_edges(edge_index, z.size(0))
 
         neg_recon_adj = self.edge_recon(z, neg_edge_index)
 
