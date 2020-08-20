@@ -551,23 +551,23 @@ if __name__ == '__main__':
             criterion = nn.BCEWithLogitsLoss()
             print('Logistic regression started!')
 
-            log = SimpleClassifier(args.hidden_dim*2, args.hidden_dim, 121, 0.5)
+            log = SimpleClassifier(args.hidden_dim, args.hidden_dim, 121, 0.5)
             opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0.0)
             log.double().cuda()
 
             for round in range(300):
 
                 log.train()
-                for data in train_dataloader:
+                for data_new in train_dataloader:
 
                     opt.zero_grad()
-                    data = data.to(device)
+                    data_new = data_new.to(device)
 
                     with torch.no_grad():
-                        z_sample, z_class, entangled_rep = model.encoder(data.x, data.edge_index, data.batch)
+                        z_sample, z_class, entangled_rep = model.encoder(data_new.x, data_new.edge_index, data_new.batch)
 
-                    logits = log(torch.cat([entangled_rep,  z_sample],-1))
-                    loss = criterion(logits, data.y)
+                    logits = log(z_sample)
+                    loss = criterion(logits, data_new.y)
 
                     loss.backward()
                     opt.step()
@@ -577,11 +577,11 @@ if __name__ == '__main__':
                 pred_list = []
                 y_list = []
                 with torch.no_grad():
-                    for data in val_dataloader:
-                        data = data.to(device)
-                        z_sample, z_class, entangled_rep = model.encoder(data.x, data.edge_index, data.batch)
+                    for data_val in val_dataloader:
+                        data_val = data_val.to(device)
+                        z_sample, z_class, entangled_rep = model.encoder(data_val.x, data_val.edge_index, data_val.batch)
 
-                        pred = log(torch.cat([entangled_rep,  z_sample],-1)) >= 0.5
+                        pred = log(z_sample) >= 0.5
 
                         pred_list.append(pred.cpu().numpy())
                         y_list.append(data.y.cpu().numpy())
