@@ -198,7 +198,7 @@ class GcnInfomax(nn.Module):
         return loss
 
 
-    def recon_loss1(self, z, edge_index, batch):
+    def recon_loss1(self, z, edge_index, batch, num_graphs):
 
         EPS = 1e-15
         MAX_LOGSTD = 10
@@ -216,12 +216,13 @@ class GcnInfomax(nn.Module):
         norm = z.size(0) * z.size(0) / float((z.size(0) * z.size(0) - edge_index.size(0)) * 2)
 
 
-
         recon_adj = self.edge_recon(z, edge_index)
 
 
         pos_loss = -torch.log(
-            recon_adj + EPS).mean()
+            recon_adj + EPS).sum()
+
+        pos_loss = pos_loss / edge_index.size(0)
 
         # Do not include self-loops in negative samples
         pos_edge_index, _ = remove_self_loops(edge_index)
@@ -230,7 +231,9 @@ class GcnInfomax(nn.Module):
         neg_edge_index = negative_sampling(pos_edge_index, z.size(0)) #random thingggg
         neg_loss = -torch.log(1 -
                               self.edge_recon(z, neg_edge_index) +
-                              EPS).mean()
+                              EPS).sum()
+
+        neg_loss = neg_loss / (edge_index.size(0) * (num_graphs - 1))
 
         return norm*(pos_loss + neg_loss)
 
@@ -422,9 +425,9 @@ if __name__ == '__main__':
 
                 #encode to z
                 X_sample = model.decoder(z_sample, grouped_class) #decode to X reconstruction
-                #recon_loss_adj = model.recon_loss1(X_sample, data.edge_index, data.batch)
-                recon_loss_node = mse_loss(X_sample, data.x)
-                recon_loss = recon_loss_node
+                recon_loss_adj = model.recon_loss1(X_sample, data.edge_index, data.batch, data.num_graphs)
+                #recon_loss_node = mse_loss(X_sample, data.x)
+                recon_loss = recon_loss_adj
                 recon_loss_all += recon_loss.item()
 
                 recon_loss.backward()
