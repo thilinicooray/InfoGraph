@@ -563,8 +563,7 @@ if __name__ == '__main__':
                     opt.zero_grad()
                     data_new = data_new.to(device)
 
-                    with torch.no_grad():
-                        z_sample, z_class, entangled_rep = model.encoder(data_new.x, data_new.edge_index, data_new.batch)
+                    z_sample, z_class, entangled_rep = model.encoder(data_new.x, data_new.edge_index, data_new.batch)
 
                     logits = log(z_sample)
                     loss = criterion(logits, data_new.y)
