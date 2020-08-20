@@ -330,7 +330,7 @@ class GcnInfomax(nn.Module):
         recon_adj = self.edge_recon(z, edge_index)
 
 
-        '''pos_loss = -torch.log(
+        pos_loss = -torch.log(
             recon_adj + EPS).sum()
 
         pos_loss = pos_loss / edge_index.size(1)
@@ -344,23 +344,23 @@ class GcnInfomax(nn.Module):
                               self.edge_recon(z, neg_edge_index) +
                               EPS).sum()
 
-        neg_loss = neg_loss / (pos_edge_index.size(1))'''
+        neg_loss = neg_loss / (pos_edge_index.size(1))
 
-        pos_edge_index, _ = remove_self_loops(edge_index)
-        pos_edge_index, _ = add_self_loops(pos_edge_index)
+        #pos_edge_index, _ = remove_self_loops(edge_index)
+        #pos_edge_index, _ = add_self_loops(pos_edge_index)
 
-        neg_edge_index = negative_sampling(pos_edge_index, z.size(0), num_neg_samples=pos_edge_index.size(1))
-
-
-        neg_recon_adj = self.edge_recon(z, neg_edge_index)
-
-        loss = norm*self.pos_neg_loss_(recon_adj, neg_recon_adj, edge_index.size(1), neg_edge_index.size(1), batch)
-
-        return loss
+        #neg_edge_index = negative_sampling(pos_edge_index, z.size(0), num_neg_samples=pos_edge_index.size(1))
 
 
+        #neg_recon_adj = self.edge_recon(z, neg_edge_index)
 
-        #return norm*(pos_loss*pos_weight + neg_loss)
+        #loss = norm*self.pos_neg_loss_(recon_adj, neg_recon_adj, edge_index.size(1), neg_edge_index.size(1), batch)
+
+        #return loss
+
+
+
+        return norm*(pos_loss*pos_weight + neg_loss)
 
         #loss = F.binary_cross_entropy_with_logits(rec, org_adj)
 
