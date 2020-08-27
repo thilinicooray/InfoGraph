@@ -105,7 +105,7 @@ class GcnInfomax(nn.Module):
         """
         node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
         class_latent_embeddings = group_wise_reparameterize(
-            training=True, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
+            training=True, mu=grouped_mu, var=grouped_logvar, labels_batch=batch, cuda=True
         )
 
 
