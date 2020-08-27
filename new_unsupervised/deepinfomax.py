@@ -105,14 +105,14 @@ class GcnInfomax(nn.Module):
         """
         node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
         class_latent_embeddings = group_wise_reparameterize(
-            training=True, mu=grouped_mu, var=grouped_logvar, labels_batch=batch, cuda=True
+            training=True, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
         )
 
 
         reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, edge_index)
 
         #reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
-        reconstruction_error = self.recon_loss1(reconstructed_node, edge_index, batch)
+        reconstruction_error = 1e-5*self.recon_loss1(reconstructed_node, edge_index, batch)
 
 
         #class_kl_divergence_loss.backward(retain_graph=True)
