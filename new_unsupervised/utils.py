@@ -5,7 +5,7 @@ from torch.autograd import Variable
 from mpl_toolkits.axes_grid1 import ImageGrid
 
 
-def accumulate_group_evidence(class_mu, class_logvar, batch, is_cuda):
+def accumulate_group_evidence1(class_mu, class_logvar, batch, is_cuda):
     """
     :param class_mu: mu values for class latent embeddings of each sample in the mini-batch
     :param class_logvar: logvar values for class latent embeddings for each sample in the mini-batch
@@ -70,6 +70,72 @@ def accumulate_group_evidence(class_mu, class_logvar, batch, is_cuda):
     # convert group vars into logvars before returning
     return Variable(group_mu, requires_grad=True), Variable(torch.log(group_var), requires_grad=True)
 
+def accumulate_group_evidence(class_mu, class_logvar, batch, is_cuda):
+    """
+    :param class_mu: mu values for class latent embeddings of each sample in the mini-batch
+    :param class_logvar: logvar values for class latent embeddings for each sample in the mini-batch
+    :param labels_batch: class labels of each sample (the operation of accumulating class evidence can also
+        be performed using group labels instead of actual class labels)
+    :param is_cuda:
+    :return:
+    """
+    var_dict = {}
+    mu_dict = {}
+
+    mu_dict = {}
+    mu_count_dict = {}
+
+
+    # calculate mu for each group
+    for i in range(len(batch)):
+        group_label = batch[i].item()
+
+        if group_label in mu_dict.keys():
+            mu_dict[group_label] += class_mu[i]
+            mu_count_dict[group_label] += 1
+        else:
+            mu_dict[group_label] = class_mu[i]
+            mu_count_dict[group_label] = 1
+
+
+    # replace individual mu and logvar values for each sample with group mu and logvar
+    group_mu = torch.DoubleTensor(class_mu.size(0), class_mu.size(1))
+
+    group_mu = group_mu.cuda()
+
+    for i in range(len(batch)):
+        group_label = batch[i].item()
+
+        group_mu[i] = mu_dict[group_label]/mu_count_dict[group_label]
+
+    var_dict = {}
+    var_count_dict = {}
+
+
+    # calculate logvar for each group
+    for i in range(len(batch)):
+        group_label = batch[i].item()
+
+        if group_label in var_dict.keys():
+            var_dict[group_label] += class_logvar[i]
+            var_count_dict[group_label] += 1
+        else:
+            var_dict[group_label] = class_logvar[i]
+            var_count_dict[group_label] = 1
+
+
+    # replace individual mu and logvar values for each sample with group mu and logvar
+    group_var = torch.DoubleTensor(class_logvar.size(0), class_logvar.size(1))
+
+    group_var = group_var.cuda()
+
+    for i in range(len(batch)):
+        group_label = batch[i].item()
+
+        group_var[i] = var_dict[group_label]/var_count_dict[group_label]
+
+    return Variable(group_mu, requires_grad=True), Variable(group_var, requires_grad=True)
+
 
 def mse_loss(input, target):
     return torch.sum((input - target).pow(2)) / input.data.nelement()
@@ -88,7 +154,7 @@ def reparameterize(training, mu, logvar):
         return mu
 
 
-def group_wise_reparameterize(training, mu, logvar, labels_batch, cuda):
+'''def group_wise_reparameterize(training, mu, logvar, labels_batch, cuda):
     eps_dict = {}
 
     # generate only 1 eps value per group label
@@ -105,6 +171,28 @@ def group_wise_reparameterize(training, mu, logvar, labels_batch, cuda):
         # multiply std by correct eps and add mu
         for i in range(logvar.size(0)):
             reparameterized_var[i] = std[i].mul(Variable(eps_dict[labels_batch[i].item()]))
+            reparameterized_var[i].add_(mu[i])
+
+        return reparameterized_var
+    else:
+        return mu'''
+
+def group_wise_reparameterize(training, mu, var, labels_batch, cuda):
+    eps_dict = {}
+
+    # generate only 1 eps value per group label
+    for label in torch.unique(labels_batch):
+        if cuda:
+            eps_dict[label.item()] = torch.cuda.DoubleTensor(1, var.size(1)).normal_(0., 0.1)
+        else:
+            eps_dict[label.item()] = torch.DoubleTensor(1, var.size(1)).normal_(0., 0.1)
+
+    if training:
+        reparameterized_var = Variable(var.data.new(var.size()))
+
+        # multiply std by correct eps and add mu
+        for i in range(var.size(0)):
+            reparameterized_var[i] = torch.sqrt(var[i]).mul(Variable(eps_dict[labels_batch[i].item()]))
             reparameterized_var[i].add_(mu[i])
 
         return reparameterized_var

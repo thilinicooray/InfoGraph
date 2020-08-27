@@ -92,11 +92,8 @@ def logistic_classify(x, y):
         accs.append(acc.item())
     return np.mean(accs)
 
-def svc_classify(data, y, search):
+def svc_classify(x, y, search):
 
-    scaler = StandardScaler()
-    scaler.fit(data)
-    x = scaler.transform(data)
 
     for c in [0.001, 0.01,0.1,1,10,100,1000, 10000, 100000]:
 
