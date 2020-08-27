@@ -38,7 +38,7 @@ class GcnInfomax(nn.Module):
 
         self.embedding_dim = mi_units = hidden_dim * num_gc_layers
         self.encoder = Encoder(dataset_num_features, hidden_dim, num_gc_layers)
-        self.decoder = Decoder(hidden_dim, hidden_dim, dataset_num_features)
+        self.decoder = Decoder(hidden_dim, hidden_dim, 5)
 
         self.local_d = FF(self.embedding_dim)
         self.global_d = FF(self.embedding_dim)
@@ -323,10 +323,11 @@ if __name__ == '__main__':
         lr = args.lr
         #lr = 0.000001
         DS = args.DS
-        path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data_degree', DS)
+        path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', DS)
         # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
 
-        dataset = TUDataset(path, name=DS, pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=88)).shuffle()
+        #dataset = TUDataset(path, name=DS, pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=88)).shuffle()
+        dataset = TUDataset(path, name=DS).shuffle()
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         try:
