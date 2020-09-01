@@ -546,10 +546,13 @@ if __name__ == '__main__':
             mi_loss_all = 0
             model.train()
             for data in train_dataloader:
-                data = data.to(device).double()
+                data = data.to(device)
 
 
                 model.zero_grad()
+
+                data.x = data.x.double()
+                data.edge_index =data.edge_index.double()
 
                 z_sample, z_class = model.encoder(data.x, data.edge_index, data.batch)
                 grouped_class = accumulate_group_rep(
@@ -698,9 +701,9 @@ if __name__ == '__main__':
                 for data_new in train_dataloader:
 
                     opt.zero_grad()
-                    data_new = data_new.to(device).double()
+                    data_new = data_new.to(device)
 
-                    z_sample, z_class, entangled_rep = model.encoder(data_new.x, data_new.edge_index, data_new.batch)
+                    z_sample, z_class, entangled_rep = model.encoder(data_new.x.double(), data_new.edge_index.double(), data_new.batch)
 
                     logits = log(z_sample)
 
