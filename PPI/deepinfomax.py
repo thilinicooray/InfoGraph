@@ -725,7 +725,7 @@ if __name__ == '__main__':
                 with torch.no_grad():
                     for data_val in val_dataloader:
                         data_val = data_val.to(device)
-                        z_sample, z_class, entangled_rep = model.encoder(data_val.x, data_val.edge_index, data_val.batch)
+                        z_sample, z_class, entangled_rep = model.encoder(data_val.x.double(), data_val.edge_index, data_val.batch)
 
                         pred = torch.sigmoid(log(z_sample)) >= 0.5
 
