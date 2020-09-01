@@ -546,7 +546,7 @@ if __name__ == '__main__':
             mi_loss_all = 0
             model.train()
             for data in train_dataloader:
-                data = data.to(device)
+                data = data.to(device).double()
 
 
                 model.zero_grad()
@@ -698,7 +698,7 @@ if __name__ == '__main__':
                 for data_new in train_dataloader:
 
                     opt.zero_grad()
-                    data_new = data_new.to(device)
+                    data_new = data_new.to(device).double()
 
                     z_sample, z_class, entangled_rep = model.encoder(data_new.x, data_new.edge_index, data_new.batch)
 
