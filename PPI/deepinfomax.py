@@ -552,7 +552,6 @@ if __name__ == '__main__':
                 model.zero_grad()
 
                 data.x = data.x.double()
-                data.edge_index =data.edge_index.double()
 
                 z_sample, z_class = model.encoder(data.x, data.edge_index, data.batch)
                 grouped_class = accumulate_group_rep(
@@ -703,7 +702,7 @@ if __name__ == '__main__':
                     opt.zero_grad()
                     data_new = data_new.to(device)
 
-                    z_sample, z_class, entangled_rep = model.encoder(data_new.x.double(), data_new.edge_index.double(), data_new.batch)
+                    z_sample, z_class, entangled_rep = model.encoder(data_new.x.double(), data_new.edge_index, data_new.batch)
 
                     logits = log(z_sample)
 
