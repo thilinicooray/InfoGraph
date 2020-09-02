@@ -160,185 +160,6 @@ class GcnInfomax(nn.Module):
         value = (z[edge_index[0]] * z[edge_index[1]]).sum(dim=1)
         return torch.sigmoid(value) if sigmoid else value
 
-    def recon_loss(self, z, edge_index, batch):
-
-        EPS = 1e-15
-        MAX_LOGSTD = 10
-        r"""Given latent variables :obj:`z`, computes the binary cross
-        entropy loss for positive edges :obj:`pos_edge_index` and negative
-        sampled edges.
-  
-        Args:
-            z (Tensor): The latent space :math:`\mathbf{Z}`.
-            pos_edge_index (LongTensor): The positive edges to train against.
-        """
-
-        #reco = self.edge_recon(z, edge_index)
-
-        #print('edge recon try ', reco.size(), edge_index.size(), reco [:10], edge_index[0][:10], edge_index[1][:10])
-
-
-        #recon_adj = self.edge_recon(z, edge_index)
-
-
-        a, idx_tensor = to_dense_batch(z, batch)
-        a_t = a.permute(0, 2, 1)
-
-        #print('batch size', a.size(), a_t.size())
-
-        rec = torch.bmm(a, a_t)
-
-        #print('inner pro', rec.size())
-
-        org_adj = to_dense_adj(edge_index, batch)
-
-
-        pos_weight = float(z.size(0) * z.size(0) - org_adj.sum()) / org_adj.sum()
-        norm = z.size(0) * z.size(0) / float((z.size(0) * z.size(0) - org_adj.sum()) * 2)
-
-
-        #print('new' ,rec, 'org', org_adj)
-
-
-        '''#adj = torch.matmul(z, z.t())
-  
-  
-        #r_adj = to_dense_adj(recon_adj, batch)
-        #org_adj = to_dense_adj(edge_index, batch)
-  
-        #print(r_adj.size(), org_adj.size())
-  
-        recon_adj = self.edge_recon(z, edge_index)
-  
-  
-        pos_loss = -torch.log(
-            recon_adj + EPS).mean()
-  
-        # Do not include self-loops in negative samples
-        pos_edge_index, _ = remove_self_loops(edge_index)
-        pos_edge_index, _ = add_self_loops(pos_edge_index)
-  
-        neg_edge_index = negative_sampling(pos_edge_index, z.size(0)) #random thingggg
-        neg_loss = -torch.log(1 -
-                              self.edge_recon(z, neg_edge_index) +
-                              EPS).mean()
-  
-        return pos_loss + neg_loss'''
-
-        loss = norm * F.binary_cross_entropy_with_logits(rec, org_adj, pos_weight=pos_weight)
-
-        return loss
-
-    def get_positive_expectation(self, p_samples, measure, average=True):
-        """Computes the positive part of a divergence / difference.
-        Args:
-            p_samples: Positive samples.
-            measure: Measure to compute for.
-            average: Average the result over samples.
-        Returns:
-            torch.Tensor
-        """
-        log_2 = np.log(2.)
-
-        if measure == 'GAN':
-            Ep = - F.softplus(-p_samples)
-        elif measure == 'JSD':
-            Ep = log_2 - F.softplus(- p_samples)
-        elif measure == 'X2':
-            Ep = p_samples ** 2
-        elif measure == 'KL':
-            Ep = p_samples + 1.
-        elif measure == 'RKL':
-            Ep = -torch.exp(-p_samples)
-        elif measure == 'DV':
-            Ep = p_samples
-        elif measure == 'H2':
-            Ep = 1. - torch.exp(-p_samples)
-        elif measure == 'W1':
-            Ep = p_samples
-
-        if average:
-            return Ep.mean()
-        else:
-            return Ep
-
-
-    # Borrowed from https://github.com/fanyun-sun/InfoGraph
-    def get_negative_expectation(self, q_samples, measure, average=True):
-        """Computes the negative part of a divergence / difference.
-        Args:
-            q_samples: Negative samples.
-            measure: Measure to compute for.
-            average: Average the result over samples.
-        Returns:
-            torch.Tensor
-        """
-        log_2 = np.log(2.)
-
-        if measure == 'GAN':
-            Eq = F.softplus(-q_samples) + q_samples
-        elif measure == 'JSD':
-            Eq = F.softplus(-q_samples) + q_samples - log_2
-        elif measure == 'X2':
-            Eq = -0.5 * ((torch.sqrt(q_samples ** 2) + 1.) ** 2)
-        elif measure == 'KL':
-            Eq = torch.exp(q_samples)
-        elif measure == 'RKL':
-            Eq = q_samples - 1.
-        elif measure == 'H2':
-            Eq = torch.exp(q_samples) - 1.
-        elif measure == 'W1':
-            Eq = q_samples
-
-        if average:
-            return Eq.mean()
-        else:
-            return Eq
-
-
-    # Borrowed from https://github.com/fanyun-sun/InfoGraph
-    def pos_neg_loss_(self, pos_adj, neg_adj, pos_count, neg_count, batch, measure='JSD'):
-        '''
-        Args:
-            l: Local feature map.
-            g: Global features.
-            measure: Type of f-divergence. For use with mode `fd`
-            mode: Loss mode. Fenchel-dual `fd`, NCE `nce`, or Donsker-Vadadhan `dv`.
-        Returns:
-            torch.Tensor: Loss.
-        '''
-
-
-        E_pos = (self.get_positive_expectation(pos_adj, measure, average=False).sum())/pos_count
-        E_neg = (self.get_negative_expectation(neg_adj, measure, average=False).sum())/neg_count
-        return E_neg - E_pos
-
-    def get_negative_edges(self, edge_idx, node_count):
-
-        #too expensive and time consuming
-
-        print('negative edge calculation started!')
-
-        negative_edges = [[],[]]
-
-        full_adj = torch.ones((node_count, node_count)).cuda()
-
-        for i in edge_idx[0]:
-            for j in edge_idx[1]:
-                full_adj[i][j] = 0
-
-        for k in range(node_count):
-            for l in range(node_count):
-                if full_adj[k][l]:
-                    negative_edges[0].append(k)
-                    negative_edges[1].append(l)
-
-
-        print('negative edge calculation done!')
-
-        return torch.stack(negative_edges, 0)
-
-
 
 
     def recon_loss1(self, z, edge_index, batch, num_graphs):
@@ -355,48 +176,27 @@ class GcnInfomax(nn.Module):
         """
 
         #org_adj = to_dense_adj(edge_index, batch)
-        pos_weight = float(z.size(0) * z.size(0) - edge_index.size(1)) / edge_index.size(1)
-        norm = z.size(0) * z.size(0) / float((z.size(0) * z.size(0) - edge_index.size(1)) * 2)
+        pos_weight = float(z.size(0) * z.size(0) - edge_index.size(0)) / edge_index.size(0)
+        norm = z.size(0) * z.size(0) / float((z.size(0) * z.size(0) - edge_index.size(0)) * 2)
+
 
 
         recon_adj = self.edge_recon(z, edge_index)
 
 
         pos_loss = -torch.log(
-            recon_adj + EPS).sum()
-
-        pos_loss = pos_loss / edge_index.size(1)
+            recon_adj + EPS).mean()
 
         # Do not include self-loops in negative samples
         pos_edge_index, _ = remove_self_loops(edge_index)
         pos_edge_index, _ = add_self_loops(pos_edge_index)
 
-        neg_edge_index = negative_sampling(pos_edge_index, z.size(0), num_neg_samples=pos_edge_index.size(1)) #random thingggg
+        neg_edge_index = negative_sampling(pos_edge_index, z.size(0)) #random thingggg
         neg_loss = -torch.log(1 -
                               self.edge_recon(z, neg_edge_index) +
-                              EPS).sum()
-
-        neg_loss = neg_loss / (pos_edge_index.size(1))
-
-        #pos_edge_index, _ = remove_self_loops(edge_index)
-        #pos_edge_index, _ = add_self_loops(pos_edge_index)
-
-        #neg_edge_index = negative_sampling(pos_edge_index, z.size(0), num_neg_samples=pos_edge_index.size(1))
-
-
-        #neg_recon_adj = self.edge_recon(z, neg_edge_index)
-
-        #loss = norm*self.pos_neg_loss_(recon_adj, neg_recon_adj, edge_index.size(1), neg_edge_index.size(1), batch)
-
-        #return loss
-
-
+                              EPS).mean()
 
         return norm*(pos_loss*pos_weight + neg_loss)
-
-        #loss = F.binary_cross_entropy_with_logits(rec, org_adj)
-
-        #return loss
 
     def get_embeddings(self, loader):
 
@@ -642,7 +442,8 @@ if __name__ == '__main__':
                     opt.zero_grad()
                     data_new = data_new.to(device)
 
-                    z_sample, z_class, entangled_rep = model.encoder(data_new.x.double(), data_new.edge_index, data_new.batch)
+                    node_latent_space_mu,  node_latent_space_logvar, class_latent_space_mu, class_latent_space_logvar, entangled_rep \
+                        = model.encoder(data_new.x.double(), data_new.edge_index, data_new.batch)
 
                     logits = log(entangled_rep)
 
@@ -665,7 +466,8 @@ if __name__ == '__main__':
                 with torch.no_grad():
                     for data_val in val_dataloader:
                         data_val = data_val.to(device)
-                        z_sample, z_class, entangled_rep = model.encoder(data_val.x.double(), data_val.edge_index, data_val.batch)
+                        node_latent_space_mu,  node_latent_space_logvar, class_latent_space_mu, class_latent_space_logvar, entangled_rep \
+                            = model.encoder(data_val.x.double(), data_val.edge_index, data_val.batch)
 
                         pred = torch.sigmoid(log(entangled_rep)) >= 0.5
 
