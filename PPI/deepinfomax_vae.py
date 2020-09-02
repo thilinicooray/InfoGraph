@@ -445,7 +445,9 @@ if __name__ == '__main__':
                     node_latent_space_mu,  node_latent_space_logvar, class_latent_space_mu, class_latent_space_logvar, entangled_rep \
                         = model.encoder(data_new.x.double(), data_new.edge_index, data_new.batch)
 
-                    logits = log(entangled_rep)
+                    node_latent_embeddings = reparameterize(training=False, mu=node_latent_space_mu, logvar=node_latent_space_logvar)
+
+                    logits = log(node_latent_embeddings)
 
                     '''tot = torch.sum(data_new.y, 0)
 
@@ -469,7 +471,9 @@ if __name__ == '__main__':
                         node_latent_space_mu,  node_latent_space_logvar, class_latent_space_mu, class_latent_space_logvar, entangled_rep \
                             = model.encoder(data_val.x.double(), data_val.edge_index, data_val.batch)
 
-                        pred = torch.sigmoid(log(entangled_rep)) >= 0.5
+                        node_latent_embeddings = reparameterize(training=False, mu=node_latent_space_mu, logvar=node_latent_space_logvar)
+
+                        pred = torch.sigmoid(log(node_latent_embeddings)) >= 0.5
 
                         pred_list.append(pred.cpu().numpy())
                         y_list.append(data_val.y.cpu().numpy())
