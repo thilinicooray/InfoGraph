@@ -162,7 +162,7 @@ class GcnInfomax(nn.Module):
 
 
 
-    def recon_loss1(self, z, edge_index, batch, num_graphs):
+    def recon_loss1(self, z, edge_index, batch):
 
         EPS = 1e-15
         MAX_LOGSTD = 10
