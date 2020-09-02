@@ -24,7 +24,7 @@ from torch import optim
 
 from cortex_DIM.nn_modules.mi_networks import MIFCNet, MI1x1ConvNet
 from losses import *
-from gin import Encoder, Decoder
+from gin import Encoder
 from evaluate_embedding import evaluate_embedding, draw_plot
 from model import *
 from utils import imshow_grid, mse_loss, reparameterize, group_wise_reparameterize, accumulate_group_evidence, \
