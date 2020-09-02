@@ -704,7 +704,7 @@ if __name__ == '__main__':
 
                     z_sample, z_class, entangled_rep = model.encoder(data_new.x.double(), data_new.edge_index, data_new.batch)
 
-                    logits = log(z_sample)
+                    logits = log(entangled_rep)
 
                     '''tot = torch.sum(data_new.y, 0)
 
@@ -727,7 +727,7 @@ if __name__ == '__main__':
                         data_val = data_val.to(device)
                         z_sample, z_class, entangled_rep = model.encoder(data_val.x.double(), data_val.edge_index, data_val.batch)
 
-                        pred = torch.sigmoid(log(z_sample)) >= 0.5
+                        pred = torch.sigmoid(log(entangled_rep)) >= 0.5
 
                         pred_list.append(pred.cpu().numpy())
                         y_list.append(data_val.y.cpu().numpy())
