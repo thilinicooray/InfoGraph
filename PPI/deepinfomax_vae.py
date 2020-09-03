@@ -464,6 +464,8 @@ if __name__ == '__main__':
 
                     pred = torch.sigmoid(log(val_emb)) >= 0.5
 
+                print(val_y.cpu().numpy(), pred.cpu().numpy())
+
                 mi_f1 = f1_score(val_y.cpu().numpy(), pred.cpu().numpy(), average='micro')
 
                 print('current f1', mi_f1)
