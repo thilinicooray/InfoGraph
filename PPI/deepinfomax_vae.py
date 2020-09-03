@@ -447,7 +447,11 @@ if __name__ == '__main__':
 
                     node_latent_embeddings = reparameterize(training=False, mu=node_latent_space_mu, logvar=node_latent_space_logvar)
 
-                    logits = log(node_latent_embeddings)
+                    std, mean = torch.std_mea(node_latent_embeddings, 0)
+
+                    standardized = (node_latent_embeddings - mean)/std
+
+                    logits = log(standardized)
 
                     '''tot = torch.sum(data_new.y, 0)
 
@@ -473,7 +477,11 @@ if __name__ == '__main__':
 
                         node_latent_embeddings = reparameterize(training=False, mu=node_latent_space_mu, logvar=node_latent_space_logvar)
 
-                        pred = torch.sigmoid(log(node_latent_embeddings)) >= 0.5
+                        std, mean = torch.std_mea(node_latent_embeddings, 0)
+
+                        standardized = (node_latent_embeddings - mean)/std
+
+                        pred = torch.sigmoid(log(standardized)) >= 0.5
 
                         pred_list.append(pred.cpu().numpy())
                         y_list.append(data_val.y.cpu().numpy())
