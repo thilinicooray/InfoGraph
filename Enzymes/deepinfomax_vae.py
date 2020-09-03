@@ -57,7 +57,7 @@ class GcnInfomax(nn.Module):
         self.prior = args.prior
 
         self.encoder = Encoder(dataset_num_features, hidden_dim, num_gc_layers)
-        self.decoder = Decoder(hidden_dim, hidden_dim, dataset_num_features)
+        self.decoder = Decoder(hidden_dim, hidden_dim, hidden_dim)
         self.node_discriminator = D_net_gauss(hidden_dim, hidden_dim)
         self.class_discriminator = D_net_gauss(hidden_dim, hidden_dim)
 
