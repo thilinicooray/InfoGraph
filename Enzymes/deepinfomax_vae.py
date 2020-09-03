@@ -227,7 +227,7 @@ class GcnInfomax(nn.Module):
 
                 class_emb = global_mean_pool(accumulated_class_latent_embeddings, batch)
 
-                reconstructed_node = self.decoder(node_latent_embeddings, accumulated_class_latent_embeddings)
+                reconstructed_node = self.decoder.linear_model['linear_1'](node_latent_embeddings, accumulated_class_latent_embeddings)
 
                 ret_node.append(reconstructed_node.cpu().numpy())
                 node_label_idx = (data.x[:,18:] != 0).nonzero()[:,1]
