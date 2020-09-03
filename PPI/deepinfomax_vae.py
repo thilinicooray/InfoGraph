@@ -447,7 +447,7 @@ if __name__ == '__main__':
 
                     node_latent_embeddings = reparameterize(training=False, mu=node_latent_space_mu, logvar=node_latent_space_logvar)
 
-                    std, mean = torch.std_mea(node_latent_embeddings, 0)
+                    std, mean = torch.std_mean(node_latent_embeddings, 0)
 
                     standardized = (node_latent_embeddings - mean)/std
 
@@ -477,7 +477,7 @@ if __name__ == '__main__':
 
                         node_latent_embeddings = reparameterize(training=False, mu=node_latent_space_mu, logvar=node_latent_space_logvar)
 
-                        std, mean = torch.std_mea(node_latent_embeddings, 0)
+                        std, mean = torch.std_mean(node_latent_embeddings, 0)
 
                         standardized = (node_latent_embeddings - mean)/std
 
