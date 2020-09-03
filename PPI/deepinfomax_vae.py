@@ -210,14 +210,15 @@ class GcnInfomax(nn.Module):
                 x, edge_index, batch = data.x, data.edge_index, data.batch
 
 
-                #print('eval train', x.type())
-                node_mu, _ = self.encoder(x, edge_index, batch)
+                node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index, batch)
 
 
-                ret.append(node_mu.cpu().numpy())
-                y.append(data.y.cpu().numpy())
-        ret = np.concatenate(ret, 0)
-        y = np.concatenate(y, 0)
+                node_latent_embeddings = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
+
+                ret.append(node_latent_embeddings)
+                y.append(data.y)
+        ret = torch.stack(ret, 0)
+        y = torch.stack(y, 0)
         return ret, y
 
 def test(train_z, train_y, val_z, val_y,test_z, test_y,  solver='lbfgs',
@@ -430,70 +431,41 @@ if __name__ == '__main__':
 
             print('Logistic regression started!')
 
-            log = SimpleClassifier(args.hidden_dim*2, args.hidden_dim, 121, 0.5)
+            log = SimpleClassifier(args.hidden_dim, args.hidden_dim, 121, 0.5)
             opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0.0)
             log.double().cuda()
+
+            train_emb, train_y = model.get_embeddings(train_dataloader)
+            val_emb, val_y = model.get_embeddings(val_dataloader)
 
             for round in range(1500):
 
                 log.train()
-                for data_new in train_dataloader:
+                opt.zero_grad()
+                logits = log(train_emb)
 
-                    opt.zero_grad()
-                    data_new = data_new.to(device)
+                '''tot = torch.sum(data_new.y, 0)
 
-                    node_latent_space_mu,  node_latent_space_logvar, class_latent_space_mu, class_latent_space_logvar, entangled_rep \
-                        = model.encoder(data_new.x.double(), data_new.edge_index, data_new.batch)
+                val = 1.0 / tot
 
-                    node_latent_embeddings = reparameterize(training=False, mu=node_latent_space_mu, logvar=node_latent_space_logvar)
+                pos_weight = val'''
 
-                    grouped_mu, grouped_logvar = accumulate_group_evidence(
-                        class_latent_space_mu.data, class_latent_space_logvar.data, data_new.batch, True
-                    )
+                criterion = nn.BCEWithLogitsLoss()
+                loss = criterion(logits, train_y)
 
-                    accumulated_class_latent_embeddings = group_wise_reparameterize(
-                        training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=data_new.batch, cuda=True
-                    )
-
-
-                    logits = log(torch.cat([node_latent_embeddings, accumulated_class_latent_embeddings],-1))
-
-                    '''tot = torch.sum(data_new.y, 0)
-
-                    val = 1.0 / tot
-
-                    pos_weight = val'''
-
-                    criterion = nn.BCEWithLogitsLoss()
-                    loss = criterion(logits, data_new.y )
-
-                    loss.backward()
-                    opt.step()
+                loss.backward()
+                opt.step()
 
                 log.eval()
 
                 pred_list = []
                 y_list = []
                 with torch.no_grad():
-                    for data_val in val_dataloader:
-                        data_val = data_val.to(device)
-                        node_latent_space_mu,  node_latent_space_logvar, class_latent_space_mu, class_latent_space_logvar, entangled_rep \
-                            = model.encoder(data_val.x.double(), data_val.edge_index, data_val.batch)
 
-                        node_latent_embeddings = reparameterize(training=False, mu=node_latent_space_mu, logvar=node_latent_space_logvar)
+                    pred = torch.sigmoid(log(val_emb)) >= 0.5
 
-                        grouped_mu, grouped_logvar = accumulate_group_evidence(
-                            class_latent_space_mu.data, class_latent_space_logvar.data, data_val.batch, True
-                        )
-
-                        accumulated_class_latent_embeddings = group_wise_reparameterize(
-                            training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=data_val.batch, cuda=True
-                        )
-
-                        pred = torch.sigmoid(log(torch.cat([node_latent_embeddings, accumulated_class_latent_embeddings],-1))) >= 0.5
-
-                        pred_list.append(pred.cpu().numpy())
-                        y_list.append(data_val.y.cpu().numpy())
+                    pred_list.append(pred.cpu().numpy())
+                    y_list.append(val_y.cpu().numpy())
                 ret = np.concatenate(pred_list, 0)
                 y = np.concatenate(y_list, 0)
                 mi_f1 = f1_score(y, ret, average='micro')
@@ -505,6 +477,7 @@ if __name__ == '__main__':
                     best_round = round
 
             print('best f1 obtained in round:', best_f1, best_round)
+
 
         #accs = torch.stack(accs)
         #print(accs.mean().item(), accs.std().item())'''
