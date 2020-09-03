@@ -212,7 +212,7 @@ class GcnInfomax(nn.Module):
                 x, edge_index, batch = data.x, data.edge_index, data.batch
 
 
-                node_mu, node_logvar, class_mu, class_logvar, entangledrep = self.encoder(x, edge_index, batch)
+                node_mu, node_logvar, class_mu, class_logvar, entangledrep = self.encoder(x[:,:18], edge_index, batch)
 
 
                 node_latent_embeddings = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
@@ -227,14 +227,16 @@ class GcnInfomax(nn.Module):
 
                 class_emb = global_mean_pool(accumulated_class_latent_embeddings, batch)
 
-                ret_node.append(node_latent_embeddings)
-                y_node.append(data.y)
-                ret_class.append(class_emb)
-                y_class.append(data.y)
-        ret_node = torch.stack(ret_node, 0)
-        y_node = torch.stack(y_node, 0)
-        ret_class = torch.stack(ret_class, 0)
-        y_class = torch.stack(y_class, 0)
+                ret_node.append(node_latent_embeddings.cpu().numpy())
+                node_label_idx = (data.x[:,18:] != 0).nonzero()[:,1]
+                y_node.append(node_label_idx.cpu().numpy())
+                ret_class.append(class_emb.cpu().numpy())
+                y_class.append(data.y.cpu().numpy())
+
+        ret_node = np.concatenate(ret_node, 0)
+        y_node = np.concatenate(y_node, 0)
+        ret_class = np.concatenate(ret_class, 0)
+        y_class = np.concatenate(y_class, 0)
         return ret_node, y_node, ret_class, y_class
 
 def test(train_z, train_y, val_z, val_y,test_z, test_y,  solver='lbfgs',
@@ -380,8 +382,6 @@ if __name__ == '__main__':
             model.train()
             for data in dataloader:
                 data = data.to(device)
-
-                print('data ', data)
 
                 optimizer.zero_grad()
                 recon_loss, kl_class, kl_node = model(data.x, data.edge_index, data.batch, data.num_graphs)
