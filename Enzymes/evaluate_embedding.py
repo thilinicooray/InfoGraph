@@ -98,7 +98,7 @@ def svc_classify(data, y, search):
     scaler.fit(data)
     x = scaler.transform(data)
 
-    for c in [0.001, 0.01,0.1,1,10,100,1000, 10000, 100000]:
+    for c in [1,10,100,1000]:
 
         kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=80)
         accuracies = []
