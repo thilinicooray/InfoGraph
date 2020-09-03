@@ -75,12 +75,11 @@ class Encoder(torch.nn.Module):
                 x_graph, x_node = self.forward(x[:,:18], edge_index, batch)
 
 
-                print('check sizes ', x_graph.size(), x_node.size(),x[:,:18].size(), data.x[:,18:].size() )
-
-                ret_node.append(x_node)
-                y_node.append(data.x[:,18:])
-                ret_class.append(x_graph)
-                y_class.append(data.y)
+                ret_node.append(x_node.cpu().numpy())
+                y_node.append(data.x[:,18:].cpu().numpy())
+                ret_class.append(x_graph.cpu().numpy())
+                y_class.append(data.y.cpu().numpy())
+                
         ret_node = np.concatenate(ret_node, 0)
         y_node = np.concatenate(y_node, 0)
         ret_class = np.concatenate(ret_class, 0)
