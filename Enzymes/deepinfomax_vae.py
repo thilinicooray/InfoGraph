@@ -384,7 +384,7 @@ if __name__ == '__main__':
                 data = data.to(device)
 
                 optimizer.zero_grad()
-                recon_loss, kl_class, kl_node = model(data.x, data.edge_index, data.batch, data.num_graphs)
+                recon_loss, kl_class, kl_node = model(data.x[:,:18], data.edge_index, data.batch, data.num_graphs)
                 recon_loss_all += recon_loss
                 kl_class_loss_all += kl_class
                 kl_node_loss_all += kl_node
