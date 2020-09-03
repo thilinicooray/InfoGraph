@@ -430,7 +430,7 @@ if __name__ == '__main__':
 
             print('Logistic regression started!')
 
-            log = SimpleClassifier(args.hidden_dim, args.hidden_dim, 121, 0.5)
+            log = SimpleClassifier(args.hidden_dim*2, args.hidden_dim, 121, 0.5)
             opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0.0)
             log.double().cuda()
 
@@ -447,11 +447,16 @@ if __name__ == '__main__':
 
                     node_latent_embeddings = reparameterize(training=False, mu=node_latent_space_mu, logvar=node_latent_space_logvar)
 
-                    std, mean = torch.std_mean(node_latent_embeddings, 0)
+                    grouped_mu, grouped_logvar = accumulate_group_evidence(
+                        class_latent_space_mu.data, class_latent_space_logvar.data, data_new.batch, True
+                    )
 
-                    standardized = (node_latent_embeddings - mean)/std
+                    accumulated_class_latent_embeddings = group_wise_reparameterize(
+                        training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=data_new.batch, cuda=True
+                    )
 
-                    logits = log(standardized)
+
+                    logits = log(torch.cat([node_latent_embeddings, accumulated_class_latent_embeddings],-1))
 
                     '''tot = torch.sum(data_new.y, 0)
 
@@ -477,11 +482,15 @@ if __name__ == '__main__':
 
                         node_latent_embeddings = reparameterize(training=False, mu=node_latent_space_mu, logvar=node_latent_space_logvar)
 
-                        std, mean = torch.std_mean(node_latent_embeddings, 0)
+                        grouped_mu, grouped_logvar = accumulate_group_evidence(
+                            class_latent_space_mu.data, class_latent_space_logvar.data, data_val.batch, True
+                        )
 
-                        standardized = (node_latent_embeddings - mean)/std
+                        accumulated_class_latent_embeddings = group_wise_reparameterize(
+                            training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=data_val.batch, cuda=True
+                        )
 
-                        pred = torch.sigmoid(log(standardized)) >= 0.5
+                        pred = torch.sigmoid(log(torch.cat([node_latent_embeddings, accumulated_class_latent_embeddings],-1))) >= 0.5
 
                         pred_list.append(pred.cpu().numpy())
                         y_list.append(data_val.y.cpu().numpy())
