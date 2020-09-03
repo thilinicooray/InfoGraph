@@ -76,7 +76,7 @@ class Encoder(torch.nn.Module):
 
 
                 ret_node.append(x_node.cpu().numpy())
-                node_label_idx = (data.x[:,18:] != 0).nonzero()[0][:,1]
+                node_label_idx = (data.x[:,18:] != 0).nonzero()
                 print('node label ', node_label_idx, node_label_idx.size(), x.size())
                 y_node.append(node_label_idx.cpu().numpy())
                 ret_class.append(x_graph.cpu().numpy())
