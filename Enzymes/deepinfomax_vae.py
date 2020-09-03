@@ -410,7 +410,7 @@ if __name__ == '__main__':
                                                                                     kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
 
             #used during finetune phase
-            if epoch % log_interval == 0:
+            if epoch > log_interval :
                 model.eval()
 
                 emb_node, y_node, emb_class, y_class = model.get_embeddings(dataloader)
