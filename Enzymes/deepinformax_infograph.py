@@ -212,9 +212,8 @@ if __name__ == '__main__':
 
                 model.zero_grad()
 
-                print('data ', data, data.x )
 
-                data.x = data.x.double()
+                data.x = data.x[:18].double()
 
                 optimizer.zero_grad()
                 loss = model(data.x, data.edge_index, data.batch, data.num_graphs)
