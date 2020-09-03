@@ -460,9 +460,14 @@ if __name__ == '__main__':
 
                 pred_list = []
                 y_list = []
+
+
                 with torch.no_grad():
 
-                    pred = torch.sigmoid(log(val_emb)) >= 0.5
+                    logreg_out = torch.sigmoid(log(val_emb))
+                    pred = torch.ones_like(logreg_out)
+
+                    pred =  pred.masked_fill(logreg_out < 0.5, 0)
 
                 print(val_y.cpu().numpy(), pred.cpu().numpy())
 
