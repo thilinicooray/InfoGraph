@@ -164,11 +164,10 @@ if __name__ == '__main__':
         #dataset = TUDataset(path, name=DS, pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=88)).shuffle()
         dataset = TUDataset(path, use_node_attr=True, name=DS).shuffle()
 
-        print('num features ', dataset.num_features)
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         try:
-            dataset_num_features = dataset.num_features
+            dataset_num_features = dataset.num_features - 3
         except:
             dataset_num_features = 1
 
