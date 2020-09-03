@@ -498,6 +498,8 @@ if __name__ == '__main__':
                 y = np.concatenate(y_list, 0)
                 mi_f1 = f1_score(y, ret, average='micro')
 
+                print('current f1', mi_f1)
+
                 if mi_f1 > best_f1:
                     best_f1 = mi_f1
                     best_round = round
