@@ -72,9 +72,9 @@ class Encoder(torch.nn.Module):
                 data.to(device)
                 x, edge_index, batch = data.x, data.edge_index, data.batch
 
-                x_graph, x_node = self.forward(x[:18], edge_index, batch)
+                x_graph, x_node = self.forward(x[:,18], edge_index, batch)
                 ret_node.append(x_node)
-                y_node.append(data.x[18:])
+                y_node.append(data.x[:,18:])
                 ret_class.append(x_graph)
                 y_class.append(data.y)
         ret_node = torch.stack(ret_node, 0)
