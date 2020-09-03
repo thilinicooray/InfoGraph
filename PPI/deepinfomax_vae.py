@@ -210,7 +210,7 @@ class GcnInfomax(nn.Module):
                 x, edge_index, batch = data.x, data.edge_index, data.batch
 
 
-                node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index, batch)
+                node_mu, node_logvar, class_mu, class_logvar, entangledrep = self.encoder(x, edge_index, batch)
 
 
                 node_latent_embeddings = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
