@@ -320,7 +320,7 @@ if __name__ == '__main__':
 
         losses = {'recon':[], 'node_kl':[], 'class_kl': []}
 
-        log_interval = 10
+        warmup_steps = 0
         #batch_size = 128
         batch_size = args.batch_size
         lr = args.lr
@@ -410,7 +410,7 @@ if __name__ == '__main__':
                                                                                     kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
 
             #used during finetune phase
-            if epoch > log_interval :
+            if epoch > warmup_steps :
                 model.eval()
 
                 emb_node, y_node, emb_class, y_class = model.get_embeddings(dataloader)
