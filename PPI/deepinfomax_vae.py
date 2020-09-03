@@ -464,13 +464,7 @@ if __name__ == '__main__':
 
                     pred = torch.sigmoid(log(val_emb)) >= 0.5
 
-                mi_f1 = torch_geometric.utils.f1_score(pred, val_y, 121)
-
-                '''pred_list.append(pred.cpu().numpy())
-                    y_list.append(val_y.cpu().numpy())
-                ret = np.concatenate(pred_list, 0)
-                y = np.concatenate(y_list, 0)
-                mi_f1 = f1_score(y, ret, average='micro')'''
+                mi_f1 = f1_score(val_y.cpu().numpy(), pred.cpu().numpy(), average='micro')
 
                 print('current f1', mi_f1)
 
