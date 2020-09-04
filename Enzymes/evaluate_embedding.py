@@ -57,7 +57,8 @@ class LogReg(nn.Module):
 def logistic_classify(x, y):
 
     nb_classes = np.unique(y).shape[0]
-    xent = nn.CrossEntropyLoss(weight=torch.tensor([0.02,0.02,0.5]).double().to('cuda'))
+    #xent = nn.CrossEntropyLoss(weight=torch.tensor([0.2,0.2,5]).double().to('cuda'))
+    xent = nn.CrossEntropyLoss()
     hid_units = x.shape[1]
 
     accs = []
