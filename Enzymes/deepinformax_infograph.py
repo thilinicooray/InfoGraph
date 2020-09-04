@@ -233,13 +233,13 @@ if __name__ == '__main__':
                 accuracies_node['linearsvc'].append(res[2])
                 accuracies_node['randomforest'].append(res[3])
                 print('node ', accuracies_node)
-                print('graph classificaion')
+                '''print('graph classificaion')
                 res = evaluate_embedding(emb_class, y_class)
                 accuracies_class['logreg'].append(res[0])
                 accuracies_class['svc'].append(res[1])
                 accuracies_class['linearsvc'].append(res[2])
                 accuracies_class['randomforest'].append(res[3])
-                print('class ', accuracies_node)
+                print('class ', accuracies_node)'''
 
 
 
