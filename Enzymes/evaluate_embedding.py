@@ -61,7 +61,7 @@ def logistic_classify(x, y):
     hid_units = x.shape[1]
 
     accs = []
-    kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
+    kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=80)
     for train_index, test_index in kf.split(x, y):
         train_embs, test_embs = x[train_index], x[test_index]
         train_lbls, test_lbls= y[train_index], y[test_index]
@@ -161,13 +161,13 @@ def evaluate_embedding(embeddings, labels, search=False):
     x, y = np.array(embeddings), np.array(labels)
     print(x.shape, y.shape)
 
-    #logreg_accuracies = [logistic_classify(x, y) for _ in range(1)]
+    logreg_accuracies = [logistic_classify(x, y) for _ in range(1)]
     # print(logreg_accuracies)
-    #print('LogReg', 0.0)
+    print('LogReg', np.mean(logreg_accuracies))
 
-    svc_accuracies = [svc_classify(x,y, search) for _ in range(1)]
+    #svc_accuracies = [svc_classify(x,y, search) for _ in range(1)]
     # print(svc_accuracies)
-    print('svc', np.mean(svc_accuracies))
+    #print('svc', np.mean(svc_accuracies))
 
     #linearsvc_accuracies = [linearsvc_classify(x, y, search) for _ in range(1)]
     # print(linearsvc_accuracies)
@@ -177,7 +177,7 @@ def evaluate_embedding(embeddings, labels, search=False):
     # print(randomforest_accuracies)
     #print('randomforest', 0.0)
 
-    return 0.0, np.mean(svc_accuracies), 0.0, 0.0
+    return  np.mean(logreg_accuracies), 0.0, 0.0, 0.0
 
 if __name__ == '__main__':
     evaluate_embedding('./data', 'ENZYMES', np.load('tmp/emb.npy'))
