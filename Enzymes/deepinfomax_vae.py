@@ -409,7 +409,7 @@ if __name__ == '__main__':
             '''losses['recon'].append(recon_loss_all/ len(dataloader))
             losses['node_kl'].append(kl_node_loss_all/ len(dataloader))
             losses['class_kl'].append(kl_class_loss_all/ len(dataloader))'''
-            losses.append(tot_loss)
+            losses.append(tot_loss/ len(dataloader))
 
 
 
