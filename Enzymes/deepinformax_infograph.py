@@ -147,7 +147,7 @@ if __name__ == '__main__':
 
         losses = {'recon':[], 'node_kl':[], 'class_kl': []}
 
-        warmup_steps = 10
+        warmup_steps = 0
         #batch_size = 128
         batch_size = args.batch_size
         lr = args.lr
