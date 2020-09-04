@@ -72,7 +72,7 @@ def logistic_classify(x, y):
 
         log = LogReg(hid_units, nb_classes).double().to('cuda')
         log.cuda()
-        opt = torch.optim.Adam(log.parameters(), lr=0.1, weight_decay=0.0)
+        opt = torch.optim.Adam(log.parameters(), lr=0.01, weight_decay=0.0)
 
         best_val = 0
         test_acc = None
