@@ -82,6 +82,7 @@ def process(dataset):
         graph = nx.Graph()
         graph.add_edges_from(adj_list[idx])
         if max_nodes is not None and graph.number_of_nodes() > max_nodes:
+            print('came here ')
             continue
 
         graph.graph['label'] = graph_labels[idx - 1]
