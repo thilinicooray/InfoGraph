@@ -126,9 +126,7 @@ def load(dataset):
             labels.append(np.array(list(nx.get_node_attributes(graph, 'label').values())))
             feat.append(np.array(list(nx.get_node_attributes(graph, 'feat').values())))
 
-        adj, diff, feat, labels = np.array(adj), np.array(diff), np.array(feat), np.array(labels).astype(int)
-
-        print('label_type ', print(labels.dtype))
+        adj, diff, feat, labels = np.array(adj), np.array(diff), np.array(feat), np.array(labels)
 
         np.save(f'{datadir}/adj.npy', adj)
         np.save(f'{datadir}/diff.npy', diff)
