@@ -286,8 +286,8 @@ class GDC(object):
             indptr = np.append(indptr, len(edge_index_np[0]))
 
             neighbors, neighbor_weights = GDC.__calc_ppr__(
-                indptr, edge_index_np[1], out_degree, kwargs['alpha'],
-                kwargs['eps'])
+                indptr, edge_index_np[1], out_degree, 0.15,
+                1e-4)
             ppr_normalization = 'col' if normalization == 'col' else 'row'
             edge_index, edge_weight = self.__neighbors_to_graph__(
                 neighbors, neighbor_weights, ppr_normalization,
