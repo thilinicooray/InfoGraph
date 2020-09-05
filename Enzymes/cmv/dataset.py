@@ -50,6 +50,8 @@ def process(dataset):
 
     graph_labels = []
     unique_labels = set()
+
+    print('node_attribute len', len(node_attrs))
     with open('{0}_graph_labels.txt'.format(prefix), 'r') as f:
         for line in f:
             val = int(line.strip('\n'))
@@ -58,6 +60,8 @@ def process(dataset):
             graph_labels.append(val)
     label_idx_dict = {val: idx for idx, val in enumerate(unique_labels)}
     graph_labels = np.array([label_idx_dict[l] for l in graph_labels])
+
+    print('graph labels ', len(graph_labels), len(graph_node_dict))
 
     adj_list = {idx: [] for idx in range(1, len(graph_labels) + 1)}
     index_graph = {idx: [] for idx in range(1, len(graph_labels) + 1)}
@@ -71,8 +75,10 @@ def process(dataset):
         index_graph[k] = [u - 1 for u in set(index_graph[k])]
 
     graphs, pprs = [], []
+    node_len_list = []
     for idx in range(1, 1 + len(adj_list)):
         graph = nx.from_edgelist(adj_list[idx])
+        node_len_list.append(graph.number_of_nodes())
         if max_nodes is not None and graph.number_of_nodes() > max_nodes:
             continue
 
@@ -95,6 +101,8 @@ def process(dataset):
 
         graphs.append(nx.relabel_nodes(graph, mapping))
         pprs.append(compute_ppr(graph, alpha=0.2))
+
+    print('node counts ', node_len_list)
 
     if 'feat_dim' in graphs[0].graph:
         pass
