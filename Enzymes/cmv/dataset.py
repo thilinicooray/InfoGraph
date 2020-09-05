@@ -64,27 +64,23 @@ def process(dataset):
 
     adj_list = {idx: [] for idx in range(1, len(graph_labels) + 1)}
     index_graph = {idx: [] for idx in range(1, len(graph_labels) + 1)}
-    adj_tot = 0
     with open('{0}_A.txt'.format(prefix), 'r') as f:
         for line in f:
             u, v = tuple(map(int, line.strip('\n').split(',')))
             adj_list[graph_node_dict[u]].append((u, v))
             index_graph[graph_node_dict[u]] += [u, v]
 
-    for g in adj_list:
-        adj_tot += len(adj_list[g])
 
-    print('adj_tot', adj_tot)
 
     for k in index_graph.keys():
         index_graph[k] = [u - 1 for u in set(index_graph[k])]
 
     graphs, pprs = [], []
-    node_len_list = []
     tot_nodes = 0
     for idx in range(1, 1 + len(adj_list)):
-        graph = nx.from_edgelist(adj_list[idx])
-        node_len_list.append(graph.number_of_nodes())
+        #graph = nx.from_edgelist(adj_list[idx])
+        graph = nx.Graph()
+        graph.add_edges_from(adj_list[idx])
         if max_nodes is not None and graph.number_of_nodes() > max_nodes:
             continue
 
