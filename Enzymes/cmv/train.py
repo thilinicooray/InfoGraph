@@ -316,7 +316,7 @@ def train(dataset, gpu, num_layer=4, epoch=40, batch=64):
             real_labels = torch.cat((real_labels.clone(), labels[g_id+1][:num_nodes[g_id+1]]), 0)
 
 
-        x = real_nodes.cpu().numpy()
+        x = real_nodes.double().cpu().numpy()
         y = real_labels.cpu().numpy()
 
         res = evaluate_embedding(x, y)
