@@ -237,7 +237,7 @@ def train(dataset, gpu, num_layer=4, epoch=40, batch=64):
 
     adj, diff, feat, labels, num_nodes = load(dataset)
 
-    print('feat', labels[0])
+    #print('feat', labels[0])
 
     feat = torch.FloatTensor(feat).cuda()
     accuracies_node = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
@@ -301,7 +301,13 @@ def train(dataset, gpu, num_layer=4, epoch=40, batch=64):
 
         node_embeds, graph_embeds = model.embed(features, adj, diff, num_nodes)
 
-        x = node_embeds.cpu().numpy()
+
+        real_nodes = []
+        real_labels = []
+
+        print('eval ', node_embeds.size(), num_nodes.size(), labels.size())
+
+        '''x = node_embeds.cpu().numpy()
         y = labels.cpu().numpy()
 
         res = evaluate_embedding(x, y)
@@ -309,7 +315,7 @@ def train(dataset, gpu, num_layer=4, epoch=40, batch=64):
         accuracies_node['svc'].append(res[1])
         accuracies_node['linearsvc'].append(res[2])
         accuracies_node['randomforest'].append(res[3])
-        print('node ', accuracies_node)
+        print('node ', accuracies_node)'''
 
 
 
