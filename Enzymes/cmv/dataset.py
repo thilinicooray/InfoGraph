@@ -24,10 +24,19 @@ def process(dataset):
     prefix = os.path.join(src, dataset, dataset)
 
     graph_node_dict = {}
+    graph_nodeset = {}
     with open('{0}_graph_indicator.txt'.format(prefix), 'r') as f:
         for idx, line in enumerate(f):
             graph_node_dict[idx + 1] = int(line.strip('\n'))
+            g_id = int(line.strip('\n'))
+
+            if g_id not in graph_nodeset:
+                graph_nodeset[g_id] = [idx + 1]
+            else:
+                graph_nodeset[g_id].append(idx + 1)
+
     max_nodes = Counter(graph_node_dict.values()).most_common(1)[0][1]
+
 
     node_labels = []
     if os.path.exists('{0}_node_labels.txt'.format(prefix)):
@@ -60,8 +69,6 @@ def process(dataset):
     label_idx_dict = {val: idx for idx, val in enumerate(unique_labels)}
     graph_labels = np.array([label_idx_dict[l] for l in graph_labels])
 
-    print('graph labels ', len(graph_labels), len(graph_node_dict))
-
     adj_list = {idx: [] for idx in range(1, len(graph_labels) + 1)}
     index_graph = {idx: [] for idx in range(1, len(graph_labels) + 1)}
     with open('{0}_A.txt'.format(prefix), 'r') as f:
@@ -81,8 +88,8 @@ def process(dataset):
         #graph = nx.from_edgelist(adj_list[idx])
         graph = nx.Graph()
         graph.add_edges_from(adj_list[idx])
+        graph.add_nodes_from(graph_nodeset[idx])
         if max_nodes is not None and graph.number_of_nodes() > max_nodes:
-            print('came here ')
             continue
 
         graph.graph['label'] = graph_labels[idx - 1]
