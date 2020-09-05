@@ -128,6 +128,8 @@ def load(dataset):
 
         adj, diff, feat, labels = np.array(adj), np.array(diff), np.array(feat), np.array(labels)
 
+        print('labels size ',np.array(labels).shape )
+
         np.save(f'{datadir}/adj.npy', adj)
         np.save(f'{datadir}/diff.npy', diff)
         np.save(f'{datadir}/feat.npy', feat)
