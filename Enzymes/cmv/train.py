@@ -242,7 +242,6 @@ def train(dataset, gpu, num_layer=4, epoch=40, batch=64):
     for n_node in num_nodes:
         tot += n_node
 
-    print('total node count', tot)
 
     #print('feat', labels[0])
 
@@ -316,18 +315,16 @@ def train(dataset, gpu, num_layer=4, epoch=40, batch=64):
             real_nodes = torch.cat((real_nodes.clone(), node_embeds[g_id+1][:num_nodes[g_id+1]]), 0)
             real_labels = torch.cat((real_labels.clone(), labels[g_id+1][:num_nodes[g_id+1]]), 0)
 
-        print('eval ', real_nodes.size(), real_labels.size(), labels.size())
 
-
-        '''x = node_embeds.cpu().numpy()
-        y = labels.cpu().numpy()
+        x = real_nodes.cpu().numpy()
+        y = real_labels.cpu().numpy()
 
         res = evaluate_embedding(x, y)
         accuracies_node['logreg'].append(res[0])
         accuracies_node['svc'].append(res[1])
         accuracies_node['linearsvc'].append(res[2])
         accuracies_node['randomforest'].append(res[3])
-        print('node ', accuracies_node)'''
+        print('node ', accuracies_node)
 
 
 
