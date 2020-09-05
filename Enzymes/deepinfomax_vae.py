@@ -229,7 +229,7 @@ class GcnInfomax(nn.Module):
                 class_emb = global_mean_pool(accumulated_class_latent_embeddings, batch)
 
 
-                ret_node.append(entangledrep.cpu().numpy())
+                ret_node.append(node_latent_embeddings.cpu().numpy())
                 node_label_idx = (data.x[:,18:] != 0).nonzero()[:,1]
                 y_node.append(node_label_idx.cpu().numpy())
                 ret_class.append(class_emb.cpu().numpy())
