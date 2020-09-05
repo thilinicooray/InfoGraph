@@ -113,9 +113,6 @@ def process(dataset):
         graphs.append(nx.relabel_nodes(graph, mapping))
         pprs.append(compute_ppr(graph, alpha=0.2))
 
-    print('tot nodes', tot_nodes)
-
-
     if 'feat_dim' in graphs[0].graph:
         pass
     else:

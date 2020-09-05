@@ -233,7 +233,7 @@ def train(dataset, gpu, num_layer=4, epoch=40, batch=64):
     patience = 20
     lr = 0.001
     l2_coef = 0.0
-    hid_units = 32
+    hid_units = 512
 
     adj, diff, feat, labels, num_nodes = load(dataset)
 
@@ -241,8 +241,6 @@ def train(dataset, gpu, num_layer=4, epoch=40, batch=64):
 
     for n_node in num_nodes:
         tot += n_node
-
-    print('num_nodes here ', tot)
 
 
     #print('feat', labels[0])
