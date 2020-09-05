@@ -242,10 +242,14 @@ def train(dataset, gpu, num_layer=4, epoch=40, batch=64):
     feat = torch.FloatTensor(feat).cuda()
     accuracies_node = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
 
-    print('feat ', feat.size(), labels)
+    labels = torch.from_numpy(labels)
+
+    print('feat ', feat.size(), labels.size())
     diff = torch.FloatTensor(diff).cuda()
     adj = torch.FloatTensor(adj).cuda()
-    labels = torch.LongTensor(labels).cuda()
+    #labels = torch.LongTensor(labels).cuda()
+
+
 
     ft_size = feat[0].shape[1]
     max_nodes = feat[0].shape[0]
