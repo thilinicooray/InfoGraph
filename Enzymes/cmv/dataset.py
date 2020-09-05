@@ -67,7 +67,6 @@ def process(dataset):
     adj_tot = 0
     with open('{0}_A.txt'.format(prefix), 'r') as f:
         for line in f:
-            adj_tot += 1
             u, v = tuple(map(int, line.strip('\n').split(',')))
             adj_list[graph_node_dict[u]].append((u, v))
             index_graph[graph_node_dict[u]] += [u, v]
@@ -79,6 +78,7 @@ def process(dataset):
 
     graphs, pprs = [], []
     node_len_list = []
+    tot_nodes = 0
     for idx in range(1, 1 + len(adj_list)):
         graph = nx.from_edgelist(adj_list[idx])
         node_len_list.append(graph.number_of_nodes())
@@ -86,6 +86,7 @@ def process(dataset):
             continue
 
         graph.graph['label'] = graph_labels[idx - 1]
+        tot_nodes += len(graph.nodes())
         for u in graph.nodes():
             if len(node_labels) > 0:
                 node_label_one_hot = [0] * num_unique_node_labels
@@ -104,6 +105,8 @@ def process(dataset):
 
         graphs.append(nx.relabel_nodes(graph, mapping))
         pprs.append(compute_ppr(graph, alpha=0.2))
+
+    print('tot nodes', tot_nodes)
 
 
     if 'feat_dim' in graphs[0].graph:
