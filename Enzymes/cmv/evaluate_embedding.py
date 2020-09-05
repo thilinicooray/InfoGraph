@@ -15,6 +15,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 import seaborn as sns
+sklearn.metrics import f1_score
 
 from sklearn.preprocessing import StandardScaler
 
@@ -89,8 +90,9 @@ def logistic_classify(x, y):
 
         logits = log(test_embs)
         preds = torch.argmax(logits, dim=1)
-        acc = torch.sum(preds == test_lbls).float() / test_lbls.shape[0]
-        accs.append(acc.item())
+        #acc = torch.sum(preds == test_lbls).float() / test_lbls.shape[0]
+        f1 = f1_score(test_lbls, preds.cpu().numpy(), average='micro')
+        accs.append(f1.item())
     return np.mean(accs)
 
 def svc_classify(data, y, search):
