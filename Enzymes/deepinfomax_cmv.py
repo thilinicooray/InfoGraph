@@ -33,9 +33,11 @@ from utils import imshow_grid, mse_loss, reparameterize, group_wise_reparameteri
 from sklearn.linear_model import LogisticRegression
 
 from torch_sparse import coalesce
-import torch_geometric.transforms.GDC.diffusion_matrix_approx as diffusion_matrix_approx
+from torch_geometric.transforms import GDC.diffusion_matrix_approx
 import torch_geometric.transforms.GDC.sparsify_sparse as sparsify_sparse
 import torch_geometric.transforms.GDC.transition_matrix as transition_matrix
+
+from utils import *
 
 from arguments import arg_parse
 
@@ -291,7 +293,7 @@ def get_diffusion_edge_index(edge_index, num_nodes):
 
     edge_index, edge_weight = coalesce(edge_index, edge_weight, N, N)
 
-    edge_index, edge_weight = diffusion_matrix_approx(
+    edge_index, edge_weight = GDC.diffusion_matrix_approx(
             edge_index, edge_weight, N, 'sym',
         diffusion_kwargs=dict(method='ppr', alpha=0.15))
     edge_index, edge_weight = sparsify_sparse(
