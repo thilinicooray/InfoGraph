@@ -15,7 +15,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 import seaborn as sns
-sklearn.metrics import f1_score
+from sklearn.metrics import f1_score
 
 from sklearn.preprocessing import StandardScaler
 
