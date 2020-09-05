@@ -5,7 +5,7 @@ import torch.nn.functional as F
 from sklearn.model_selection import GridSearchCV, StratifiedKFold
 from dataset import load
 
-from ..evaluate_embedding import evaluate_embedding
+from evaluate_embedding import evaluate_embedding
 
 
 class GCNLayer(nn.Module):

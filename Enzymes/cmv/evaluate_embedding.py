@@ -16,16 +16,12 @@ from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-import os
+from sklearn.preprocessing import StandardScaler
 
-seed = 97
-#epochs = 30
-
-
-def draw_plot(datadir, DS, embeddings, fname, max_nodes=None):
-    return
-    graphs = read_graphfile(datadir, DS, max_nodes=max_nodes)
-    labels = [graph.graph['label'] for graph in graphs]
+def draw_plot(labels, embeddings, fname, max_nodes=None):
+    #return
+    #graphs = read_graphfile(datadir, DS, max_nodes=max_nodes)
+    #labels = [graph.graph['label'] for graph in graphs]
 
     labels = preprocessing.LabelEncoder().fit_transform(labels)
     x, y = np.array(embeddings), np.array(labels)
@@ -61,11 +57,12 @@ class LogReg(nn.Module):
 def logistic_classify(x, y):
 
     nb_classes = np.unique(y).shape[0]
+    #xent = nn.CrossEntropyLoss(weight=torch.tensor([0.2,0.2,5]).double().to('cuda'))
     xent = nn.CrossEntropyLoss()
     hid_units = x.shape[1]
 
     accs = []
-    kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
+    kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=80)
     for train_index, test_index in kf.split(x, y):
         train_embs, test_embs = x[train_index], x[test_index]
         train_lbls, test_lbls= y[train_index], y[test_index]
@@ -74,13 +71,13 @@ def logistic_classify(x, y):
         test_embs, test_lbls= torch.from_numpy(test_embs).cuda(), torch.from_numpy(test_lbls).cuda()
 
 
-        log = LogReg(hid_units, nb_classes)
+        log = LogReg(hid_units, nb_classes).double().to('cuda')
         log.cuda()
         opt = torch.optim.Adam(log.parameters(), lr=0.01, weight_decay=0.0)
 
         best_val = 0
         test_acc = None
-        for it in range(100):
+        for it in range(300):
             log.train()
             opt.zero_grad()
 
@@ -96,10 +93,13 @@ def logistic_classify(x, y):
         accs.append(acc.item())
     return np.mean(accs)
 
-def svc_classify(x, y, search):
+def svc_classify(data, y, search):
 
-    #for i in range(100):
-    for C in [0.001, 0.01,0.1,1,10,100,1000, 10000, 100000]:
+    scaler = StandardScaler()
+    scaler.fit(data)
+    x = scaler.transform(data)
+
+    for c in [1,10,100,1000]:
 
         kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=80)
         accuracies = []
@@ -109,17 +109,17 @@ def svc_classify(x, y, search):
             y_train, y_test = y[train_index], y[test_index]
             # x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.1)
             if search:
-                params = {'C':[0.001, 0.01,0.1,1,10,100,1000]}
+                params = {'C':[1,10,100,1000]}
                 classifier = GridSearchCV(SVC(), params, cv=5, scoring='accuracy', verbose=0)
             else:
-                classifier = SVC(C=C)
+                classifier = SVC(C=c)
             classifier.fit(x_train, y_train)
             accuracies.append(accuracy_score(y_test, classifier.predict(x_test)))
 
         mean = np.mean(accuracies)
         std = np.std(accuracies)
 
-        print('mean libsvm ',  C, mean, 'std ', std)
+        print('mean libsvm ', c, mean, 'std ', std)
 
     return mean
 
@@ -151,7 +151,7 @@ def linearsvc_classify(x, y, search):
             params = {'C':[0.001, 0.01,0.1,1,10,100,1000]}
             classifier = GridSearchCV(LinearSVC(max_iter=1000), params, cv=5, scoring='accuracy', verbose=0)
         else:
-            classifier = LinearSVC(C=1000)
+            classifier = LinearSVC(C=10)
         classifier.fit(x_train, y_train)
         accuracies.append(accuracy_score(y_test, classifier.predict(x_test)))
     return np.mean(accuracies)
@@ -162,13 +162,13 @@ def evaluate_embedding(embeddings, labels, search=False):
     x, y = np.array(embeddings), np.array(labels)
     print(x.shape, y.shape)
 
-    #logreg_accuracies = [logistic_classify(x, y) for _ in range(1)]
+    logreg_accuracies = [logistic_classify(x, y) for _ in range(1)]
     # print(logreg_accuracies)
-    #print('LogReg', 0.0)
+    print('LogReg', np.mean(logreg_accuracies))
 
-    svc_accuracies = [svc_classify(x,y, search) for _ in range(1)]
+    #svc_accuracies = [svc_classify(x,y, search) for _ in range(1)]
     # print(svc_accuracies)
-    print('svc', np.mean(svc_accuracies))
+    #print('svc', np.mean(svc_accuracies))
 
     #linearsvc_accuracies = [linearsvc_classify(x, y, search) for _ in range(1)]
     # print(linearsvc_accuracies)
@@ -178,7 +178,7 @@ def evaluate_embedding(embeddings, labels, search=False):
     # print(randomforest_accuracies)
     #print('randomforest', 0.0)
 
-    return 0.0, np.mean(svc_accuracies), 0.0, 0.0
+    return  np.mean(logreg_accuracies), 0.0, 0.0, 0.0
 
 if __name__ == '__main__':
     evaluate_embedding('./data', 'ENZYMES', np.load('tmp/emb.npy'))
