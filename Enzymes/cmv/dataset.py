@@ -71,6 +71,9 @@ def process(dataset):
             adj_list[graph_node_dict[u]].append((u, v))
             index_graph[graph_node_dict[u]] += [u, v]
 
+    for g in adj_list:
+        adj_tot += len(adj_list[g])
+
     print('adj_tot', adj_tot)
 
     for k in index_graph.keys():
