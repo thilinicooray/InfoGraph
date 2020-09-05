@@ -8,7 +8,7 @@ from utils import compute_ppr, normalize_adj
 
 def download(dataset):
     basedir = os.path.dirname(os.path.abspath(__file__))
-    datadir = os.path.join(basedir, 'data', dataset)
+    datadir = os.path.join(basedir, 'data_cmv', dataset)
     if not os.path.exists(datadir):
         os.makedirs(datadir)
         url = 'https://ls11-www.cs.tu-dortmund.de/people/morris/graphkerneldatasets/{0}.zip'.format(dataset)
