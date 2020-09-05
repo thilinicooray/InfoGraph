@@ -33,9 +33,7 @@ from utils import imshow_grid, mse_loss, reparameterize, group_wise_reparameteri
 from sklearn.linear_model import LogisticRegression
 
 from torch_sparse import coalesce
-from gdc.GDC import diffusion_matrix_approx
-import torch_geometric.transforms.GDC.sparsify_sparse as sparsify_sparse
-import torch_geometric.transforms.GDC.transition_matrix as transition_matrix
+from gdc import GDC
 
 from utils import *
 
@@ -130,7 +128,7 @@ class Model(nn.Module):
         l1, gv1, l2, gv2 = self.forward(adj, diff, feat)
         return (l1 + l2).detach(),(gv1 + gv2).detach()
 
-    def get_embeddings_whole(self, loader):
+    def get_embeddings_whole(self, gdc_net,loader):
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         ret_node = []
@@ -140,6 +138,8 @@ class Model(nn.Module):
         with torch.no_grad():
             for data in loader:
                 data.to(device)
+
+                diff_edge_index = get_diffusion_edge_index(gdc_net, data.edge_index, data.num_nodes)
 
                 x_node, x_graph = self.embed(data.edge_index, diff_edge_index, data.x[:,:18])
 
@@ -284,7 +284,7 @@ def global_global_loss_(g1_enc, g2_enc, measure):
     E_neg = E_neg / (num_graphs * (num_graphs - 1))
     return E_neg - E_pos
 
-def get_diffusion_edge_index(edge_index, num_nodes):
+def get_diffusion_edge_index(gdc_net,edge_index, num_nodes):
     N = num_nodes
     edge_index = edge_index
     edge_weight = torch.ones(edge_index.size(1),
@@ -293,14 +293,14 @@ def get_diffusion_edge_index(edge_index, num_nodes):
 
     edge_index, edge_weight = coalesce(edge_index, edge_weight, N, N)
 
-    edge_index, edge_weight = diffusion_matrix_approx(
+    edge_index, edge_weight = gdc_net.diffusion_matrix_approx(
             edge_index, edge_weight, N, 'sym',
         diffusion_kwargs=dict(method='ppr', alpha=0.15))
-    edge_index, edge_weight = sparsify_sparse(
+    edge_index, edge_weight = gdc_net.sparsify_sparse(
             edge_index, edge_weight, N, sparsification_kwargs=dict(method='threshold', avg_degree=64))
 
     edge_index, edge_weight = coalesce(edge_index, edge_weight, N, N)
-    edge_index, edge_weight = transition_matrix(
+    edge_index, edge_weight = gdc_net.transition_matrix(
         edge_index, edge_weight, N, 'col')
 
     edge_index = edge_index
@@ -321,6 +321,8 @@ if __name__ == '__main__':
         #for epochs in range(20,41):
 
         print('seed ', seed, 'epochs ', epochs)
+
+        gdc_net = GDC()
 
 
         random.seed(seed)
@@ -407,7 +409,7 @@ if __name__ == '__main__':
 
                 optimizer.zero_grad()
 
-                diff_edge_index = get_diffusion_edge_index(data.edge_index, data.num_nodes)
+                diff_edge_index = get_diffusion_edge_index(gdc_net, data.edge_index, data.num_nodes)
 
                 lv1, gv1, lv2, gv2 = model(data.edge_index, diff_edge_index, data.x[:,:18])
 
@@ -428,7 +430,7 @@ if __name__ == '__main__':
             if epoch > warmup_steps:
                 model.eval()
 
-                emb_node, y_node, emb_class, y_class = model.get_embeddings_whole(dataloader)
+                emb_node, y_node, emb_class, y_class = model.get_embeddings_whole(gdc_net, dataloader)
                 print('node classificaion')
                 res = evaluate_embedding(emb_node, y_node)
                 accuracies_node['logreg'].append(res[0])
