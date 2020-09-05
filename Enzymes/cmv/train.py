@@ -309,7 +309,7 @@ def train(dataset, gpu, num_layer=4, epoch=40, batch=64):
             real_nodes = torch.cat((real_nodes.clone(), node_embeds[g_id+1][:num_nodes[g_id+1]]), 0)
             real_labels = torch.cat((real_labels.clone(), labels[g_id+1][:num_nodes[g_id+1]]), 0)
 
-        print('eval ', real_nodes.size(), real_labels, labels.size())
+        print('eval ', real_nodes.size(), real_labels.size(), labels.size())
 
 
         '''x = node_embeds.cpu().numpy()
