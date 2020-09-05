@@ -409,15 +409,23 @@ if __name__ == '__main__':
 
                 optimizer.zero_grad()
 
+                print('came to diff')
+
                 diff_edge_index = get_diffusion_edge_index(gdc_net, data.edge_index, data.num_nodes)
 
+                print('got diff')
+
                 lv1, gv1, lv2, gv2 = model(data.edge_index, diff_edge_index, data.x[:,:18])
+
+                print('ran method')
 
 
                 loss1 = local_global_loss_(lv1, gv2, data.batch, 'JSD')
                 loss2 = local_global_loss_(lv2, gv1, data.batch, 'JSD')
                 # loss3 = global_global_loss_(gv1, gv2, 'JSD')
                 loss = loss1 + loss2
+
+                print('got loss')
 
                 loss_all += loss
 
