@@ -128,8 +128,6 @@ def load(dataset):
 
         adj, diff, feat, labels = np.array(adj), np.array(diff), np.array(feat), np.array(labels)
 
-        print('labels size ',labels.shape,  feat.shape)
-
         np.save(f'{datadir}/adj.npy', adj)
         np.save(f'{datadir}/diff.npy', diff)
         np.save(f'{datadir}/feat.npy', feat)
@@ -143,6 +141,7 @@ def load(dataset):
 
     max_nodes = max([a.shape[0] for a in adj])
     feat_dim = feat[0].shape[-1]
+    label_dim = 1
 
     num_nodes = []
 
@@ -162,10 +161,12 @@ def load(dataset):
 
         feat[idx] = np.vstack((feat[idx], np.zeros((max_nodes - feat[idx].shape[0], feat_dim))))
 
+        labels[idx] = np.vstack((labels[idx], np.zeros((max_nodes - labels[idx].shape[0], label_dim))))
+
     adj = np.array(adj.tolist()).reshape(-1, max_nodes, max_nodes)
     diff = np.array(diff.tolist()).reshape(-1, max_nodes, max_nodes)
     feat = np.array(feat.tolist()).reshape(-1, max_nodes, feat_dim)
-    labels = np.array(labels.tolist()).reshape(-1, max_nodes, 1)
+    labels = np.array(labels.tolist()).reshape(-1, max_nodes, label_dim)
 
     return adj, diff, feat, labels, num_nodes
 
