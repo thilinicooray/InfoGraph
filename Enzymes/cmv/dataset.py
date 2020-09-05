@@ -163,6 +163,7 @@ def load(dataset):
     adj = np.array(adj.tolist()).reshape(-1, max_nodes, max_nodes)
     diff = np.array(diff.tolist()).reshape(-1, max_nodes, max_nodes)
     feat = np.array(feat.tolist()).reshape(-1, max_nodes, feat_dim)
+    labels = np.array(labels.tolist()).reshape(-1, max_nodes, 1)
 
     return adj, diff, feat, labels, num_nodes
 
