@@ -302,10 +302,15 @@ def train(dataset, gpu, num_layer=4, epoch=40, batch=64):
         node_embeds, graph_embeds = model.embed(features, adj, diff, num_nodes)
 
 
-        real_nodes = None
-        real_labels = None
+        real_nodes = node_embeds[0][:num_nodes[0]]
+        real_labels = labels[0][:num_nodes[0]]
 
-        print('eval ', node_embeds.size(), num_nodes, labels.size())
+        for g_id in range(len(num_nodes[1:])):
+            real_nodes = torch.cat((real_nodes.clone(), node_embeds[g_id+1][:num_nodes[g_id+1]]), 0)
+            real_labels = torch.cat((real_labels.clone(), labels[g_id+1][:num_nodes[g_id+1]]), 0)
+
+        print('eval ', real_nodes.size(), real_labels, labels.size())
+
 
         '''x = node_embeds.cpu().numpy()
         y = labels.cpu().numpy()
