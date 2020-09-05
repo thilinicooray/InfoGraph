@@ -231,7 +231,7 @@ def train(dataset, gpu, num_layer=4, epoch=40, batch=64):
     nb_epochs = epoch
     batch_size = batch
     patience = 20
-    lr = 0.0001
+    lr = 0.001
     l2_coef = 0.0
     hid_units = 1024
 
