@@ -244,7 +244,7 @@ def train(dataset, gpu, num_layer=4, epoch=40, batch=64):
 
     diff = torch.FloatTensor(diff).cuda()
     adj = torch.FloatTensor(adj).cuda()
-    #labels = torch.LongTensor(labels).cuda()
+    labels = torch.LongTensor(labels).cuda()
 
 
 
