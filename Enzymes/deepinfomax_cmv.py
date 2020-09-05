@@ -295,9 +295,9 @@ def get_diffusion_edge_index(gdc_net,edge_index, num_nodes):
 
     edge_index, edge_weight = gdc_net.diffusion_matrix_approx(
             edge_index, edge_weight, N, 'sym','ppr',
-        diffusion_kwargs=dict(method='ppr', alpha=0.15))
+        kwargs=dict(method='ppr', alpha=0.15))
     edge_index, edge_weight = gdc_net.sparsify_sparse(
-            edge_index, edge_weight, N, 'threshold',sparsification_kwargs=dict(method='threshold', avg_degree=64))
+            edge_index, edge_weight, N, 'threshold',kwargs=dict(method='threshold', avg_degree=64))
 
     edge_index, edge_weight = coalesce(edge_index, edge_weight, N, N)
     edge_index, edge_weight = gdc_net.transition_matrix(
