@@ -82,7 +82,7 @@ def process(dataset):
                 node_label_one_hot = [0] * num_unique_node_labels
                 node_label = node_labels[u - 1]
                 node_label_one_hot[node_label] = 1
-                graph.nodes[u]['label'] = int(node_label)
+                graph.nodes[u]['n_label'] = int(node_label)
             if len(node_attrs) > 0:
                 graph.nodes[u]['feat'] = node_attrs[u - 1]
         if len(node_attrs) > 0:
@@ -123,7 +123,7 @@ def load(dataset):
         for idx, graph in enumerate(graphs):
             adj.append(nx.to_numpy_array(graph))
             #labels.append(graph.graph['label'])
-            labels.append(np.array(list(nx.get_node_attributes(graph, 'label').values())))
+            labels.append(np.array(list(nx.get_node_attributes(graph, 'n_label').values())))
             feat.append(np.array(list(nx.get_node_attributes(graph, 'feat').values())))
 
         adj, diff, feat, labels = np.array(adj), np.array(diff), np.array(feat), np.array(labels)
