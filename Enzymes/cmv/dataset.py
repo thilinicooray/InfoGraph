@@ -20,7 +20,7 @@ def download(dataset):
 
 
 def process(dataset):
-    src = os.path.join(os.path.dirname(__file__), 'data')
+    src = os.path.join(os.path.dirname(__file__), 'data_cmv')
     prefix = os.path.join(src, dataset, dataset)
 
     graph_node_dict = {}
@@ -113,7 +113,7 @@ def process(dataset):
 
 def load(dataset):
     basedir = os.path.dirname(os.path.abspath(__file__))
-    datadir = os.path.join(basedir, 'data', dataset)
+    datadir = os.path.join(basedir, 'data_cmv', dataset)
 
     if not os.path.exists(datadir):
         download(dataset)
