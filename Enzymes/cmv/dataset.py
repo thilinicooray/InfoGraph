@@ -51,7 +51,6 @@ def process(dataset):
     graph_labels = []
     unique_labels = set()
 
-    print('node_attribute len', len(node_attrs))
     with open('{0}_graph_labels.txt'.format(prefix), 'r') as f:
         for line in f:
             val = int(line.strip('\n'))
@@ -65,11 +64,15 @@ def process(dataset):
 
     adj_list = {idx: [] for idx in range(1, len(graph_labels) + 1)}
     index_graph = {idx: [] for idx in range(1, len(graph_labels) + 1)}
+    adj_tot = 0
     with open('{0}_A.txt'.format(prefix), 'r') as f:
         for line in f:
+            adj_tot += 1
             u, v = tuple(map(int, line.strip('\n').split(',')))
             adj_list[graph_node_dict[u]].append((u, v))
             index_graph[graph_node_dict[u]] += [u, v]
+
+    print('adj_tot', adj_tot)
 
     for k in index_graph.keys():
         index_graph[k] = [u - 1 for u in set(index_graph[k])]
@@ -102,7 +105,6 @@ def process(dataset):
         graphs.append(nx.relabel_nodes(graph, mapping))
         pprs.append(compute_ppr(graph, alpha=0.2))
 
-    print('node counts ', node_len_list)
 
     if 'feat_dim' in graphs[0].graph:
         pass
