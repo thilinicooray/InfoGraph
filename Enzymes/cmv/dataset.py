@@ -123,29 +123,29 @@ def load(dataset):
     basedir = os.path.dirname(os.path.abspath(__file__))
     datadir = os.path.join(basedir, 'data_cmv', dataset)
 
-    if not os.path.exists(datadir):
-        download(dataset)
-        graphs, diff = process(dataset)
-        feat, adj, labels = [], [], []
+    '''if not os.path.exists(datadir):
+        download(dataset)'''
+    graphs, diff = process(dataset)
+    feat, adj, labels = [], [], []
 
-        for idx, graph in enumerate(graphs):
-            adj.append(nx.to_numpy_array(graph))
-            #labels.append(graph.graph['label'])
-            labels.append(np.array(list(nx.get_node_attributes(graph, 'n_label').values())))
-            feat.append(np.array(list(nx.get_node_attributes(graph, 'feat').values())))
+    for idx, graph in enumerate(graphs):
+        adj.append(nx.to_numpy_array(graph))
+        #labels.append(graph.graph['label'])
+        labels.append(np.array(list(nx.get_node_attributes(graph, 'n_label').values())))
+        feat.append(np.array(list(nx.get_node_attributes(graph, 'feat').values())))
 
-        adj, diff, feat, labels = np.array(adj), np.array(diff), np.array(feat), np.array(labels)
+    adj, diff, feat, labels = np.array(adj), np.array(diff), np.array(feat), np.array(labels)
 
-        np.save(f'{datadir}/adj.npy', adj)
-        np.save(f'{datadir}/diff.npy', diff)
-        np.save(f'{datadir}/feat.npy', feat)
-        np.save(f'{datadir}/labels.npy', labels)
+    np.save(f'{datadir}/adj.npy', adj)
+    np.save(f'{datadir}/diff.npy', diff)
+    np.save(f'{datadir}/feat.npy', feat)
+    np.save(f'{datadir}/labels.npy', labels)
 
-    else:
+    '''else:
         adj = np.load(f'{datadir}/adj.npy', allow_pickle=True)
         diff = np.load(f'{datadir}/diff.npy', allow_pickle=True)
         feat = np.load(f'{datadir}/feat.npy', allow_pickle=True)
-        labels = np.load(f'{datadir}/labels.npy', allow_pickle=True)
+        labels = np.load(f'{datadir}/labels.npy', allow_pickle=True)'''
 
     max_nodes = max([a.shape[0] for a in adj])
     feat_dim = feat[0].shape[-1]
