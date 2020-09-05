@@ -302,10 +302,10 @@ def train(dataset, gpu, num_layer=4, epoch=40, batch=64):
         node_embeds, graph_embeds = model.embed(features, adj, diff, num_nodes)
 
 
-        real_nodes = []
-        real_labels = []
+        real_nodes = None
+        real_labels = None
 
-        print('eval ', node_embeds.size(), num_nodes.size(), labels.size())
+        print('eval ', node_embeds.size(), num_nodes, labels.size())
 
         '''x = node_embeds.cpu().numpy()
         y = labels.cpu().numpy()
