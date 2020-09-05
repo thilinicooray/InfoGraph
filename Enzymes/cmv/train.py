@@ -237,7 +237,7 @@ def train(dataset, gpu, num_layer=4, epoch=40, batch=64):
 
     adj, diff, feat, labels, num_nodes = load(dataset)
 
-    print('feat', feat.shape, labels.shape, feat.dtype, labels.dtype)
+    print('feat', labels[0])
 
     feat = torch.FloatTensor(feat).cuda()
     accuracies_node = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
