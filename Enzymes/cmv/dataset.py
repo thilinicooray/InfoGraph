@@ -161,7 +161,7 @@ def load(dataset):
 
         feat[idx] = np.vstack((feat[idx], np.zeros((max_nodes - feat[idx].shape[0], feat_dim))))
 
-        labels[idx] = np.vstack((labels[idx], np.zeros((max_nodes - labels[idx].shape[0], label_dim))))
+        labels[idx] = np.vstack((labels[idx], np.zeros((max_nodes - labels[idx].shape[0]))))
 
     adj = np.array(adj.tolist()).reshape(-1, max_nodes, max_nodes)
     diff = np.array(diff.tolist()).reshape(-1, max_nodes, max_nodes)
