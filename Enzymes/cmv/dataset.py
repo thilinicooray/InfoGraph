@@ -82,7 +82,7 @@ def process(dataset):
                 node_label_one_hot = [0] * num_unique_node_labels
                 node_label = node_labels[u - 1]
                 node_label_one_hot[node_label] = 1
-                graph.nodes[u]['label'] = node_label_one_hot
+                graph.nodes[u]['label'] = int(node_label)
             if len(node_attrs) > 0:
                 graph.nodes[u]['feat'] = node_attrs[u - 1]
         if len(node_attrs) > 0:
