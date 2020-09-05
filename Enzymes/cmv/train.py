@@ -242,6 +242,8 @@ def train(dataset, gpu, num_layer=4, epoch=40, batch=64):
     for n_node in num_nodes:
         tot += n_node
 
+    print('num_nodes here ', tot)
+
 
     #print('feat', labels[0])
 
