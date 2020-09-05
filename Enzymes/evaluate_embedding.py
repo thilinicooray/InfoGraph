@@ -95,10 +95,6 @@ def logistic_classify(x, y):
         acc = torch.sum(preds == test_lbls).float() / test_lbls.shape[0]
         #f1 = f1_score(test_lbls.cpu().numpy(), preds.cpu().numpy(), average='micro')
 
-        cls_report = classification_report(test_lbls.cpu().numpy(),  preds.cpu().numpy())
-
-        print('cls report ', cls_report)
-
         accs.append(acc.item())
     return np.mean(accs)
 
