@@ -144,8 +144,8 @@ class GcnInfomax(nn.Module):
         loss.backward()
 
 
-        #return  reconstruction_error.item(), class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
-        return loss.item()
+        return  reconstruction_error.item(), class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
+        #return loss.item()
 
 
     def edge_recon(self, z, edge_index, sigmoid=True):
@@ -320,8 +320,8 @@ if __name__ == '__main__':
         accuracies_node = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
         accuracies_class = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
 
-        #losses = {'recon':[], 'node_kl':[], 'class_kl': []}
-        losses = []
+        losses = {'recon':[], 'node_kl':[], 'class_kl': []}
+        #losses = []
 
         warmup_steps = 0
         #batch_size = 128
@@ -388,12 +388,12 @@ if __name__ == '__main__':
                 data = data.to(device)
 
                 optimizer.zero_grad()
-                #recon_loss, kl_class, kl_node = model(data.x[:,:18], data.edge_index, data.batch, data.num_graphs)
-                current_loss = model(data.x[:,:18].double(), data.edge_index, data.batch, data.num_graphs)
-                '''recon_loss_all += recon_loss
+                recon_loss, kl_class, kl_node = model(data.x[:,:18].double(), data.edge_index, data.batch, data.num_graphs)
+                #current_loss = model(data.x[:,:18].double(), data.edge_index, data.batch, data.num_graphs)
+                recon_loss_all += recon_loss
                 kl_class_loss_all += kl_class
-                kl_node_loss_all += kl_node'''
-                tot_loss += current_loss
+                kl_node_loss_all += kl_node
+                #tot_loss += current_loss
 
 
 
@@ -406,16 +406,16 @@ if __name__ == '__main__':
                 #torch.nn.utils.clip_grad_norm_(model.parameters(), 0.25)
                 optimizer.step()
 
-            '''losses['recon'].append(recon_loss_all/ len(dataloader))
+            losses['recon'].append(recon_loss_all/ len(dataloader))
             losses['node_kl'].append(kl_node_loss_all/ len(dataloader))
-            losses['class_kl'].append(kl_class_loss_all/ len(dataloader))'''
-            losses.append(tot_loss/ len(dataloader))
+            losses['class_kl'].append(kl_class_loss_all/ len(dataloader))
+            #losses.append(tot_loss/ len(dataloader))
 
 
 
-            '''print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(dataloader),
-                                                                                    kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))'''
-            print('Epoch {}, Loss {}'.format(epoch, tot_loss / len(dataloader)))
+            print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(dataloader),
+                                                                                    kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
+            #print('Epoch {}, Loss {}'.format(epoch, tot_loss / len(dataloader)))
 
             #used during finetune phase
             if epoch > warmup_steps :
