@@ -4,7 +4,7 @@ from collections import OrderedDict
 
 import torch
 import torch.nn.functional as F
-from torch.nn import Sequential, Linear, ReLU, Tanh, Sigmoid
+from torch.nn import Sequential, Linear, ReLU, Tanh, Sigmoid, PReLU
 from torch_geometric.datasets import TUDataset
 from torch_geometric.data import DataLoader
 from torch_geometric.nn import GINConv, global_add_pool
@@ -30,6 +30,7 @@ class Encoder(torch.nn.Module):
         # self.nns = []
         self.convs = torch.nn.ModuleList()
         self.bns = torch.nn.ModuleList()
+        self.act = PReLU()
 
         for i in range(num_gc_layers+4):
 
@@ -77,11 +78,11 @@ class Encoder(torch.nn.Module):
         out = torch.cat(xs, 1)
 
         j = self.num_gc_layers
-        node_latent_space_mu = self.bns[j](torch.tanh(self.convs[j](out, edge_index)))
-        node_latent_space_logvar = self.bns[j+1](torch.tanh(self.convs[j+1](out, edge_index)))
+        node_latent_space_mu = self.bns[j](self.act(self.convs[j](out, edge_index)))
+        node_latent_space_logvar = self.bns[j+1](self.act(self.convs[j+1](out, edge_index)))
 
-        class_latent_space_mu = self.bns[j+2](torch.tanh(self.convs[j+2](out, edge_index)))
-        class_latent_space_logvar = self.bns[j+3](torch.tanh(self.convs[j+3](out, edge_index)))
+        class_latent_space_mu = self.bns[j+2](self.act(self.convs[j+2](out, edge_index)))
+        class_latent_space_logvar = self.bns[j+3](self.act(self.convs[j+3](out, edge_index)))
 
         '''node_latent_space_mu = F.relu(self.node_mu(x))
         node_latent_space_logvar = F.relu(self.node_logvar(x))
