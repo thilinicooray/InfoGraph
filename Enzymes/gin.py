@@ -39,11 +39,11 @@ class Encoder(torch.nn.Module):
             else:
                 nn = Sequential(Linear(num_features, dim), ReLU(), Linear(dim, dim))'''
             if i == 0:
-                nn = Sequential(Linear(num_features, dim), ReLU(), Linear(dim, dim))
+                nn = Sequential(Linear(num_features, dim), self.act(), Linear(dim, dim))
             elif i >= num_gc_layers:
-                nn = Sequential(Linear(dim*num_gc_layers, dim), ReLU(), Linear(dim, dim))
+                nn = Sequential(Linear(dim*num_gc_layers, dim), self.act(), Linear(dim, dim))
             else:
-                nn = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim))
+                nn = Sequential(Linear(dim, dim), self.act(), Linear(dim, dim))
 
 
             conv = GINConv(nn)
@@ -69,7 +69,7 @@ class Encoder(torch.nn.Module):
         xs = []
         for i in range(self.num_gc_layers):
 
-            x = F.relu(self.convs[i](x, edge_index))
+            x = self.act(self.convs[i](x, edge_index))
             x = self.bns[i](x)
             xs.append(x)
             # if i == 2:
@@ -101,7 +101,7 @@ class Decoder(torch.nn.Module):
 
         self.linear_model = torch.nn.Sequential(OrderedDict([
             ('linear_1', torch.nn.Linear(in_features=node_dim + class_dim, out_features=node_dim, bias=True)),
-            ('relu_1', ReLU()),
+            ('relu_1', PReLU()),
 
             ('linear_2', torch.nn.Linear(in_features=node_dim, out_features=feat_size, bias=True)),
             ('relu_final', Tanh())
