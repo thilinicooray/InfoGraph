@@ -39,11 +39,11 @@ class Encoder(torch.nn.Module):
             else:
                 nn = Sequential(Linear(num_features, dim), ReLU(), Linear(dim, dim))'''
             if i == 0:
-                nn = Sequential(Linear(num_features, dim), self.act(), Linear(dim, dim))
+                nn = Sequential(Linear(num_features, dim), PReLU(), Linear(dim, dim))
             elif i >= num_gc_layers:
-                nn = Sequential(Linear(dim*num_gc_layers, dim), self.act(), Linear(dim, dim))
+                nn = Sequential(Linear(dim*num_gc_layers, dim), PReLU(), Linear(dim, dim))
             else:
-                nn = Sequential(Linear(dim, dim), self.act(), Linear(dim, dim))
+                nn = Sequential(Linear(dim, dim), PReLU(), Linear(dim, dim))
 
 
             conv = GINConv(nn)
