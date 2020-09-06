@@ -215,7 +215,7 @@ if __name__ == '__main__':
                 data.x = data.x.double()
 
                 optimizer.zero_grad()
-                loss = model(data.x[:,:18], data.edge_index, data.batch, data.num_graphs)
+                loss = model(data.x[:,:18].double(), data.edge_index, data.batch, data.num_graphs)
                 loss_all += loss.item() * data.num_graphs
                 loss.backward()
                 optimizer.step()
