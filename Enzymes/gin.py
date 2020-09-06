@@ -7,7 +7,7 @@ import torch.nn.functional as F
 from torch.nn import Sequential, Linear, ReLU, Tanh, Sigmoid, PReLU
 from torch_geometric.datasets import TUDataset
 from torch_geometric.data import DataLoader
-from torch_geometric.nn import GINConv, global_add_pool
+from torch_geometric.nn import GINConv, global_add_pool, GCNConv
 
 import numpy as np
 from sklearn.model_selection import cross_val_score
@@ -38,15 +38,24 @@ class Encoder(torch.nn.Module):
                 nn = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim))
             else:
                 nn = Sequential(Linear(num_features, dim), ReLU(), Linear(dim, dim))'''
-            if i == 0:
-                nn = Sequential(Linear(num_features, dim), PReLU(), Linear(dim, dim))
+            '''if i == 0:
+                nn = Sequential(Linear(num_features, dim), ReLU(), Linear(dim, dim))
             elif i >= num_gc_layers:
-                nn = Sequential(Linear(dim*num_gc_layers, dim), PReLU(), Linear(dim, dim))
+                nn = Sequential(Linear(dim*num_gc_layers, dim), ReLU(), Linear(dim, dim))
             else:
-                nn = Sequential(Linear(dim, dim), PReLU(), Linear(dim, dim))
+                nn = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim))
 
 
-            conv = GINConv(nn)
+            conv = GINConv(nn)'''
+
+            if i == 0:
+                conv = GCNConv(num_features, dim)
+            elif i >= num_gc_layers:
+                conv = GCNConv(dim*num_gc_layers, dim)
+            else:
+                conv = GCNConv(dim, dim)
+
+
             bn = torch.nn.BatchNorm1d(dim)
 
             self.convs.append(conv)
@@ -69,7 +78,7 @@ class Encoder(torch.nn.Module):
         xs = []
         for i in range(self.num_gc_layers):
 
-            x = self.act(self.convs[i](x, edge_index))
+            x = F.relu(self.convs[i](x, edge_index))
             x = self.bns[i](x)
             xs.append(x)
             # if i == 2:
@@ -78,11 +87,11 @@ class Encoder(torch.nn.Module):
         out = torch.cat(xs, 1)
 
         j = self.num_gc_layers
-        node_latent_space_mu = self.bns[j](self.act(self.convs[j](out, edge_index)))
-        node_latent_space_logvar = self.bns[j+1](self.act(self.convs[j+1](out, edge_index)))
+        node_latent_space_mu = self.bns[j](torch.tanh(self.convs[j](out, edge_index)))
+        node_latent_space_logvar = self.bns[j+1](torch.tanh(self.convs[j+1](out, edge_index)))
 
-        class_latent_space_mu = self.bns[j+2](self.act(self.convs[j+2](out, edge_index)))
-        class_latent_space_logvar = self.bns[j+3](self.act(self.convs[j+3](out, edge_index)))
+        class_latent_space_mu = self.bns[j+2](torch.tanh(self.convs[j+2](out, edge_index)))
+        class_latent_space_logvar = self.bns[j+3](torch.tanh(self.convs[j+3](out, edge_index)))
 
         '''node_latent_space_mu = F.relu(self.node_mu(x))
         node_latent_space_logvar = F.relu(self.node_logvar(x))
@@ -101,10 +110,10 @@ class Decoder(torch.nn.Module):
 
         self.linear_model = torch.nn.Sequential(OrderedDict([
             ('linear_1', torch.nn.Linear(in_features=node_dim + class_dim, out_features=node_dim, bias=True)),
-            ('relu_1', PReLU()),
+            ('relu_1', ReLU()),
 
             ('linear_2', torch.nn.Linear(in_features=node_dim, out_features=feat_size, bias=True)),
-            ('relu_final', PReLU())
+            ('relu_final', Tanh())
         ]))
 
     def forward(self, node_latent_space, class_latent_space):
