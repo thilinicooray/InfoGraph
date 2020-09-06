@@ -129,7 +129,8 @@ class GcnInfomax(nn.Module):
         )
 
 
-        reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
+        #reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
+        reconstructed_node = torch.cat([node_latent_embeddings, class_latent_embeddings], -1)
 
         #reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
         reconstruction_error = self.recon_loss1(reconstructed_node, edge_index, batch)
@@ -229,7 +230,7 @@ class GcnInfomax(nn.Module):
                 class_emb = global_mean_pool(accumulated_class_latent_embeddings, batch)
 
 
-                ret_node.append(entangledrep.cpu().numpy())
+                ret_node.append(node_latent_embeddings.cpu().numpy())
                 node_label_idx = (data.x[:,18:] != 0).nonzero()[:,1]
                 y_node.append(node_label_idx.cpu().numpy())
                 ret_class.append(class_emb.cpu().numpy())
