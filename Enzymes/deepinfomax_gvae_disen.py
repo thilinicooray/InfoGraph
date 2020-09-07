@@ -132,18 +132,18 @@ class GcnInfomax(nn.Module):
         sampling from group mu and logvar for each graph in mini-batch differently makes
         the decoder consider class latent embeddings as random noise and ignore them 
         """
-        '''node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
+        node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
         class_latent_embeddings = group_wise_reparameterize(
             training=True, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
-        )'''
+        )
 
-        z_mu = torch.cat([node_mu, grouped_mu], -1)
-        z_logvar = torch.cat([node_logvar, grouped_logvar], -1)
-        node_latent_embeddings = reparameterize(training=True, mu=z_mu, logvar=z_logvar)
+        #z_mu = torch.cat([node_mu, grouped_mu], -1)
+        #z_logvar = torch.cat([node_logvar, grouped_logvar], -1)
+        #node_latent_embeddings = reparameterize(training=True, mu=z_mu, logvar=z_logvar)
 
 
 
-        #reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
+        reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
         #reconstructed_node = torch.cat([node_latent_embeddings, class_latent_embeddings], -1)
         #reconstructed_node = node_latent_embeddings + class_latent_embeddings
 
@@ -229,7 +229,13 @@ class GcnInfomax(nn.Module):
                 x, edge_index, batch = data.x, data.edge_index, data.batch
 
 
-                node_mu, node_logvar, class_mu, class_logvar, entangledrep = self.encoder(x[:,:18].double(), edge_index, batch)
+                mu, logvar, entangledrep = self.encoder(x[:,:18].double(), edge_index, batch)
+
+                node_mu = mu[:,:self.node_dim]
+                class_mu = mu[:,self.node_dim:]
+
+                node_logvar = logvar[:,:self.node_dim]
+                class_logvar = logvar[:,self.node_dim:]
 
 
                 node_latent_embeddings = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
