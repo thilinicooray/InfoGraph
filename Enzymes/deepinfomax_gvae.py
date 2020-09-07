@@ -208,16 +208,20 @@ class GcnInfomax(nn.Module):
 
                 node_latent_embeddings = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
 
-
+                class_emb = global_mean_pool(node_latent_embeddings, batch)
 
 
                 ret_node.append(node_latent_embeddings.cpu().numpy())
                 node_label_idx = (data.x[:,18:] != 0).nonzero()[:,1]
                 y_node.append(node_label_idx.cpu().numpy())
+                ret_class.append(class_emb.cpu().numpy())
+                y_class.append(data.y.cpu().numpy())
 
 
         ret_node = np.concatenate(ret_node, 0)
         y_node = np.concatenate(y_node, 0)
+        ret_class = np.concatenate(ret_class, 0)
+        y_class = np.concatenate(y_class, 0)
 
         return ret_node, y_node, ret_class, y_class
 
@@ -408,13 +412,13 @@ if __name__ == '__main__':
                 accuracies_node['randomforest'].append(res[3])
                 print('node ', accuracies_node)
                 print('train_loss', losses)
-                '''print('graph classificaion')
+                print('graph classificaion')
                 res = evaluate_embedding(emb_class, y_class)
                 accuracies_class['logreg'].append(res[0])
                 accuracies_class['svc'].append(res[1])
                 accuracies_class['linearsvc'].append(res[2])
                 accuracies_class['randomforest'].append(res[3])
-                print('class ', accuracies_node)'''
+                print('class ', accuracies_class)
 
 
 
