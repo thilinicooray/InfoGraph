@@ -24,7 +24,7 @@ from torch import optim
 
 from cortex_DIM.nn_modules.mi_networks import MIFCNet, MI1x1ConvNet
 from losses import *
-from gin import Encoder, Decoder
+from gin_gvae import Encoder, Decoder
 from evaluate_embedding import evaluate_embedding, draw_plot
 from model import *
 from utils import imshow_grid, mse_loss, reparameterize, group_wise_reparameterize, accumulate_group_evidence, \
@@ -60,6 +60,9 @@ class GcnInfomax(nn.Module):
         self.decoder = Decoder(hidden_dim, hidden_dim, dataset_num_features)
         self.node_discriminator = D_net_gauss(hidden_dim, hidden_dim)
         self.class_discriminator = D_net_gauss(hidden_dim, hidden_dim)
+        self.node_dim = hidden_dim /2
+        self.graph_dim = hidden_dim /2
+
 
 
 
@@ -81,7 +84,13 @@ class GcnInfomax(nn.Module):
 
         # batch_size = data.num_graphs
 
-        node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index, batch)
+        mu, logvar = self.encoder(x, edge_index, batch)
+
+        node_mu = mu[:,:self.node_dim]
+        class_mu = mu[:,self.node_dim:]
+
+        node_logvar = logvar[:,:self.node_dim]
+        class_logvar = logvar[:,self.node_dim:]
 
 
 
@@ -123,18 +132,23 @@ class GcnInfomax(nn.Module):
         sampling from group mu and logvar for each graph in mini-batch differently makes
         the decoder consider class latent embeddings as random noise and ignore them 
         """
-        node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
+        '''node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
         class_latent_embeddings = group_wise_reparameterize(
             training=True, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
-        )
+        )'''
+
+        z_mu = torch.cat([node_mu, grouped_mu], -1)
+        z_logvar = torch.cat([node_logvar, grouped_logvar], -1)
+        node_latent_embeddings = reparameterize(training=True, mu=z_mu, logvar=z_logvar)
 
 
-        reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
+
+        #reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
         #reconstructed_node = torch.cat([node_latent_embeddings, class_latent_embeddings], -1)
         #reconstructed_node = node_latent_embeddings + class_latent_embeddings
 
         #reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
-        reconstruction_error = self.recon_loss1(reconstructed_node, edge_index, batch)
+        reconstruction_error = self.recon_loss1(node_latent_embeddings, edge_index, batch)
 
 
         #class_kl_divergence_loss.backward(retain_graph=True)
