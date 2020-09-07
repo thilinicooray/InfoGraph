@@ -51,13 +51,13 @@ class Encoder(torch.nn.Module):
             if i == 0:
                 conv = GCNConv(num_features, dim)
             elif i >= num_gc_layers:
-                #conv = GCNConv(dim*num_gc_layers, dim)
-                conv = torch.nn.Sequential(OrderedDict([
+                conv = GCNConv(dim*num_gc_layers, dim)
+                '''conv = torch.nn.Sequential(OrderedDict([
                     ('linear_1', torch.nn.Linear(in_features=dim*num_gc_layers, out_features=dim, bias=True)),
                     ('relu_1', ReLU()),
 
                     ('linear_2', torch.nn.Linear(in_features=dim, out_features=dim, bias=True)),
-                ]))
+                ]))'''
 
             else:
                 conv = GCNConv(dim, dim)
@@ -94,17 +94,17 @@ class Encoder(torch.nn.Module):
         out = torch.cat(xs, 1)
 
         j = self.num_gc_layers
-        '''node_latent_space_mu = self.bns[j](torch.tanh(self.convs[j](out, edge_index)))
+        node_latent_space_mu = self.bns[j](torch.tanh(self.convs[j](out, edge_index)))
         node_latent_space_logvar = self.bns[j+1](torch.tanh(self.convs[j+1](out, edge_index)))
 
         class_latent_space_mu = self.bns[j+2](torch.tanh(self.convs[j+2](out, edge_index)))
-        class_latent_space_logvar = self.bns[j+3](torch.tanh(self.convs[j+3](out, edge_index)))'''
+        class_latent_space_logvar = self.bns[j+3](torch.tanh(self.convs[j+3](out, edge_index)))
 
-        node_latent_space_mu = self.bns[j](torch.tanh(self.convs[j](out)))
+        '''node_latent_space_mu = self.bns[j](torch.tanh(self.convs[j](out)))
         node_latent_space_logvar = self.bns[j+1](torch.tanh(self.convs[j+1](out)))
 
         class_latent_space_mu = self.bns[j+2](torch.tanh(self.convs[j+2](out)))
-        class_latent_space_logvar = self.bns[j+3](torch.tanh(self.convs[j+3](out)))
+        class_latent_space_logvar = self.bns[j+3](torch.tanh(self.convs[j+3](out)))'''
 
         '''node_latent_space_mu = F.relu(self.node_mu(x))
         node_latent_space_logvar = F.relu(self.node_logvar(x))
