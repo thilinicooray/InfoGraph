@@ -60,8 +60,8 @@ class GcnInfomax(nn.Module):
         self.decoder = Decoder(hidden_dim, hidden_dim, dataset_num_features)
         self.node_discriminator = D_net_gauss(hidden_dim, hidden_dim)
         self.class_discriminator = D_net_gauss(hidden_dim, hidden_dim)
-        self.node_dim = hidden_dim /2
-        self.graph_dim = hidden_dim /2
+        self.node_dim = int(hidden_dim /2)
+        self.graph_dim = int(hidden_dim /2)
 
 
 
