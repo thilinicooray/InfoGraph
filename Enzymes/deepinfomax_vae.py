@@ -95,23 +95,23 @@ class GcnInfomax(nn.Module):
 
 
         # kl-divergence error for style latent space
-        '''node_kl_divergence_loss = torch.mean(
+        node_kl_divergence_loss = torch.mean(
             - 0.5 * torch.sum(1 + node_logvar - node_mu.pow(2) - node_logvar.exp())
-        )'''
+        )
 
-        node_kl_divergence_loss = -0.5 / n_nodes * torch.mean(torch.sum(
-            1 + 2 * node_logvar - node_mu.pow(2) - node_logvar.exp().pow(2), 1))
+        '''node_kl_divergence_loss = -0.5 / n_nodes * torch.mean(torch.sum(
+            1 + 2 * node_logvar - node_mu.pow(2) - node_logvar.exp().pow(2), 1))'''
 
 
         node_kl_divergence_loss = node_kl_divergence_loss
 
 
         # kl-divergence error for class latent space
-        '''class_kl_divergence_loss = torch.mean(
+        class_kl_divergence_loss = (
             - 0.5 * torch.sum(1 + grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp())
-        )'''
-        class_kl_divergence_loss = -0.5 / n_nodes * torch.mean(torch.sum(
-            1 + 2 * grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp().pow(2), 1))
+        )/ num_graphs
+        '''class_kl_divergence_loss = -0.5 / n_nodes * torch.mean(torch.sum(
+            1 + 2 * grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp().pow(2), 1))'''
 
         #print('class kl unwei ', class_kl_divergence_loss)
         class_kl_divergence_loss = class_kl_divergence_loss
