@@ -291,11 +291,12 @@ if __name__ == '__main__':
 
         print('init seed, seed ', torch.initial_seed(), seed)
 
-        accuracies = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
+        accuracies_node = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
+        accuracies_class = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
 
         losses = {'recon':[], 'node_kl':[], 'class_kl': []}
 
-        log_interval = 1
+        warmup_steps = 0
         #batch_size = 128
         batch_size = args.batch_size
         lr = args.lr
@@ -488,15 +489,25 @@ if __name__ == '__main__':
             #print('\n\n', losses, '\n')
 
             #used during finetune phase
-            if epoch % log_interval == 0:
+            if epoch > warmup_steps :
                 model.eval()
-                emb, y = model.get_embeddings(dataloader)
-                res = evaluate_embedding(emb, y)
-                accuracies['logreg'].append(res[0])
-                accuracies['svc'].append(res[1])
-                accuracies['linearsvc'].append(res[2])
-                accuracies['randomforest'].append(res[3])
-                print(accuracies)
+
+                emb_node, y_node, emb_class, y_class = model.get_embeddings(dataloader)
+                print('node classificaion')
+                res = evaluate_embedding(emb_node, y_node)
+                accuracies_node['logreg'].append(res[0])
+                accuracies_node['svc'].append(res[1])
+                accuracies_node['linearsvc'].append(res[2])
+                accuracies_node['randomforest'].append(res[3])
+                print('node ', accuracies_node)
+                print('train_loss', losses)
+                '''print('graph classificaion')
+                res = evaluate_embedding(emb_class, y_class)
+                accuracies_class['logreg'].append(res[0])
+                accuracies_class['svc'].append(res[1])
+                accuracies_class['linearsvc'].append(res[2])
+                accuracies_class['randomforest'].append(res[3])
+                print('class ', accuracies_node)'''
 
 
         '''model.eval()
