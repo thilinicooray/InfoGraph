@@ -147,7 +147,7 @@ class GcnInfomax(nn.Module):
         wrong = torch.sum(x * reconstructed_node_fake, -1)
         margin = torch.sum(reconstructed_node * reconstructed_node_fake, -1)
 
-        rank_loss = torch.mean(torch.max(torch.zeros(margin.size(0)).cuda().double(), margin.squeeze() - correct.squeeze() + wrong.squeeze()),0)
+        rank_loss = torch.mean(torch.max(torch.zeros(margin.size(0)).cuda().double(), margin.squeeze() - correct.squeeze()),0)
 
 
 
