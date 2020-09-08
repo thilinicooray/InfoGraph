@@ -78,7 +78,7 @@ class Encoder(torch.nn.Module):
         node_latent_space_mu = self.bns[j](torch.tanh(self.convs[j](out, edge_index)))
         #node_latent_space_logvar = self.bns[j+1](torch.tanh(self.convs[j+1](x, edge_index)))
 
-        #class_latent_space_mu = self.bns[j+2](torch.tanh(self.convs[j+2](x, edge_index)))
+        class_latent_space_mu = self.bns[j+2](torch.tanh(self.convs[j+2](x, edge_index)))
         #class_latent_space_logvar = self.bns[j+3](torch.tanh(self.convs[j+3](x, edge_index)))
 
         '''node_latent_space_mu = F.relu(self.node_mu(x))
@@ -88,9 +88,9 @@ class Encoder(torch.nn.Module):
         class_latent_space_logvar = F.relu(self.class_logvar(x))'''
 
         if self.training:
-            return node_latent_space_mu, None
+            return node_latent_space_mu, class_latent_space_mu
         else:
-            return node_latent_space_mu, None
+            return node_latent_space_mu, class_latent_space_mu
 
 
 class Decoder(torch.nn.Module):
@@ -105,8 +105,8 @@ class Decoder(torch.nn.Module):
             ('relu_final', Tanh())
         ]))
 
-    def forward(self, x, class_latent_space):
-        #x = torch.cat((node_latent_space, class_latent_space), dim=1)
+    def forward(self, node_latent_space, class_latent_space):
+        x = torch.cat((node_latent_space, class_latent_space), dim=1)
 
         x = torch.softmax(self.linear_model(x), dim=-1)
 

@@ -249,8 +249,12 @@ class GcnInfomax(nn.Module):
 
                 node_mu, class_mu = self.encoder(x[:,:18].double(), edge_index, batch)
 
+                grouped_mu = accumulate_group_rep(
+                    class_mu.data,  batch
+                )
 
-                class_emb = global_mean_pool(node_mu, batch)
+
+                class_emb = global_mean_pool(grouped_mu, batch)
 
 
                 ret_node.append(node_mu.cpu().numpy())
@@ -380,13 +384,13 @@ if __name__ == '__main__':
                 model.zero_grad()
 
                 z_sample, z_class = model.encoder(data.x[:,:18].double(), data.edge_index, data.batch)
-                ''''grouped_class = accumulate_group_rep(
+                grouped_class = accumulate_group_rep(
                     z_class, data.batch
-                )'''
+                )
 
 
                 #encode to z
-                X_sample = model.decoder(z_sample, None) #decode to X reconstruction
+                X_sample = model.decoder(z_sample, grouped_class) #decode to X reconstruction
                 recon_loss = 1e-5* model.recon_loss1(X_sample, data.edge_index, data.batch)
                 recon_loss_all += recon_loss.item()
 
@@ -405,32 +409,31 @@ if __name__ == '__main__':
                 z_real_gauss_node = Variable(torch.randn(data.batch.shape[0], args.hidden_dim) * 5.).double().cuda()
                 D_real_gauss_node = model.node_discriminator(z_real_gauss_node)
 
-                #z_real_gauss_class = Variable(torch.randn(data.num_graphs, args.hidden_dim) * 5.).double().cuda()
+                z_real_gauss_class = Variable(torch.randn(data.num_graphs, args.hidden_dim) * 5.).double().cuda()
 
-                #z_real_gauss_class_exp = expand_group_rep(z_real_gauss_class, data.batch, data.batch.shape[0], args.hidden_dim)
+                z_real_gauss_class_exp = expand_group_rep(z_real_gauss_class, data.batch, data.batch.shape[0], args.hidden_dim)
 
 
-                #D_real_gauss_class = model.class_discriminator(z_real_gauss_class_exp)
+                D_real_gauss_class = model.class_discriminator(z_real_gauss_class_exp)
 
                 z_fake_gauss_node, z_fake_gauss_class = model.encoder(data.x[:,:18].double(), data.edge_index, data.batch)
 
-                '''grouped_z_fake_gauss_class = accumulate_group_rep(
+                grouped_z_fake_gauss_class = accumulate_group_rep(
                     z_fake_gauss_class, data.batch
-                )'''
+                )
 
                 D_fake_gauss_node = model.node_discriminator(z_fake_gauss_node)
-                #D_fake_gauss_class = model.class_discriminator(grouped_z_fake_gauss_class)
+                D_fake_gauss_class = model.class_discriminator(grouped_z_fake_gauss_class)
 
 
 
                 D_loss_node = -torch.mean(torch.log(D_real_gauss_node + EPS) + torch.log(1 - D_fake_gauss_node + EPS))
-                #D_loss_class = -torch.mean(torch.log(D_real_gauss_class + EPS) + torch.log(1 - D_fake_gauss_class + EPS))
+                D_loss_class = -torch.mean(torch.log(D_real_gauss_class + EPS) + torch.log(1 - D_fake_gauss_class + EPS))
 
 
 
 
-                #D_loss = D_loss_node + D_loss_class
-                D_loss = D_loss_node
+                D_loss = D_loss_node + D_loss_class
 
                 kl_class_loss_all += D_loss.item()
 
@@ -442,20 +445,20 @@ if __name__ == '__main__':
 
                 z_fake_gauss_node, z_fake_gauss_class = model.encoder(data.x[:,:18].double(), data.edge_index, data.batch)
 
-                ''''grouped_z_fake_gauss_class = accumulate_group_rep(
+                grouped_z_fake_gauss_class = accumulate_group_rep(
                     z_fake_gauss_class, data.batch
-                )'''
+                )
 
                 D_fake_gauss_node = model.node_discriminator(z_fake_gauss_node)
-                #D_fake_gauss_class = model.class_discriminator(grouped_z_fake_gauss_class)
+                D_fake_gauss_class = model.class_discriminator(grouped_z_fake_gauss_class)
 
 
 
                 G_loss_node = -torch.mean(torch.log(D_fake_gauss_node + EPS))
-                #G_loss_class = -torch.mean(torch.log(D_fake_gauss_class + EPS))
+                G_loss_class = -torch.mean(torch.log(D_fake_gauss_class + EPS))
 
-                #G_loss = G_loss_node + G_loss_class
-                G_loss = G_loss_node
+                G_loss = G_loss_node + G_loss_class
+                #G_loss = G_loss_node
 
                 kl_node_loss_all += G_loss.item()
 
