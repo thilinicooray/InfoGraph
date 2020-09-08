@@ -51,7 +51,7 @@ class Encoder(torch.nn.Module):
             if i == 0:
                 conv = GCNConv(num_features, dim)
             elif i >= num_gc_layers:
-                conv = GCNConv(dim, dim)
+                conv = GCNConv(dim*2, dim)
             else:
                 conv = GCNConv(dim, dim)
 
@@ -106,7 +106,7 @@ class Decoder(torch.nn.Module):
         super(Decoder, self).__init__()
 
         self.linear_model = torch.nn.Sequential(OrderedDict([
-            ('linear_1', torch.nn.Linear(in_features=node_dim, out_features=node_dim, bias=True)),
+            ('linear_1', torch.nn.Linear(in_features=node_dim*2, out_features=node_dim, bias=True)),
             ('relu_1', ReLU()),
 
             ('linear_2', torch.nn.Linear(in_features=node_dim, out_features=feat_size, bias=True)),
