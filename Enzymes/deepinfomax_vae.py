@@ -163,7 +163,7 @@ class GcnInfomax(nn.Module):
 
         loss.backward()
 
-        self.encoder.training()
+        self.encoder.train()
 
 
         return  reconstruction_error.item(), class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
