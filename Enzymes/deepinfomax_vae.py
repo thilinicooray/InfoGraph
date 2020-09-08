@@ -141,13 +141,49 @@ class GcnInfomax(nn.Module):
         #node_kl_divergence_loss.backward(retain_graph=True)
         #reconstruction_error.backward()
 
-        loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error
+        #loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error
+
+        class_kl_divergence_loss.backward()
+        node_kl_divergence_loss.backward()
+
+
+        self.encoder.eval()
+
+        node_mu_re, node_logvar_re, class_mu_re, class_logvar_re = self.encoder(reconstructed_node, edge_index, batch)
+
+        grouped_mu_re, grouped_logvar_re = accumulate_group_evidence(
+            class_mu_re.data, class_logvar_re.data, batch, True
+        )
+
+        kl_class_round_loss = self.compute_two_gaussian_loss(grouped_mu, grouped_logvar, grouped_mu_re, grouped_logvar_re)
+
+        kl_node_round_loss = self.compute_two_gaussian_loss(node_mu, node_logvar, node_mu_re, node_logvar_re)
+
+        loss = reconstruction_error + kl_class_round_loss + kl_node_round_loss
 
         loss.backward()
+
+        self.encoder.training()
 
 
         return  reconstruction_error.item(), class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
         #return loss.item()
+
+    def compute_two_gaussian_loss(self, mu1, logvar1, mu2, logvar2):
+        """Computes the KL loss between the embedding attained from the answers
+        and the categories.
+        KL divergence between two gaussians:
+            log(sigma_2/sigma_1) + (sigma_2^2 + (mu_1 - mu_2)^2)/(2sigma_1^2) - 0.5
+        Args:
+            mu1: Means from first space.
+            logvar1: Log variances from first space.
+            mu2: Means from second space.
+            logvar2: Means from second space.
+        """
+        numerator = logvar1.exp() + torch.pow(mu1 - mu2, 2)
+        fraction = torch.div(numerator, (logvar2.exp() + 1e-8))
+        kl = 0.5 * torch.sum(logvar2 - logvar1 + fraction - 1)
+        return kl / (mu1.size(0) + 1e-8)
 
 
     def edge_recon(self, z, edge_index, sigmoid=True):
