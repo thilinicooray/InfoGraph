@@ -51,7 +51,7 @@ class Encoder(torch.nn.Module):
             if i == 0:
                 conv = GCNConv(num_features, dim)
             elif i >= num_gc_layers:
-                conv = GCNConv(dim*2, dim)
+                conv = GCNConv(dim, dim*2)
             else:
                 conv = GCNConv(dim, dim)
 
