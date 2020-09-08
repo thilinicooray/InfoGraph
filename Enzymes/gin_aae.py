@@ -90,7 +90,7 @@ class Encoder(torch.nn.Module):
         if self.training:
             return node_latent_space_mu, None
         else:
-            return node_latent_space_mu, None,  out
+            return node_latent_space_mu, None
 
 
 class Decoder(torch.nn.Module):
