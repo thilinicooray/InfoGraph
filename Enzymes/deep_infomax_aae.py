@@ -247,7 +247,7 @@ class GcnInfomax(nn.Module):
                 x, edge_index, batch = data.x, data.edge_index, data.batch
 
 
-                node_mu, class_mu, entangledrep = self.encoder(x[:,:18].double(), edge_index, batch)
+                node_mu, class_mu = self.encoder(x[:,:18].double(), edge_index, batch)
 
 
                 class_emb = global_mean_pool(node_mu, batch)
