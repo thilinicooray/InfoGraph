@@ -78,7 +78,7 @@ class Encoder(torch.nn.Module):
         node_latent_space_mu = self.bns[j](torch.tanh(self.convs[j](out, edge_index)))
         #node_latent_space_logvar = self.bns[j+1](torch.tanh(self.convs[j+1](x, edge_index)))
 
-        class_latent_space_mu = self.bns[j+2](torch.tanh(self.convs[j+2](x, edge_index)))
+        class_latent_space_mu = self.bns[j+2](torch.tanh(self.convs[j+2](out, edge_index)))
         #class_latent_space_logvar = self.bns[j+3](torch.tanh(self.convs[j+3](x, edge_index)))
 
         '''node_latent_space_mu = F.relu(self.node_mu(x))
