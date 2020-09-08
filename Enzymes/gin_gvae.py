@@ -52,7 +52,7 @@ class Encoder(torch.nn.Module):
                 conv = GCNConv(num_features, dim)
                 bn = torch.nn.BatchNorm1d(dim)
             elif i >= num_gc_layers:
-                conv = GCNConv(dim, dim*2)
+                conv = GCNConv(dim*2, dim*2)
                 bn = torch.nn.BatchNorm1d(dim*2)
             else:
                 conv = GCNConv(dim, dim)
@@ -90,8 +90,8 @@ class Encoder(torch.nn.Module):
         out = torch.cat(xs, 1)
 
         j = self.num_gc_layers
-        node_latent_space_mu = self.bns[j](torch.tanh(self.convs[j](x, edge_index)))
-        node_latent_space_logvar = self.bns[j+1](torch.tanh(self.convs[j+1](x, edge_index)))
+        node_latent_space_mu = self.bns[j](torch.tanh(self.convs[j](out, edge_index)))
+        node_latent_space_logvar = self.bns[j+1](torch.tanh(self.convs[j+1](out, edge_index)))
 
         '''node_latent_space_mu = F.relu(self.node_mu(x))
         node_latent_space_logvar = F.relu(self.node_logvar(x))
