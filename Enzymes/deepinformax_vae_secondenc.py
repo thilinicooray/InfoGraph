@@ -144,8 +144,8 @@ class GcnInfomax(nn.Module):
 
         #loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error
 
-        class_kl_divergence_loss.backward()
-        node_kl_divergence_loss.backward()
+        class_kl_divergence_loss.backward(retain_graph=True)
+        node_kl_divergence_loss.backward(retain_graph=True)
 
 
         self.encoder.eval()
@@ -160,7 +160,7 @@ class GcnInfomax(nn.Module):
 
         kl_node_round_loss = self.compute_two_gaussian_loss(node_mu, node_logvar, node_mu_re, node_logvar_re)
 
-        loss = reconstruction_error + kl_class_round_loss + kl_node_round_loss  
+        loss = reconstruction_error + kl_class_round_loss + kl_node_round_loss
 
         loss.backward()
 
