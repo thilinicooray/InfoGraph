@@ -57,7 +57,7 @@ class GcnInfomax(nn.Module):
         self.prior = args.prior
 
         self.encoder = Encoder(dataset_num_features, hidden_dim, num_gc_layers)
-        self.decoder = Decoder(hidden_dim, hidden_dim, dataset_num_features)
+        self.decoder = Decoder(hidden_dim, hidden_dim, hidden_dim)
         self.node_discriminator = D_net_gauss(hidden_dim, hidden_dim)
         self.class_discriminator = D_net_gauss(hidden_dim, hidden_dim)
 
@@ -141,19 +141,22 @@ class GcnInfomax(nn.Module):
         #node_kl_divergence_loss.backward(retain_graph=True)
         #reconstruction_error.backward()
 
-        reconstructed_node_fake = self.decoder(node_latent_embeddings, torch.zeros_like(class_latent_embeddings))
+        '''reconstructed_node_fake = self.decoder(node_latent_embeddings, torch.zeros_like(class_latent_embeddings))
 
         correct = torch.sum(x * reconstructed_node, -1)
         wrong = torch.sum(x * reconstructed_node_fake, -1)
         margin = torch.sum(reconstructed_node * reconstructed_node_fake, -1)
 
-        rank_loss = torch.mean(torch.max(torch.zeros(margin.size(0)).cuda().double(), margin.squeeze() - correct.squeeze()),0)
+        rank_loss = torch.mean(torch.max(torch.zeros(margin.size(0)).cuda().double(), margin.squeeze() - correct.squeeze()),0)'''
+
+        measure='JSD'
+        #local_global_loss = local_global_loss_(reconstructed_node, global_mean_pool(class_latent_embeddings, batch), batch, measure)
 
 
 
 
 
-        loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error + rank_loss
+        loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error
 
         loss.backward()
 
