@@ -379,7 +379,7 @@ if __name__ == '__main__':
 
                 model.zero_grad()
 
-                z_sample, z_class = model.encoder(data.x[:,:18], data.edge_index, data.batch)
+                z_sample, z_class = model.encoder(data.x[:,:18].double(), data.edge_index, data.batch)
                 ''''grouped_class = accumulate_group_rep(
                     z_class, data.batch
                 )'''
@@ -412,7 +412,7 @@ if __name__ == '__main__':
 
                 #D_real_gauss_class = model.class_discriminator(z_real_gauss_class_exp)
 
-                z_fake_gauss_node, z_fake_gauss_class = model.encoder(data.x[:,:18], data.edge_index, data.batch)
+                z_fake_gauss_node, z_fake_gauss_class = model.encoder(data.x[:,:18].double(), data.edge_index, data.batch)
 
                 '''grouped_z_fake_gauss_class = accumulate_group_rep(
                     z_fake_gauss_class, data.batch
@@ -440,7 +440,7 @@ if __name__ == '__main__':
                 # Generator
                 model.encoder.train()
 
-                z_fake_gauss_node, z_fake_gauss_class = model.encoder(data.x[:,:18], data.edge_index, data.batch)
+                z_fake_gauss_node, z_fake_gauss_class = model.encoder(data.x[:,:18].double(), data.edge_index, data.batch)
 
                 ''''grouped_z_fake_gauss_class = accumulate_group_rep(
                     z_fake_gauss_class, data.batch
