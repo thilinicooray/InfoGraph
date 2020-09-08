@@ -150,7 +150,7 @@ class GcnInfomax(nn.Module):
         rank_loss = torch.mean(torch.max(torch.zeros(margin.size(0)).cuda().double(), margin.squeeze() - correct.squeeze()),0)'''
 
         measure='JSD'
-        local_global_loss = local_global_loss_(reconstructed_node, global_mean_pool(class_latent_embeddings, batch), batch, measure)
+        local_global_loss = local_global_loss_(node_latent_embeddings, global_mean_pool(class_latent_embeddings, batch), batch, measure)
 
 
 
