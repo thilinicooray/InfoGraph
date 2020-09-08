@@ -141,7 +141,7 @@ class GcnInfomax(nn.Module):
         #node_kl_divergence_loss.backward(retain_graph=True)
         #reconstruction_error.backward()
 
-        reconstructed_node_fake = self.decoder(node_latent_embeddings, torch.ones_like(class_latent_embeddings))
+        reconstructed_node_fake = self.decoder(node_latent_embeddings, torch.zeros_like(class_latent_embeddings))
 
         correct = torch.sum(x * reconstructed_node, -1)
         wrong = torch.sum(x * reconstructed_node_fake, -1)
