@@ -51,7 +51,7 @@ class Encoder(torch.nn.Module):
             if i == 0:
                 conv = GCNConv(num_features, dim)
             elif i >= num_gc_layers:
-                conv = GCNConv(dim*num_gc_layers, dim)
+                conv = GCNConv(dim, dim)
                 '''conv = torch.nn.Sequential(OrderedDict([
                     ('linear_1', torch.nn.Linear(in_features=dim*num_gc_layers, out_features=dim, bias=True)),
                     ('relu_1', ReLU()),
@@ -78,14 +78,14 @@ class Encoder(torch.nn.Module):
         self.class_logvar = Linear(in_features=dim, out_features=dim, bias=True)'''
 
         self.class_mu =  torch.nn.Sequential(OrderedDict([
-            ('linear_1', torch.nn.Linear(in_features=dim*num_gc_layers, out_features=dim, bias=True)),
+            ('linear_1', torch.nn.Linear(in_features=dim, out_features=dim, bias=True)),
             ('relu_1', ReLU()),
 
             ('linear_2', torch.nn.Linear(in_features=dim, out_features=dim, bias=True)),
         ]))
 
         self.class_logvar =  torch.nn.Sequential(OrderedDict([
-            ('linear_1', torch.nn.Linear(in_features=dim*num_gc_layers, out_features=dim, bias=True)),
+            ('linear_1', torch.nn.Linear(in_features=dim, out_features=dim, bias=True)),
             ('relu_1', ReLU()),
 
             ('linear_2', torch.nn.Linear(in_features=dim, out_features=dim, bias=True)),
