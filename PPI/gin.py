@@ -4,7 +4,7 @@ from collections import OrderedDict
 
 import torch
 import torch.nn.functional as F
-from torch.nn import Sequential, Linear, ReLU, Tanh, Sigmoid
+from torch.nn import Sequential, Linear, ReLU, Tanh, Sigmoid, PReLU
 from torch_geometric.datasets import TUDataset
 from torch_geometric.data import DataLoader
 from torch_geometric.nn import GINConv, global_add_pool, GCNConv
@@ -26,6 +26,8 @@ class Encoder(torch.nn.Module):
         # num_features = dataset.num_features
         # dim = 32
         self.num_gc_layers = num_gc_layers
+        self.skip = Linear(num_features, dim)
+        self.act = PReLU()
 
         # self.nns = []
         self.convs = torch.nn.ModuleList()
@@ -44,7 +46,7 @@ class Encoder(torch.nn.Module):
             if i == 0:
                 conv = GCNConv(num_features, dim)
             elif i >= num_gc_layers:
-                conv = GCNConv(dim*num_gc_layers, dim)
+                conv = GCNConv(dim, dim)
             else:
                 conv = GCNConv(dim, dim)
 
@@ -70,19 +72,23 @@ class Encoder(torch.nn.Module):
         xs = []
         for i in range(self.num_gc_layers):
 
-            x = F.relu(self.convs[i](x, edge_index))
-            x = self.bns[i](x)
-            xs.append(x)
+            if i == 0:
+                val = self.act(self.convs[i](x, edge_index))
+            else:
+                prev = torch.sum(torch.stack(xs,0),0)
+                val = self.act(self.convs[i](prev + self.skip(x), edge_index))
+
+            xs.append(val)
             # if i == 2:
                 # feature_map = x2
 
-        out = torch.cat(xs, 1)
+        #out = torch.cat(xs, 1)
         j = self.num_gc_layers
-        node_latent_space_mu = self.bns[j](torch.tanh(self.convs[j](out, edge_index)))
-        node_latent_space_logvar = self.bns[j+1](torch.tanh(self.convs[j+1](out, edge_index)))
+        node_latent_space_mu = self.bns[j](torch.tanh(self.convs[j](xs[-1], edge_index)))
+        node_latent_space_logvar = self.bns[j+1](torch.tanh(self.convs[j+1](xs[-1], edge_index)))
 
-        class_latent_space_mu = self.bns[j+2](torch.tanh(self.convs[j+2](out, edge_index)))
-        class_latent_space_logvar = self.bns[j+3](torch.tanh(self.convs[j+3](out, edge_index)))
+        class_latent_space_mu = self.bns[j+2](torch.tanh(self.convs[j+2](xs[-1], edge_index)))
+        class_latent_space_logvar = self.bns[j+3](torch.tanh(self.convs[j+3](xs[-1], edge_index)))
 
         '''node_latent_space_mu = F.relu(self.node_mu(x))
         node_latent_space_logvar = F.relu(self.node_logvar(x))
