@@ -7,7 +7,7 @@ import torch.nn.functional as F
 from torch.nn import Sequential, Linear, ReLU, Tanh, Sigmoid
 from torch_geometric.datasets import TUDataset
 from torch_geometric.data import DataLoader
-from torch_geometric.nn import GINConv, global_add_pool
+from torch_geometric.nn import GINConv, global_add_pool, GCNConv
 
 import numpy as np
 from sklearn.model_selection import cross_val_score
@@ -33,13 +33,21 @@ class Encoder(torch.nn.Module):
 
         for i in range(num_gc_layers+4):
 
-            if i == 0:
+            '''if i == 0:
                 nn = Sequential(Linear(num_features, dim), ReLU(), Linear(dim, dim))
             elif i >= num_gc_layers:
                 nn = Sequential(Linear(dim*num_gc_layers, dim), ReLU(), Linear(dim, dim))
             else:
                 nn = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim))
-            conv = GINConv(nn)
+            conv = GINConv(nn)'''
+
+            if i == 0:
+                conv = GCNConv(num_features, dim)
+            elif i >= num_gc_layers:
+                conv = GCNConv(dim*num_gc_layers, dim)
+            else:
+                conv = GCNConv(dim, dim)
+
             bn = torch.nn.BatchNorm1d(dim)
 
             self.convs.append(conv)
