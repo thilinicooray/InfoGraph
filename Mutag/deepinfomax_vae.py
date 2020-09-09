@@ -464,7 +464,7 @@ if __name__ == '__main__':
                 accuracies_class['svc'].append(res[1])
                 accuracies_class['linearsvc'].append(res[2])
                 accuracies_class['randomforest'].append(res[3])
-                print('class ', accuracies_node)
+                print('class ', accuracies_class)
 
                 print('train_loss', losses)
 
