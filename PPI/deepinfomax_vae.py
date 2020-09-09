@@ -212,16 +212,17 @@ class GcnInfomax(nn.Module):
 
                 node_mu, node_logvar, class_mu, class_logvar, entangledrep = self.encoder(x.double(), edge_index, batch)
 
-                grouped_mu, grouped_logvar = accumulate_group_evidence(
+                '''grouped_mu, grouped_logvar = accumulate_group_evidence(
                     class_mu.data, class_logvar.data, batch, True
                 )
                 class_latent_embeddings = group_wise_reparameterize(
                     training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
-                )
+                )'''
 
                 node_latent_embeddings = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
 
-                ret.append(torch.cat([node_latent_embeddings,class_latent_embeddings],-1).cpu().numpy())
+                #ret.append(torch.cat([node_latent_embeddings,class_latent_embeddings],-1).cpu().numpy())
+                ret.append(node_latent_embeddings.cpu().numpy())
                 y.append(data.y.cpu().numpy())
         ret = np.concatenate(ret, 0)
         y = np.concatenate(y, 0)
@@ -437,7 +438,7 @@ if __name__ == '__main__':
 
             print('Logistic regression started!')
 
-            log = SimpleClassifier(args.hidden_dim*2, args.hidden_dim, 121, 0.5)
+            log = SimpleClassifier(args.hidden_dim, args.hidden_dim, 121, 0.5)
             opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0.0)
             log.double().cuda()
 
