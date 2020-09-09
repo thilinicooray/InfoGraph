@@ -4,10 +4,10 @@ from collections import OrderedDict
 
 import torch
 import torch.nn.functional as F
-from torch.nn import Sequential, Linear, ReLU, Tanh, Sigmoid
+from torch.nn import Sequential, Linear, ReLU, Tanh, Sigmoid, PReLU
 from torch_geometric.datasets import TUDataset
 from torch_geometric.data import DataLoader
-from torch_geometric.nn import GINConv, global_add_pool
+from torch_geometric.nn import GINConv, global_add_pool, GCNConv
 
 import numpy as np
 from sklearn.model_selection import cross_val_score
@@ -26,24 +26,31 @@ class Encoder(torch.nn.Module):
         # num_features = dataset.num_features
         # dim = 32
         self.num_gc_layers = num_gc_layers
+        self.skip = Linear(num_features, dim)
+        self.act = PReLU()
 
         # self.nns = []
         self.convs = torch.nn.ModuleList()
         self.bns = torch.nn.ModuleList()
 
-        for i in range(num_gc_layers+4):
+        for i in range(num_gc_layers+2):
 
-            if i == 0:
+            '''if i == 0:
                 nn = Sequential(Linear(num_features, dim), ReLU(), Linear(dim, dim))
-                bn = torch.nn.BatchNorm1d(dim)
             elif i >= num_gc_layers:
-                nn = Sequential(Linear(dim*num_gc_layers, dim), ReLU(), Linear(dim, dim*2))
-                bn = torch.nn.BatchNorm1d(dim*2)
+                nn = Sequential(Linear(dim*num_gc_layers, dim), ReLU(), Linear(dim, dim))
             else:
                 nn = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim))
-                bn = torch.nn.BatchNorm1d(dim)
-            conv = GINConv(nn)
+            conv = GINConv(nn)'''
 
+            if i == 0:
+                conv = GCNConv(num_features, dim)
+            elif i >= num_gc_layers:
+                conv = GCNConv(dim, dim)
+            else:
+                conv = GCNConv(dim, dim)
+
+            bn = torch.nn.BatchNorm1d(dim)
 
             self.convs.append(conv)
             self.bns.append(bn)
@@ -65,16 +72,20 @@ class Encoder(torch.nn.Module):
         xs = []
         for i in range(self.num_gc_layers):
 
-            x = F.relu(self.convs[i](x, edge_index))
-            x = self.bns[i](x)
-            xs.append(x)
+            if i == 0:
+                val = self.act(self.convs[i](x, edge_index))
+            else:
+                prev = torch.sum(torch.stack(xs,0),0)
+                val = self.act(self.convs[i](prev + self.skip(x), edge_index))
+
+            xs.append(val)
             # if i == 2:
             # feature_map = x2
 
-        out = torch.cat(xs, 1)
+        #out = torch.cat(xs, 1)
         j = self.num_gc_layers
-        node_latent_space_mu = self.bns[j](torch.tanh(self.convs[j](out, edge_index)))
-        node_latent_space_logvar = self.bns[j+1](torch.tanh(self.convs[j+1](out, edge_index)))
+        node_latent_space_mu = self.bns[j](torch.tanh(self.convs[j](xs[-1], edge_index)))
+        node_latent_space_logvar = self.bns[j+1](torch.tanh(self.convs[j+1](xs[-1], edge_index)))
 
 
         '''node_latent_space_mu = F.relu(self.node_mu(x))
