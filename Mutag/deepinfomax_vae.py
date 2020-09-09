@@ -366,7 +366,7 @@ if __name__ == '__main__':
         # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
 
         #dataset = TUDataset(path, name=DS, pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=88)).shuffle()
-        dataset = TUDataset(path, use_node_attr=True, name=DS).shuffle()
+        dataset = TUDataset(path, name=DS).shuffle()
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         try:
