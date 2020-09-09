@@ -485,8 +485,8 @@ if __name__ == '__main__':
                 )
 
 
-                reconstructed_node_true = model.decoder(node_latent_embeddings, class_latent_embeddings)
-                reconstructed_node_fake = model.decoder(node_latent_embeddings, torch.zeros_like(class_latent_embeddings))
+                reconstructed_node_fake = model.decoder(node_latent_embeddings, class_latent_embeddings)
+                reconstructed_node_true = model.decoder(node_latent_embeddings, torch.zeros_like(class_latent_embeddings))
 
 
                 D_real_gauss_node = model.node_discriminator(reconstructed_node_true)
@@ -510,8 +510,15 @@ if __name__ == '__main__':
 
 
                 node_mu, node_logvar, class_mu, class_logvar = model.encoder(data.x[:,:18].double(), data.edge_index, data.batch)
+                grouped_mu, grouped_logvar = accumulate_group_evidence(
+                    class_mu.data, class_logvar.data, data.batch, True
+                )
+
                 node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
-                reconstructed_node_fake = model.decoder(node_latent_embeddings, torch.zeros_like(class_latent_embeddings))
+                class_latent_embeddings = group_wise_reparameterize(
+                    training=True, mu=grouped_mu, logvar=grouped_logvar, labels_batch=data.batch, cuda=True
+                )
+                reconstructed_node_fake = model.decoder(node_latent_embeddings, class_latent_embeddings)
 
 
                 D_fake_gauss_node = model.node_discriminator(reconstructed_node_fake)
