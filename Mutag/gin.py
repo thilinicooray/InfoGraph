@@ -41,7 +41,7 @@ class Encoder(torch.nn.Module):
             if i == 0:
                 nn = Sequential(Linear(num_features, dim), ReLU(), Linear(dim, dim))
             elif i >= num_gc_layers:
-                nn = Sequential(Linear(dim*num_gc_layers, dim), ReLU(), Linear(dim, dim))
+                nn = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim))
             else:
                 nn = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim))
 
@@ -108,11 +108,11 @@ class Encoder(torch.nn.Module):
         out = torch.cat(xs, 1)
 
         j = self.num_gc_layers
-        node_latent_space_mu = self.bns[j](torch.tanh(self.convs[j](out, edge_index)))
-        node_latent_space_logvar = self.bns[j+1](torch.tanh(self.convs[j+1](out, edge_index)))
+        node_latent_space_mu = self.bns[j](torch.tanh(self.convs[j](x, edge_index)))
+        node_latent_space_logvar = self.bns[j+1](torch.tanh(self.convs[j+1](x, edge_index)))
 
-        class_latent_space_mu = self.bns[j+2](torch.tanh(self.convs[j+2](out, edge_index)))
-        class_latent_space_logvar = self.bns[j+3](torch.tanh(self.convs[j+3](out, edge_index)))
+        class_latent_space_mu = self.bns[j+2](torch.tanh(self.convs[j+2](x, edge_index)))
+        class_latent_space_logvar = self.bns[j+3](torch.tanh(self.convs[j+3](x, edge_index)))
 
         #class_latent_space_mu = self.bns[j+2](torch.tanh(self.class_mu(out)))
         #class_latent_space_logvar = self.bns[j+1](torch.tanh(self.class_logvar(out)))
