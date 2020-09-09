@@ -38,17 +38,20 @@ class Encoder(torch.nn.Module):
                 nn = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim))
             else:
                 nn = Sequential(Linear(num_features, dim), ReLU(), Linear(dim, dim))'''
-            '''if i == 0:
+            if i == 0:
                 nn = Sequential(Linear(num_features, dim), ReLU(), Linear(dim, dim))
+                bn = torch.nn.BatchNorm1d(dim)
             elif i >= num_gc_layers:
-                nn = Sequential(Linear(dim*num_gc_layers, dim), ReLU(), Linear(dim, dim))
+                nn = Sequential(Linear(num_gc_layers, dim), ReLU(), Linear(dim, dim*2))
+                bn = torch.nn.BatchNorm1d(dim*2)
             else:
                 nn = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim))
+                bn = torch.nn.BatchNorm1d(dim)
 
 
-            conv = GINConv(nn)'''
+            conv = GINConv(nn)
 
-            if i == 0:
+            '''if i == 0:
                 conv = GCNConv(num_features, dim)
                 bn = torch.nn.BatchNorm1d(dim)
             elif i >= num_gc_layers:
@@ -56,7 +59,7 @@ class Encoder(torch.nn.Module):
                 bn = torch.nn.BatchNorm1d(dim*2)
             else:
                 conv = GCNConv(dim, dim)
-                bn = torch.nn.BatchNorm1d(dim)
+                bn = torch.nn.BatchNorm1d(dim)'''
 
 
             #bn = torch.nn.BatchNorm1d(dim)
@@ -87,11 +90,11 @@ class Encoder(torch.nn.Module):
             # if i == 2:
             # feature_map = x2
 
-        out = torch.cat(xs, 1)
+        #out = torch.cat(xs, 1)
 
         j = self.num_gc_layers
-        node_latent_space_mu = self.bns[j](torch.tanh(self.convs[j](out, edge_index)))
-        node_latent_space_logvar = self.bns[j+1](torch.tanh(self.convs[j+1](out, edge_index)))
+        node_latent_space_mu = self.bns[j](torch.tanh(self.convs[j](x, edge_index)))
+        node_latent_space_logvar = self.bns[j+1](torch.tanh(self.convs[j+1](x, edge_index)))
 
         '''node_latent_space_mu = F.relu(self.node_mu(x))
         node_latent_space_logvar = F.relu(self.node_logvar(x))
@@ -101,7 +104,7 @@ class Encoder(torch.nn.Module):
         if self.training:
             return node_latent_space_mu,  node_latent_space_logvar
         else:
-            return node_latent_space_mu,  node_latent_space_logvar,  out
+            return node_latent_space_mu,  node_latent_space_logvar
 
 
 class Decoder(torch.nn.Module):
