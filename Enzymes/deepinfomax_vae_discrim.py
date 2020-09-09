@@ -355,7 +355,7 @@ if __name__ == '__main__':
         accuracies_node = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
         accuracies_class = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
 
-        losses = {'recon':[], 'node_kl':[], 'class_kl': []}
+        losses = {'recon':[], 'node_kl':[], 'class_kl': [], 'gen_loss':[], 'disc_loss' :[]}
         #losses = []
 
         warmup_steps = 0
@@ -424,7 +424,8 @@ if __name__ == '__main__':
             recon_loss_all = 0
             kl_class_loss_all = 0
             kl_node_loss_all = 0
-            mi_loss_all = 0
+            disc_loss_all = 0
+            gen_loss_all = 0
             model.train()
             for data in dataloader:
                 data = data.to(device)
@@ -443,13 +444,13 @@ if __name__ == '__main__':
                     1 + 2 * node_logvar - node_mu.pow(2) - node_logvar.exp().pow(2), 1))
 
 
-                node_kl_divergence_loss = node_kl_divergence_loss
+                kl_node_loss_all += node_kl_divergence_loss
 
 
                 class_kl_divergence_loss = - 0.5  * torch.mean(global_mean_pool(torch.sum(
                     1 + 2 * grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp().pow(2), 1), data.batch))
 
-                class_kl_divergence_loss = class_kl_divergence_loss
+                kl_class_loss_all += class_kl_divergence_loss
 
                 node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
                 class_latent_embeddings = group_wise_reparameterize(
@@ -500,7 +501,7 @@ if __name__ == '__main__':
 
                 D_loss = D_loss_node
 
-                kl_class_loss_all += D_loss.item()
+                disc_loss_all += D_loss.item()
 
                 D_loss.backward()
                 optim_D.step()
@@ -530,13 +531,15 @@ if __name__ == '__main__':
                 G_loss = G_loss_node
                 #G_loss = G_loss_node
 
-                kl_node_loss_all += G_loss.item()
+                gen_loss_all += G_loss.item()
 
                 optim_P_gen.zero_grad()
                 G_loss.backward()
                 optim_P_gen.step()
 
             losses['recon'].append(recon_loss_all/ len(dataloader))
+            losses['gen_loss'].append(gen_loss_all/ len(dataloader))
+            losses['disc_loss'].append(disc_loss_all/ len(dataloader))
             losses['node_kl'].append(kl_node_loss_all/ len(dataloader))
             losses['class_kl'].append(kl_class_loss_all/ len(dataloader))
             #losses.append(tot_loss/ len(dataloader))
