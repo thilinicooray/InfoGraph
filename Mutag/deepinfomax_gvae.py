@@ -325,7 +325,7 @@ if __name__ == '__main__':
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         try:
-            dataset_num_features = 18
+            dataset_num_features = dataset.num_features
         except:
             dataset_num_features = 1
 
