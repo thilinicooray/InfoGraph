@@ -206,10 +206,10 @@ class GcnInfomax(nn.Module):
 
                 node_latent_embeddings = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
 
-                ret.append(node_latent_embeddings)
-                y.append(data.y)
-        ret = torch.stack(ret, 0)
-        y = torch.stack(y, 0)
+                ret.append(node_latent_embeddings.cpu().numpy())
+                y.append(data.y.cpu().numpy())
+        ret = np.concatenate(ret, 0)
+        y = np.concatenate(y, 0)
         return ret, y
 
 def test(train_z, train_y, val_z, val_y,test_z, test_y,  solver='lbfgs',
@@ -429,38 +429,41 @@ if __name__ == '__main__':
             train_emb, train_y = model.get_embeddings(train_dataloader)
             val_emb, val_y = model.get_embeddings(val_dataloader)
 
-            for round in range(1500):
+            train_embs, train_lbls = torch.from_numpy(train_emb).cuda(), torch.from_numpy(train_y).cuda()
+            val_embs, val_lbls= torch.from_numpy(val_emb).cuda(), torch.from_numpy(val_y).cuda()
+
+            for round in range(500):
 
                 log.train()
                 opt.zero_grad()
-                logits = log(train_emb)
+                logits = log(train_embs)
 
                 '''tot = torch.sum(data_new.y, 0)
-
+    
                 val = 1.0 / tot
-
+    
                 pos_weight = val'''
 
                 criterion = nn.BCEWithLogitsLoss()
-                loss = criterion(logits, train_y)
+                loss = criterion(logits, train_lbls)
 
                 loss.backward()
                 opt.step()
 
                 log.eval()
-
+    
                 pred_list = []
                 y_list = []
 
 
                 with torch.no_grad():
 
-                    logreg_out = torch.sigmoid(log(val_emb))
+                    logreg_out = torch.sigmoid(log(val_embs))
                     pred = torch.ones_like(logreg_out)
 
                     pred =  pred.masked_fill(logreg_out < 0.5, 0)
 
-                mi_f1 = f1_score(val_y[0].cpu().numpy(), pred[0].cpu().numpy(), average='micro')
+                mi_f1 = f1_score(val_lbls[0].cpu().numpy(), pred[0].cpu().numpy(), average='micro')
 
                 if mi_f1 > best_f1:
                     best_f1 = mi_f1
