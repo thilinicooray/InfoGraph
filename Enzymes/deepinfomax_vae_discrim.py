@@ -35,7 +35,7 @@ from sklearn.linear_model import LogisticRegression
 from arguments import arg_parse
 
 class D_net_gauss(nn.Module):
-    def __init__(self,N,z_dim):
+    def __init__(self,z_dim,N):
         super(D_net_gauss, self).__init__()
         self.lin1 = nn.Linear(z_dim, N)
         self.lin2 = nn.Linear(N, N)
