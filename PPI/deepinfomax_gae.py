@@ -96,7 +96,7 @@ class GcnInfomax(nn.Module):
             - 0.5 * torch.sum(1 + node_logvar - node_mu.pow(2) - node_logvar.exp())
         )'''
 
-        node_kl_divergence_loss = -0.5 / n_nodes * torch.mean(torch.sum(
+        node_kl_divergence_loss = -0.5 * torch.mean(torch.sum(
             1 + 2 * node_logvar - node_mu.pow(2) - node_logvar.exp().pow(2), 1))
 
 

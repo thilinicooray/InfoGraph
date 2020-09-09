@@ -99,7 +99,7 @@ class GcnInfomax(nn.Module):
             - 0.5 * torch.sum(1 + node_logvar - node_mu.pow(2) - node_logvar.exp())
         )'''
 
-        node_kl_divergence_loss = -0.5 / n_nodes * torch.mean(torch.sum(
+        node_kl_divergence_loss = -0.5 * torch.mean(torch.sum(
             1 + 2 * node_logvar - node_mu.pow(2) - node_logvar.exp().pow(2), 1))
 
 
@@ -110,8 +110,8 @@ class GcnInfomax(nn.Module):
         '''class_kl_divergence_loss = torch.mean(
             - 0.5 * torch.sum(1 + grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp())
         )'''
-        class_kl_divergence_loss = -0.5 / n_nodes * torch.mean(torch.sum(
-            1 + 2 * grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp().pow(2), 1))
+        class_kl_divergence_loss = - 0.5  * torch.mean(global_mean_pool(torch.sum(
+            1 + 2 * grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp().pow(2), 1), batch))
 
         #print('class kl unwei ', class_kl_divergence_loss)
         class_kl_divergence_loss = class_kl_divergence_loss
@@ -212,16 +212,16 @@ class GcnInfomax(nn.Module):
 
                 node_mu, node_logvar, class_mu, class_logvar, entangledrep = self.encoder(x.double(), edge_index, batch)
 
-                grouped_mu, grouped_logvar = accumulate_group_evidence(
+                '''grouped_mu, grouped_logvar = accumulate_group_evidence(
                     class_mu.data, class_logvar.data, batch, True
                 )
                 class_latent_embeddings = group_wise_reparameterize(
                     training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
-                )
+                )'''
 
                 node_latent_embeddings = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
 
-                ret.append(torch.cat([node_latent_embeddings,class_latent_embeddings],-1).cpu().numpy())
+                ret.append(node_latent_embeddings.cpu().numpy())
                 y.append(data.y.cpu().numpy())
         ret = np.concatenate(ret, 0)
         y = np.concatenate(y, 0)
