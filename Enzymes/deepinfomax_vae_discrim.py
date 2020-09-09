@@ -444,13 +444,13 @@ if __name__ == '__main__':
                     1 + 2 * node_logvar - node_mu.pow(2) - node_logvar.exp().pow(2), 1))
 
 
-                kl_node_loss_all += node_kl_divergence_loss
+                kl_node_loss_all += node_kl_divergence_loss.item()
 
 
                 class_kl_divergence_loss = - 0.5  * torch.mean(global_mean_pool(torch.sum(
                     1 + 2 * grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp().pow(2), 1), data.batch))
 
-                kl_class_loss_all += class_kl_divergence_loss
+                kl_class_loss_all += class_kl_divergence_loss.item()
 
                 node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
                 class_latent_embeddings = group_wise_reparameterize(
