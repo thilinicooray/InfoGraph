@@ -3,10 +3,10 @@ from tqdm import tqdm
 
 import torch
 import torch.nn.functional as F
-from torch.nn import Sequential, Linear, ReLU
+from torch.nn import Sequential, Linear, ReLU, PReLU
 from torch_geometric.datasets import TUDataset
 from torch_geometric.data import DataLoader
-from torch_geometric.nn import GINConv, global_add_pool
+from torch_geometric.nn import GINConv, global_add_pool, GCNConv
 
 import numpy as np
 from sklearn.model_selection import cross_val_score
@@ -25,6 +25,8 @@ class Encoder(torch.nn.Module):
         # num_features = dataset.num_features
         # dim = 32
         self.num_gc_layers = num_gc_layers
+        self.skip = Linear(num_features, dim)
+        self.act = PReLU()
 
         # self.nns = []
         self.convs = torch.nn.ModuleList()
@@ -33,10 +35,9 @@ class Encoder(torch.nn.Module):
         for i in range(num_gc_layers):
 
             if i:
-                nn = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim))
+                conv = GCNConv(dim, dim)
             else:
-                nn = Sequential(Linear(num_features, dim), ReLU(), Linear(dim, dim))
-            conv = GINConv(nn)
+                conv = GCNConv(num_features, dim)
             bn = torch.nn.BatchNorm1d(dim)
 
             self.convs.append(conv)
@@ -48,13 +49,16 @@ class Encoder(torch.nn.Module):
             x = torch.ones((batch.shape[0], 1)).to(device)
 
         xs = []
+        xs = []
         for i in range(self.num_gc_layers):
 
-            x = F.relu(self.convs[i](x, edge_index))
-            x = self.bns[i](x)
-            xs.append(x)
-            # if i == 2:
-            # feature_map = x2
+            if i == 0:
+                val = self.act(self.convs[i](x, edge_index))
+            else:
+                prev = torch.sum(torch.stack(xs,0),0)
+                val = self.act(self.convs[i](prev + self.skip(x), edge_index))
+
+            xs.append(val)
 
         xpool = [global_add_pool(x, batch) for x in xs]
         x = torch.cat(xpool, 1)
@@ -69,9 +73,7 @@ class Encoder(torch.nn.Module):
             for data in loader:
                 data.to(device)
                 x, edge_index, batch = data.x, data.edge_index, data.batch
-                if x is None:
-                    x = torch.ones((batch.shape[0],1)).to(device)
-                x, _ = self.forward(x, edge_index, batch)
+                _, x = self.forward(x, edge_index, batch)
                 ret.append(x.cpu().numpy())
                 y.append(data.y.cpu().numpy())
         ret = np.concatenate(ret, 0)

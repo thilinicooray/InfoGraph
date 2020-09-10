@@ -208,6 +208,9 @@ if __name__ == '__main__':
         accuracies['linearsvc'].append(res[2])
         accuracies['randomforest'].append(res[3])'''
 
+        logreg_val = []
+        logreg_valbased_test = []
+
         #model.train()
         for epoch in range(1, epochs+1):
             loss_all = 0
@@ -255,123 +258,37 @@ if __name__ == '__main__':
 
             print('Logistic regression started!')
 
-            log = SimpleClassifier(args.hidden_dim*2, args.hidden_dim, 121, 0.5)
-            opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0.0)
-            log.double().cuda()
 
+            train_emb, train_y = model.encoder.get_embeddings(train_dataloader)
+            val_emb, val_y = model.encodr.get_embeddings(val_dataloader)
+            test_emb, test_y = model.encoder.get_embeddings(test_dataloader)
 
-            for round in range(1500):
-
-                log.train()
-                for data_new in train_dataloader:
-
-                    opt.zero_grad()
-                    data_new = data_new.to(device)
-
-                    _, rep = model.encoder(data_new.x.double(), data_new.edge_index, data_new.batch)
-
-                    logits = log(rep)
-
-                    '''tot = torch.sum(data_new.y, 0)
-
-                    val = 1.0 / tot
-
-                    pos_weight = val'''
-
-                    criterion = nn.BCEWithLogitsLoss()
-                    loss = criterion(logits, data_new.y )
-
-                    loss.backward()
-                    opt.step()
-
-                log.eval()
-
-                pred_list = []
-                y_list = []
-                with torch.no_grad():
-                    for data_val in val_dataloader:
-                        data_val = data_val.to(device)
-                        _, rep = model.encoder(data_val.x.double(), data_val.edge_index, data_val.batch)
-
-                        pred = torch.sigmoid(log(rep)) >= 0.5
-
-                        pred_list.append(pred.cpu().numpy())
-                        y_list.append(data_val.y.cpu().numpy())
-                ret = np.concatenate(pred_list, 0)
-                y = np.concatenate(y_list, 0)
-                mi_f1 = f1_score(y, ret, average='micro')
-
-                if mi_f1 > best_f1:
-                    best_f1 = mi_f1
-                    best_round = round
-
-            print('best f1 obtained in round:', best_f1, best_round)
-
-        #accs = torch.stack(accs)
-        #print(accs.mean().item(), accs.std().item())'''
-
-
-        '''model.eval()
-
-        accs = []
-        best_f1 = 0
-        best_round = 0
-
-        criterion = nn.BCEWithLogitsLoss()
-        print('Logistic regression started!')
-
-        log = SimpleClassifier(args.hidden_dim, args.hidden_dim, 121, 0.5)
-        opt = torch.optim.Adam(log.parameters(), lr=5e-2, weight_decay=0.0)
-        log.double().cuda()
-
-        for round in range(300):
-
-            log.train()
-            for data_new in train_dataloader:
-
-                opt.zero_grad()
-                data_new = data_new.to(device)
-
-                z_sample, z_class, entangled_rep = model.encoder(data_new.x, data_new.edge_index, data_new.batch)
-
-                logits = log(z_sample)
-                loss = criterion(logits, data_new.y)
-
-                loss.backward()
-                opt.step()
-
-            log.eval()
-
-            pred_list = []
-            y_list = []
-            with torch.no_grad():
-                for data_val in val_dataloader:
-                    data_val = data_val.to(device)
-                    z_sample, z_class, entangled_rep = model.encoder(data_val.x, data_val.edge_index, data_val.batch)
-
-                    pred = torch.sigmoid(log(z_sample)) >= 0.5
-
-                    pred_list.append(pred.cpu().numpy())
-                    y_list.append(data_val.y.cpu().numpy())
-            ret = np.concatenate(pred_list, 0)
-            y = np.concatenate(y_list, 0)
-            mi_f1  = f1_score(y, ret, average='micro')
-
-            print('current f1 ', round, mi_f1)
-
-            if mi_f1 > best_f1:
-                best_f1 = mi_f1
-                best_round = round
-
-        print('best f1 obtained in round:', best_f1, best_round)'''
+            from sklearn.preprocessing import StandardScaler
+            scaler = StandardScaler()
+            scaler.fit(train_emb)
+            train_emb = scaler.transform(train_emb)
+            val_emb = scaler.transform(val_emb)
+            test_emb = scaler.transform(test_emb)
 
 
 
-    
+            from sklearn.linear_model import SGDClassifier
+            from sklearn.metrics import f1_score
+            from sklearn.multioutput import MultiOutputClassifier
+            log = MultiOutputClassifier(SGDClassifier(loss="log"), n_jobs=10)
+            log.fit(train_emb, train_y)
 
 
-        #draw_plot(y, emb, 'imdb_b_normal.png')
+            val_pred = log.predict(val_emb)
+            test_pred = log.predict(test_emb)
 
-        '''with open('unsupervised.log', 'a+') as f:
-            s = json.dumps(accuracies)
-            f.write('{},{},{},{},{},{}\n'.format(args.DS, args.num_gc_layers, epochs, log_interval, lr, s))'''
+            tot_f1_val = f1_score(val_y.flatten(), val_pred.flatten(), average='micro')
+
+            tot_f1_test = f1_score(test_y.flatten(), test_pred.flatten(), average='micro')
+
+
+            logreg_val.append(tot_f1_val)
+            logreg_valbased_test.append(tot_f1_test)
+
+            print('logreg val', logreg_val)
+            print('logreg test', logreg_valbased_test)
