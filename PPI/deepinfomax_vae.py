@@ -496,16 +496,16 @@ if __name__ == '__main__':
                 tot_f1_val = 0
                 num_nodes = val_lbls.size(0)
 
-                '''for val_id in range(num_nodes):
+                for val_id in range(num_nodes):
                     mi_f1 = f1_score(val_lbls[val_id].cpu().numpy(), pred[val_id].cpu().numpy(), average='micro')
                     tot_f1_val += mi_f1
 
-                tot_f1_val = tot_f1_val/num_nodes'''
+                tot_f1_val = tot_f1_val/num_nodes
 
-                val_lbl_flatten = val_lbls.contiguous().view(-1)
+                '''val_lbl_flatten = val_lbls.contiguous().view(-1)
                 pred_flatten = pred.contiguous().view(-1)
 
-                tot_f1_val = f1_score(val_lbl_flatten.cpu().numpy(), pred_flatten.cpu().numpy(), average='micro')
+                tot_f1_val = f1_score(val_lbl_flatten.cpu().numpy(), pred_flatten.cpu().numpy(), average='micro')'''
 
 
 
@@ -525,16 +525,16 @@ if __name__ == '__main__':
                 tot_f1_test = 0
                 num_test_nodes = test_lbls.size(0)
 
-                '''for test_id in range(num_test_nodes):
+                for test_id in range(num_test_nodes):
                     mi_f1_test = f1_score(test_lbls[test_id].cpu().numpy(), pred_test[test_id].cpu().numpy(), average='micro')
                     tot_f1_test += mi_f1_test
 
-                tot_f1_test = tot_f1_test/tot_f1_test'''
+                tot_f1_test = tot_f1_test/tot_f1_test
 
-                test_lbls_flatten = test_lbls.contiguous().view(-1)
+                '''test_lbls_flatten = test_lbls.contiguous().view(-1)
                 pred_test_flatten = pred_test.contiguous().view(-1)
 
-                tot_f1_test = f1_score(test_lbls_flatten.cpu().numpy(), pred_test_flatten.cpu().numpy(), average='micro')
+                tot_f1_test = f1_score(test_lbls_flatten.cpu().numpy(), pred_test_flatten.cpu().numpy(), average='micro')'''
 
 
                 test_res.append(tot_f1_test)
