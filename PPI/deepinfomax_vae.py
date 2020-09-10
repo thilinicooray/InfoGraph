@@ -539,6 +539,8 @@ if __name__ == '__main__':
 
                 test_res.append(tot_f1_test)
 
+                print('current val, test ', tot_f1_val, tot_f1_test)
+
             print('best f1 obtained in round:', best_f1, best_round)
             logreg_val.append(best_f1)
             logreg_valbased_test.append(test_res[best_round])
