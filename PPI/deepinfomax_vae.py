@@ -434,121 +434,121 @@ if __name__ == '__main__':
 
             model.eval()
 
-            if epoch == epochs:
+            #if epoch == epochs:
 
-                accs = []
-                best_f1 = 0
-                best_round = 0
+            accs = []
+            best_f1 = 0
+            best_round = 0
 
 
-                print('Logistic regression started!')
+            print('Logistic regression started!')
 
-                log = SimpleClassifier(args.hidden_dim*2, args.hidden_dim, 121, 0.5)
-                opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0.0)
-                log.double().cuda()
+            log = SimpleClassifier(args.hidden_dim, args.hidden_dim, 121, 0.5)
+            opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0.0)
+            log.double().cuda()
 
-                train_emb, train_y = model.get_embeddings(train_dataloader)
-                val_emb, val_y = model.get_embeddings(val_dataloader)
-                test_emb, test_y = model.get_embeddings(test_dataloader)
+            train_emb, train_y = model.get_embeddings(train_dataloader)
+            val_emb, val_y = model.get_embeddings(val_dataloader)
+            test_emb, test_y = model.get_embeddings(test_dataloader)
 
-                from sklearn.preprocessing import StandardScaler
-                scaler = StandardScaler()
-                scaler.fit(train_emb)
-                train_emb = scaler.transform(train_emb)
-                val_emb = scaler.transform(val_emb)
-                test_emb = scaler.transform(test_emb)
+            from sklearn.preprocessing import StandardScaler
+            scaler = StandardScaler()
+            scaler.fit(train_emb)
+            train_emb = scaler.transform(train_emb)
+            val_emb = scaler.transform(val_emb)
+            test_emb = scaler.transform(test_emb)
 
-                train_embs, train_lbls = torch.from_numpy(train_emb).cuda(), torch.from_numpy(train_y).cuda()
-                val_embs, val_lbls= torch.from_numpy(val_emb).cuda(), torch.from_numpy(val_y).cuda()
-                test_embs, test_lbls= torch.from_numpy(test_emb).cuda(), torch.from_numpy(test_y).cuda()
+            train_embs, train_lbls = torch.from_numpy(train_emb).cuda(), torch.from_numpy(train_y).cuda()
+            val_embs, val_lbls= torch.from_numpy(val_emb).cuda(), torch.from_numpy(val_y).cuda()
+            test_embs, test_lbls= torch.from_numpy(test_emb).cuda(), torch.from_numpy(test_y).cuda()
 
-                test_res = []
+            test_res = []
 
-                for round in range(300):
+            for round in range(300):
 
-                    log.train()
-                    opt.zero_grad()
-                    logits = log(torch.cat([train_embs,train_embs],-1))
+                log.train()
+                opt.zero_grad()
+                logits = log(train_embs)
 
-                    '''tot = torch.sum(data_new.y, 0)
+                '''tot = torch.sum(data_new.y, 0)
     
-                    val = 1.0 / tot
+                val = 1.0 / tot
     
-                    pos_weight = val'''
+                pos_weight = val'''
 
-                    criterion = nn.BCEWithLogitsLoss()
-                    loss = criterion(logits, train_lbls)
+                criterion = nn.BCEWithLogitsLoss()
+                loss = criterion(logits, train_lbls)
 
-                    loss.backward()
-                    opt.step()
+                loss.backward()
+                opt.step()
 
-                    log.eval()
+                log.eval()
 
-                    pred_list = []
-                    y_list = []
+                pred_list = []
+                y_list = []
 
 
-                    with torch.no_grad():
+                with torch.no_grad():
 
-                        logreg_out = torch.sigmoid(log(torch.cat([val_embs,val_embs],-1)))
-                        pred = torch.ones_like(logreg_out)
+                    logreg_out = torch.sigmoid(log(val_embs))
+                    pred = torch.ones_like(logreg_out)
 
-                        pred =  pred.masked_fill(logreg_out < 0.5, 0)
+                    pred =  pred.masked_fill(logreg_out < 0.5, 0)
 
-                    tot_f1_val = 0
-                    num_nodes = val_lbls.size(0)
+                tot_f1_val = 0
+                num_nodes = val_lbls.size(0)
 
-                    '''for val_id in range(num_nodes):
-                        mi_f1 = f1_score(val_lbls[val_id].cpu().numpy(), pred[val_id].cpu().numpy(), average='micro')
-                        tot_f1_val += mi_f1
+                '''for val_id in range(num_nodes):
+                    mi_f1 = f1_score(val_lbls[val_id].cpu().numpy(), pred[val_id].cpu().numpy(), average='micro')
+                    tot_f1_val += mi_f1
 
-                    tot_f1_val = tot_f1_val/num_nodes'''
+                tot_f1_val = tot_f1_val/num_nodes'''
 
-                    val_lbl_flatten = val_lbls.contiguous().view(-1)
-                    pred_flatten = pred.contiguous().view(-1)
+                val_lbl_flatten = val_lbls.contiguous().view(-1)
+                pred_flatten = pred.contiguous().view(-1)
     
-                    tot_f1_val = f1_score(val_lbl_flatten.cpu().numpy(), pred_flatten.cpu().numpy(), average='micro')
+                tot_f1_val = f1_score(val_lbl_flatten.cpu().numpy(), pred_flatten.cpu().numpy(), average='micro')
 
 
 
-                    if tot_f1_val > best_f1:
-                        best_f1 = tot_f1_val
-                        best_round = round
+                if tot_f1_val > best_f1:
+                    best_f1 = tot_f1_val
+                    best_round = round
 
-                    #test set
+                #test set
 
-                    with torch.no_grad():
+                with torch.no_grad():
 
-                        logreg_out_test = torch.sigmoid(log(torch.cat([test_embs,test_embs],-1)))
-                        pred_test = torch.ones_like(logreg_out_test)
+                    logreg_out_test = torch.sigmoid(log(test_embs))
+                    pred_test = torch.ones_like(logreg_out_test)
 
-                        pred_test = pred_test.masked_fill(logreg_out_test < 0.5, 0)
+                    pred_test = pred_test.masked_fill(logreg_out_test < 0.5, 0)
 
-                    tot_f1_test = 0
-                    num_test_nodes = test_lbls.size(0)
+                tot_f1_test = 0
+                num_test_nodes = test_lbls.size(0)
 
-                    '''for test_id in range(num_test_nodes):
-                        mi_f1_test = f1_score(test_lbls[test_id].cpu().numpy(), pred_test[test_id].cpu().numpy(), average='micro')
-                        tot_f1_test += mi_f1_test
+                '''for test_id in range(num_test_nodes):
+                    mi_f1_test = f1_score(test_lbls[test_id].cpu().numpy(), pred_test[test_id].cpu().numpy(), average='micro')
+                    tot_f1_test += mi_f1_test
 
-                    tot_f1_test = tot_f1_test/num_test_nodes'''
+                tot_f1_test = tot_f1_test/num_test_nodes'''
 
-                    test_lbls_flatten = test_lbls.contiguous().view(-1)
-                    pred_test_flatten = pred_test.contiguous().view(-1)
+                test_lbls_flatten = test_lbls.contiguous().view(-1)
+                pred_test_flatten = pred_test.contiguous().view(-1)
 
-                    tot_f1_test = f1_score(test_lbls_flatten.cpu().numpy(), pred_test_flatten.cpu().numpy(), average='micro')
+                tot_f1_test = f1_score(test_lbls_flatten.cpu().numpy(), pred_test_flatten.cpu().numpy(), average='micro')
 
 
-                    test_res.append(tot_f1_test)
+                test_res.append(tot_f1_test)
 
-                    print('current val, test ',round, tot_f1_val, tot_f1_test)
+                print('current val, test ',round, tot_f1_val, tot_f1_test)
 
-                print('best f1 obtained in round:', best_f1, best_round)
-                logreg_val.append(best_f1)
-                logreg_valbased_test.append(test_res[best_round])
+            print('best f1 obtained in round:', best_f1, best_round)
+            logreg_val.append(best_f1)
+            logreg_valbased_test.append(test_res[best_round])
 
-                print('logreg val', logreg_val)
-                print('logreg test', logreg_valbased_test)
+            print('logreg val', logreg_val)
+            print('logreg test', logreg_valbased_test)
 
 
 
