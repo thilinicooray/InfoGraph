@@ -529,7 +529,7 @@ if __name__ == '__main__':
                     mi_f1_test = f1_score(test_lbls[test_id].cpu().numpy(), pred_test[test_id].cpu().numpy(), average='micro')
                     tot_f1_test += mi_f1_test
 
-                tot_f1_test = tot_f1_test/tot_f1_test
+                tot_f1_test = tot_f1_test/num_test_nodes
 
                 '''test_lbls_flatten = test_lbls.contiguous().view(-1)
                 pred_test_flatten = pred_test.contiguous().view(-1)

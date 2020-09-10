@@ -355,6 +355,9 @@ if __name__ == '__main__':
         accuracies['linearsvc'].append(res[2])
         accuracies['randomforest'].append(res[3])'''
 
+        logreg_val = []
+        logreg_valbased_test = []
+
         #model.train()
         for epoch in range(1, epochs+1):
             recon_loss_all = 0
@@ -428,9 +431,20 @@ if __name__ == '__main__':
 
             train_emb, train_y = model.get_embeddings(train_dataloader)
             val_emb, val_y = model.get_embeddings(val_dataloader)
+            test_emb, test_y = model.get_embeddings(test_dataloader)
+
+            from sklearn.preprocessing import StandardScaler
+            scaler = StandardScaler()
+            scaler.fit(train_emb)
+            train_emb = scaler.transform(train_emb)
+            val_emb = scaler.transform(val_emb)
+            test_emb = scaler.transform(test_emb)
 
             train_embs, train_lbls = torch.from_numpy(train_emb).cuda(), torch.from_numpy(train_y).cuda()
             val_embs, val_lbls= torch.from_numpy(val_emb).cuda(), torch.from_numpy(val_y).cuda()
+            test_embs, test_lbls= torch.from_numpy(test_emb).cuda(), torch.from_numpy(test_y).cuda()
+
+            test_res = []
 
             for round in range(500):
 
@@ -439,9 +453,9 @@ if __name__ == '__main__':
                 logits = log(train_embs)
 
                 '''tot = torch.sum(data_new.y, 0)
-    
+
                 val = 1.0 / tot
-    
+
                 pos_weight = val'''
 
                 criterion = nn.BCEWithLogitsLoss()
@@ -463,13 +477,60 @@ if __name__ == '__main__':
 
                     pred =  pred.masked_fill(logreg_out < 0.5, 0)
 
-                mi_f1 = f1_score(val_lbls[0].cpu().numpy(), pred[0].cpu().numpy(), average='micro')
+                tot_f1_val = 0
+                num_nodes = val_lbls.size(0)
 
-                if mi_f1 > best_f1:
-                    best_f1 = mi_f1
+                '''for val_id in range(num_nodes):
+                    mi_f1 = f1_score(val_lbls[val_id].cpu().numpy(), pred[val_id].cpu().numpy(), average='micro')
+                    tot_f1_val += mi_f1
+
+                tot_f1_val = tot_f1_val/num_nodes'''
+
+                val_lbl_flatten = val_lbls.contiguous().view(-1)
+                pred_flatten = pred.contiguous().view(-1)
+
+                tot_f1_val = f1_score(val_lbl_flatten.cpu().numpy(), pred_flatten.cpu().numpy(), average='micro')
+
+
+
+                if tot_f1_val > best_f1:
+                    best_f1 = tot_f1_val
                     best_round = round
 
+                #test set
+
+                with torch.no_grad():
+
+                    logreg_out_test = torch.sigmoid(log(test_embs))
+                    pred_test = torch.ones_like(logreg_out_test)
+
+                    pred_test = pred_test.masked_fill(logreg_out_test < 0.5, 0)
+
+                tot_f1_test = 0
+                num_test_nodes = test_lbls.size(0)
+
+                '''for test_id in range(num_test_nodes):
+                    mi_f1_test = f1_score(test_lbls[test_id].cpu().numpy(), pred_test[test_id].cpu().numpy(), average='micro')
+                    tot_f1_test += mi_f1_test
+
+                tot_f1_test = tot_f1_test/num_test_nodes'''
+
+                test_lbls_flatten = test_lbls.contiguous().view(-1)
+                pred_test_flatten = pred_test.contiguous().view(-1)
+
+                tot_f1_test = f1_score(test_lbls_flatten.cpu().numpy(), pred_test_flatten.cpu().numpy(), average='micro')
+
+
+                test_res.append(tot_f1_test)
+
+                print('current val, test ', tot_f1_val, tot_f1_test)
+
             print('best f1 obtained in round:', best_f1, best_round)
+            logreg_val.append(best_f1)
+            logreg_valbased_test.append(test_res[best_round])
+
+            print('logreg val', logreg_val)
+            print('logreg test', logreg_valbased_test)
 
 
         #accs = torch.stack(accs)
