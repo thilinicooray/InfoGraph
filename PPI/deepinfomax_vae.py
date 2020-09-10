@@ -486,12 +486,17 @@ if __name__ == '__main__':
 
                     pred =  pred.masked_fill(logreg_out < 0.5, 0)
 
+                tot_f1_val = 0
+                num_nodes = val_lbls.size(0)
 
-                print('val ', val_lbls.size(),val_lbls[0].size(),  pred.size(), pred[0].size())
-                mi_f1 = f1_score(val_lbls[0].cpu().numpy(), pred[0].cpu().numpy(), average='micro')
+                for val_id in range(num_nodes):
+                    mi_f1 = f1_score(val_lbls[val_id].cpu().numpy(), pred[val_id].cpu().numpy(), average='micro')
+                    tot_f1_val += mi_f1
 
-                if mi_f1 > best_f1:
-                    best_f1 = mi_f1
+                tot_f1_val = tot_f1_val/num_nodes
+
+                if tot_f1_val > best_f1:
+                    best_f1 = tot_f1_val
                     best_round = round
 
                 #test set
@@ -501,10 +506,19 @@ if __name__ == '__main__':
                     logreg_out_test = torch.sigmoid(log(test_embs))
                     pred_test = torch.ones_like(logreg_out_test)
 
-                    pred_test =  pred_test.masked_fill(logreg_out_test < 0.5, 0)
+                    pred_test = pred_test.masked_fill(logreg_out_test < 0.5, 0)
 
-                mi_f1_test = f1_score(test_lbls[0].cpu().numpy(), pred_test[0].cpu().numpy(), average='micro')
-                test_res.append(mi_f1_test)
+                tot_f1_test = 0
+                num_test_nodes = test_lbls.size(0)
+
+                for test_id in range(num_test_nodes):
+                    mi_f1_test = f1_score(test_lbls[test_id].cpu().numpy(), pred_test[test_id].cpu().numpy(), average='micro')
+                    tot_f1_test += mi_f1_test
+
+                tot_f1_test = tot_f1_test/tot_f1_test
+
+
+                test_res.append(tot_f1_test)
 
             print('best f1 obtained in round:', best_f1, best_round)
             logreg_val.append(best_f1)
