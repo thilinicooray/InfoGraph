@@ -260,7 +260,7 @@ if __name__ == '__main__':
 
 
             train_emb, train_y = model.encoder.get_embeddings(train_dataloader)
-            val_emb, val_y = model.encodr.get_embeddings(val_dataloader)
+            val_emb, val_y = model.encoder.get_embeddings(val_dataloader)
             test_emb, test_y = model.encoder.get_embeddings(test_dataloader)
 
             from sklearn.preprocessing import StandardScaler
