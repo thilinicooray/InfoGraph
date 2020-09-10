@@ -47,8 +47,8 @@ class Encoder(torch.nn.Module):
                 conv = GCNConv(num_features, dim)
                 bn = torch.nn.BatchNorm1d(dim)
             elif i >= num_gc_layers:
-                conv = GCNConv(dim, dim*2)
-                bn = torch.nn.BatchNorm1d(dim*2)
+                conv = GCNConv(dim, dim)
+                bn = torch.nn.BatchNorm1d(dim)
             else:
                 conv = GCNConv(dim, dim)
                 bn = torch.nn.BatchNorm1d(dim)
