@@ -443,7 +443,7 @@ if __name__ == '__main__':
 
                 print('Logistic regression started!')
 
-                log = SimpleClassifier(args.hidden_dim, args.hidden_dim, 121, 0.5)
+                log = SimpleClassifier(args.hidden_dim*2, args.hidden_dim, 121, 0.5)
                 opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0.0)
                 log.double().cuda()
 
@@ -464,11 +464,11 @@ if __name__ == '__main__':
 
                 test_res = []
 
-                for round in range(500):
+                for round in range(300):
 
                     log.train()
                     opt.zero_grad()
-                    logits = log(train_embs)
+                    logits = log(torch.cat([train_embs,train_embs],-1))
 
                     '''tot = torch.sum(data_new.y, 0)
     
@@ -490,7 +490,7 @@ if __name__ == '__main__':
 
                     with torch.no_grad():
 
-                        logreg_out = torch.sigmoid(log(val_embs))
+                        logreg_out = torch.sigmoid(log(torch.cat([val_embs,val_embs],-1)))
                         pred = torch.ones_like(logreg_out)
 
                         pred =  pred.masked_fill(logreg_out < 0.5, 0)
@@ -519,7 +519,7 @@ if __name__ == '__main__':
 
                     with torch.no_grad():
 
-                        logreg_out_test = torch.sigmoid(log(test_embs))
+                        logreg_out_test = torch.sigmoid(log(torch.cat([test_embs,test_embs],-1)))
                         pred_test = torch.ones_like(logreg_out_test)
 
                         pred_test = pred_test.masked_fill(logreg_out_test < 0.5, 0)
