@@ -72,7 +72,7 @@ class Encoder(torch.nn.Module):
         with torch.no_grad():
             for data in loader:
                 data.to(device)
-                x, edge_index, batch = data.x, data.edge_index, data.batch
+                x, edge_index, batch = data.x.double(), data.edge_index, data.batch
                 _, x = self.forward(x, edge_index, batch)
                 ret.append(x.cpu().numpy())
                 y.append(data.y.cpu().numpy())
