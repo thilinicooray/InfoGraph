@@ -361,12 +361,12 @@ if __name__ == '__main__':
             #dataset_num_features = 5
             #input_feat = torch.ones((batch_size, 1)).to(device)
 
-        train_x = data.x[data.train_mask]
+        '''train_x = data.x[data.train_mask]
         train_y = data.y[data.train_mask]
         val_x = data.x[data.val_mask]
         val_y = data.y[data.val_mask]
         test_x = data.x[data.test_mask]
-        test_y = data.y[data.test_mask]
+        test_y = data.y[data.test_mask]'''
 
         nb_classes = np.unique(data.y.cpu().numpy()).shape[0]
 
@@ -538,8 +538,8 @@ if __name__ == '__main__':
             val_emb, val_lbls= torch.from_numpy(val_emb).cuda(), torch.from_numpy(val_y_labels)
             test_emb, test_lbls= torch.from_numpy(test_emb).cuda(), torch.from_numpy(test_y_labels)
 
-            print('emb', train_emb.size(), val_emb.size(), test_emb.size())
-            print('y',  train_lbls.size(), val_lbls.size(), test_lbls.size())
+            #print('emb', train_emb.size(), val_emb.size(), test_emb.size())
+            #print('y',  train_lbls.size(), val_lbls.size(), test_lbls.size())
 
             '''from sklearn.preprocessing import StandardScaler
             scaler = StandardScaler()
@@ -566,7 +566,8 @@ if __name__ == '__main__':
             if tot_acc_val > best_val:
                 best_val_round = epoch - 1'''
 
-            accs = []
+            accs_val = []
+            accs_test = []
             for _ in range(50):
                 log = LogReg(args.hidden_dim*2, nb_classes).double().cuda()
                 opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0)
@@ -576,26 +577,37 @@ if __name__ == '__main__':
                     opt.zero_grad()
 
                     logits = log(train_emb)
-                    loss = xent(logits, train_y)
+                    loss = xent(logits, train_lbls)
 
                     loss.backward()
                     opt.step()
 
-                logits = log(test_emb)
-                preds = torch.argmax(logits, dim=1)
-                acc = torch.sum(preds == test_y).float() / test_y.shape[0]
-                accs.append(acc * 100)
+                logits_test = log(test_emb)
+                preds_test = torch.argmax(logits_test, dim=1)
+                acc_test = torch.sum(preds_test == test_lbls).float() / test_lbls.shape[0]
+                accs_test.append(acc_test * 100)
 
-            accs = torch.stack(accs)
-            print(accs.mean().item(), accs.std().item())
+                logits_val = log(val_emb)
+                preds_val = torch.argmax(logits_val, dim=1)
+                acc_val = torch.sum(preds_val == val_lbls).float() / val_lbls.shape[0]
+                accs_val.append(acc_val * 100)
+
+            accs_test = torch.stack(accs_test)
+            print('test ', accs_test.mean().item(), accs_test.std().item())
+
+            accs_val = torch.stack(accs_val)
+            print('val ', accs_val.mean().item(), accs_val.std().item())
+
+            if accs_val.mean().item() > best_val:
+                best_val_round = epoch - 1
 
 
-            logreg_val.append(accs.mean().item())
-            logreg_valbased_test.append(accs.mean().item())
+            logreg_val.append(accs_val.mean().item())
+            logreg_valbased_test.append(accs_test.mean().item())
 
             print('logreg val', logreg_val)
             print('logreg test', logreg_valbased_test)
 
-        #print('best perf based on validation score val, test, in epoch', logreg_val[best_val_round], logreg_valbased_test[best_val_round], best_val_round)
+        print('best perf based on validation score val, test, in epoch', logreg_val[best_val_round], logreg_valbased_test[best_val_round], best_val_round)
 
 
