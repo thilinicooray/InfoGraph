@@ -534,12 +534,12 @@ if __name__ == '__main__':
 
             train_emb, train_y_labels, val_emb, val_y_labels,test_emb, test_y_labels  = model.get_embeddings(data)
 
-            print('emb', train_emb.size(), val_emb.size(), test_emb.size())
-            print('y',  train_y_labels.size(), val_y_labels.size(), test_y_labels.size())
+            train_emb, train_lbls = torch.from_numpy(train_emb).cuda(), torch.from_numpy(train_y_labels)
+            val_emb, val_lbls= torch.from_numpy(val_emb).cuda(), torch.from_numpy(val_y_labels)
+            test_emb, test_lbls= torch.from_numpy(test_emb).cuda(), torch.from_numpy(test_y_labels)
 
-            train_emb, train_lbls = torch.from_numpy(train_emb).cuda(), train_y_labels
-            val_emb, val_lbls= torch.from_numpy(val_emb).cuda(), val_y_labels
-            test_emb, test_lbls= torch.from_numpy(test_emb).cuda(), test_y_labels
+            print('emb', train_emb.size(), val_emb.size(), test_emb.size())
+            print('y',  train_lbls.size(), val_lbls.size(), test_lbls.size())
 
             '''from sklearn.preprocessing import StandardScaler
             scaler = StandardScaler()
