@@ -403,6 +403,11 @@ if __name__ == '__main__':
             model.zero_grad()
 
             z_sample, z_class = model.encoder(data.x.double(), data.edge_index)
+
+            #contrastive loss
+            con_loss = local_global_loss_contrast(z_sample, z_class, 'JSD')
+
+
             grouped_class = accumulate_group_rep(
                 z_class
             )
@@ -415,6 +420,7 @@ if __name__ == '__main__':
             recon_loss_all += recon_loss.item()
 
             recon_loss.backward()
+            con_loss.backward()
             optim_P.step()
             optim_Q_enc.step()
 
