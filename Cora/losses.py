@@ -51,7 +51,7 @@ def local_global_loss_contrast(l_enc, g_enc, measure):
     E_pos = get_positive_expectation(graph_graph_level, measure, average=False).sum()
     E_pos = E_pos / num_nodes
     E_neg = get_negative_expectation(graph_node_level, measure, average=False).sum()
-    E_neg = E_pos / num_nodes
+    E_neg = E_neg / num_nodes
 
     return E_neg - E_pos
 
