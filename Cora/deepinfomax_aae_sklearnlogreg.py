@@ -440,7 +440,7 @@ if __name__ == '__main__':
             #model.class_discriminator.zero_grad()
 
 
-            z_real_gauss_node = Variable(torch.randn(data.x.shape[0], args.hidden_dim*2)).double().cuda()
+            z_real_gauss_node = Variable(torch.randn(data.x.shape[0], args.hidden_dim*2)* 5.).double().cuda()
             D_real_gauss_node = model.node_discriminator(z_real_gauss_node)
 
 
