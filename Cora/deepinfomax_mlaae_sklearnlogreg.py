@@ -404,8 +404,7 @@ if __name__ == '__main__':
 
             z_sample, z_class = model.encoder(data.x.double(), data.edge_index)
 
-            #contrastive loss
-            con_loss = local_global_loss_contrast(z_sample, z_class, 'JSD')
+
 
 
             grouped_class = accumulate_group_rep(
@@ -418,6 +417,9 @@ if __name__ == '__main__':
 
             recon_loss = model.recon_loss1(X_sample, data.edge_index) + mse_loss(X_sample, data.x.double())
             recon_loss_all += recon_loss.item()
+
+            #contrastive loss
+            con_loss = local_global_loss_contrast(z_sample, z_class, 'JSD')
 
             tot_loss = recon_loss + con_loss
 
