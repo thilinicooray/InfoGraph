@@ -18,6 +18,7 @@ from torch_geometric.datasets import Planetoid
 from torch_geometric.data import DataLoader
 from torch_geometric.nn import global_mean_pool, global_add_pool, global_max_pool
 from torch_geometric.utils import negative_sampling, remove_self_loops, add_self_loops, to_dense_adj, to_dense_batch
+from torch.nn import Sequential, Linear, ReLU, Tanh, Sigmoid, PReLU
 import sys
 import json
 from torch import optim
