@@ -189,28 +189,27 @@ class GcnInfomax(nn.Module):
 
         return norm*(pos_loss*pos_weight + neg_loss)
 
-    def get_embeddings(self, loader):
+    def get_embeddings(self, data):
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         ret = []
         y = []
         with torch.no_grad():
-            for data in loader:
 
-                data.to(device)
-                x, edge_index, batch = data.x, data.edge_index, data.batch
-
-
-                node_mu, node_logvar = self.encoder(x.double(), edge_index, batch)
+            data.to(device)
+            x, edge_index = data.x, data.edge_index
 
 
-                node_latent_embeddings = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
+            node_latent, graph_latent = self.encoder(x.double(), edge_index)
 
-                ret.append(node_latent_embeddings.cpu().numpy())
-                y.append(data.y.cpu().numpy())
-        ret = np.concatenate(ret, 0)
-        y = np.concatenate(y, 0)
-        return ret, y
+        train_emb = node_latent[data.train_mask].cpu().numpy()
+        train_y = data.y[data.train_mask].cpu().numpy()
+        val_emb = node_latent[data.val_mask].cpu().numpy()
+        val_y = data.y[data.val_mask].cpu().numpy()
+        test_emb = node_latent[data.test_mask].cpu().numpy()
+        test_y = data.y[data.test_mask].cpu().numpy()
+
+        return train_emb, train_y, val_emb, val_y,test_emb, test_y
 
 def test(train_z, train_y, val_z, val_y,test_z, test_y,  solver='lbfgs',
          multi_class='ovr', *args, **kwargs):
@@ -308,7 +307,8 @@ if __name__ == '__main__':
 
         dataset = Planetoid(path, name=DS)
 
-        print('cora ', dataset[0])
+        print('cora dataset summary', dataset[0])
+        data = dataset[0].to(device)
 
 
 
@@ -318,7 +318,7 @@ if __name__ == '__main__':
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         try:
-            dataset_num_features = train_dataset.num_features
+            dataset_num_features = data.x.size(-1)
         except:
             dataset_num_features = 1
 
@@ -329,9 +329,12 @@ if __name__ == '__main__':
             #dataset_num_features = 5
             #input_feat = torch.ones((batch_size, 1)).to(device)
 
-        train_dataloader = DataLoader(train_dataset, batch_size=batch_size)
-        val_dataloader = DataLoader(val_dataset, batch_size=batch_size)
-        test_dataloader = DataLoader(test_dataset, batch_size=batch_size)
+        train_x = data.x[data.train_mask]
+        train_y = data.y[data.train_mask]
+        val_x = data.x[data.val_mask]
+        val_y = data.y[data.val_mask]
+        test_x = data.x[data.test_mask]
+        test_y = data.y[data.test_mask]
 
 
         model = GcnInfomax(args.hidden_dim, args.num_gc_layers).double().to(device)
@@ -376,105 +379,101 @@ if __name__ == '__main__':
             disc_loss_all = 0
             mi_loss_all = 0
             model.train()
-            for data in train_dataloader:
-                data = data.to(device)
+
+
+            model.zero_grad()
+
+            z_sample, z_class = model.encoder(data.x.double(), data.edge_index)
+            grouped_class = accumulate_group_rep(
+                z_class, data.batch
+            )
+
+
+            #encode to z
+            X_sample = model.decoder(z_sample, grouped_class) #decode to X reconstruction
+            recon_loss = model.recon_loss1(X_sample, data.edge_index)
+            recon_loss_all += recon_loss.item()
+
+            recon_loss.backward()
+            optim_P.step()
+            optim_Q_enc.step()
+
+            # Discriminator
+            ## true prior is random normal (randn)
+            ## this is constraining the Z-projection to be normal!
+            model.encoder.eval()
+            #model.class_discriminator.zero_grad()
+            #model.class_discriminator.zero_grad()
+
+
+            z_real_gauss_node = Variable(torch.randn(data.batch.shape[0], args.hidden_dim) * 5.).double().cuda()
+            D_real_gauss_node = model.node_discriminator(z_real_gauss_node)
+
+            z_real_gauss_class = Variable(torch.randn(data.num_graphs, args.hidden_dim) * 5.).double().cuda()
+
+            z_real_gauss_class_exp = expand_group_rep(z_real_gauss_class, data.batch, data.batch.shape[0], args.hidden_dim)
+
+
+            D_real_gauss_class = model.class_discriminator(z_real_gauss_class_exp)
+
+            z_fake_gauss_node, z_fake_gauss_class = model.encoder(data.x.double(), data.edge_index)
+
+            grouped_z_fake_gauss_class = accumulate_group_rep(
+                z_fake_gauss_class
+            )
+
+            D_fake_gauss_node = model.node_discriminator(z_fake_gauss_node)
+            D_fake_gauss_class = model.class_discriminator(grouped_z_fake_gauss_class)
+
+
+
+            D_loss_node = -torch.mean(torch.log(D_real_gauss_node + EPS) + torch.log(1 - D_fake_gauss_node + EPS))
+            D_loss_class = -torch.mean(torch.log(D_real_gauss_class + EPS) + torch.log(1 - D_fake_gauss_class + EPS))
 
 
 
 
-                model.zero_grad()
+            D_loss = D_loss_node + D_loss_class
 
-                z_sample, z_class = model.encoder(data.x.double(), data.edge_index, data.batch)
-                grouped_class = accumulate_group_rep(
-                    z_class, data.batch
-                )
+            disc_loss_all += D_loss.item()
 
+            D_loss.backward()
+            optim_D.step()
 
-                #encode to z
-                X_sample = model.decoder(z_sample, grouped_class) #decode to X reconstruction
-                recon_loss = model.recon_loss1(X_sample, data.edge_index, data.batch)
-                recon_loss_all += recon_loss.item()
+            # Generator
+            model.encoder.train()
 
-                recon_loss.backward()
-                optim_P.step()
-                optim_Q_enc.step()
+            z_fake_gauss_node, z_fake_gauss_class = model.encoder(data.x.double(), data.edge_index, data.batch)
 
-                # Discriminator
-                ## true prior is random normal (randn)
-                ## this is constraining the Z-projection to be normal!
-                model.encoder.eval()
-                #model.class_discriminator.zero_grad()
-                #model.class_discriminator.zero_grad()
+            grouped_z_fake_gauss_class = accumulate_group_rep(
+                z_fake_gauss_class, data.batch
+            )
 
-
-                z_real_gauss_node = Variable(torch.randn(data.batch.shape[0], args.hidden_dim) * 5.).double().cuda()
-                D_real_gauss_node = model.node_discriminator(z_real_gauss_node)
-
-                z_real_gauss_class = Variable(torch.randn(data.num_graphs, args.hidden_dim) * 5.).double().cuda()
-
-                z_real_gauss_class_exp = expand_group_rep(z_real_gauss_class, data.batch, data.batch.shape[0], args.hidden_dim)
-
-
-                D_real_gauss_class = model.class_discriminator(z_real_gauss_class_exp)
-
-                z_fake_gauss_node, z_fake_gauss_class = model.encoder(data.x[:,:18].double(), data.edge_index, data.batch)
-
-                grouped_z_fake_gauss_class = accumulate_group_rep(
-                    z_fake_gauss_class, data.batch
-                )
-
-                D_fake_gauss_node = model.node_discriminator(z_fake_gauss_node)
-                D_fake_gauss_class = model.class_discriminator(grouped_z_fake_gauss_class)
+            D_fake_gauss_node = model.node_discriminator(z_fake_gauss_node)
+            D_fake_gauss_class = model.class_discriminator(grouped_z_fake_gauss_class)
 
 
 
-                D_loss_node = -torch.mean(torch.log(D_real_gauss_node + EPS) + torch.log(1 - D_fake_gauss_node + EPS))
-                D_loss_class = -torch.mean(torch.log(D_real_gauss_class + EPS) + torch.log(1 - D_fake_gauss_class + EPS))
+            G_loss_node = -torch.mean(torch.log(D_fake_gauss_node + EPS))
+            G_loss_class = -torch.mean(torch.log(D_fake_gauss_class + EPS))
+
+            G_loss = G_loss_node + G_loss_class
+            #G_loss = G_loss_node
+
+            gen_loss_all += G_loss.item()
+
+            optim_Q_gen.zero_grad()
+            G_loss.backward()
+            optim_Q_gen.step()
+
+            losses['recon'].append(recon_loss_all)
+            losses['gen'].append(gen_loss_all)
+            losses['disc'].append(disc_loss_all)
 
 
 
-
-                D_loss = D_loss_node + D_loss_class
-
-                disc_loss_all += D_loss.item()
-
-                D_loss.backward()
-                optim_D.step()
-
-                # Generator
-                model.encoder.train()
-
-                z_fake_gauss_node, z_fake_gauss_class = model.encoder(data.x[:,:18].double(), data.edge_index, data.batch)
-
-                grouped_z_fake_gauss_class = accumulate_group_rep(
-                    z_fake_gauss_class, data.batch
-                )
-
-                D_fake_gauss_node = model.node_discriminator(z_fake_gauss_node)
-                D_fake_gauss_class = model.class_discriminator(grouped_z_fake_gauss_class)
-
-
-
-                G_loss_node = -torch.mean(torch.log(D_fake_gauss_node + EPS))
-                G_loss_class = -torch.mean(torch.log(D_fake_gauss_class + EPS))
-
-                G_loss = G_loss_node + G_loss_class
-                #G_loss = G_loss_node
-
-                gen_loss_all += G_loss.item()
-
-                optim_Q_gen.zero_grad()
-                G_loss.backward()
-                optim_Q_gen.step()
-
-            losses['recon'].append(recon_loss_all/ len(train_dataloader))
-            losses['gen'].append(gen_loss_all/ len(train_dataloader))
-            losses['disc'].append(disc_loss_all/ len(train_dataloader))
-
-
-
-            print('Epoch {}, Recon Loss {} Gen Loss {} Disc Loss {}'.format(epoch, recon_loss_all / len(train_dataloader),
-                                                                            gen_loss_all / len(train_dataloader), disc_loss_all / len(train_dataloader)))
+            print('Epoch {}, Recon Loss {} Gen Loss {} Disc Loss {}'.format(epoch, recon_loss_all ,
+                                                                            gen_loss_all , disc_loss_all ))
 
             #used during finetune phase
             '''if epoch % log_interval == 0:
@@ -511,9 +510,7 @@ if __name__ == '__main__':
             print('Logistic regression started!')
 
 
-            train_emb, train_y = model.get_embeddings(train_dataloader)
-            val_emb, val_y = model.get_embeddings(val_dataloader)
-            test_emb, test_y = model.get_embeddings(test_dataloader)
+            train_emb, train_y, val_emb, val_y,test_emb, test_y  = model.get_embeddings(data)
 
             from sklearn.preprocessing import StandardScaler
             scaler = StandardScaler()
@@ -547,6 +544,6 @@ if __name__ == '__main__':
             print('logreg val', logreg_val)
             print('logreg test', logreg_valbased_test)
 
-        print('best perf based on validation score val, test', logreg_val[best_val_round], logreg_valbased_test[best_val_round])
+        print('best perf based on validation score val, test, in epoch', logreg_val[best_val_round], logreg_valbased_test[best_val_round], best_val_round)
 
 
