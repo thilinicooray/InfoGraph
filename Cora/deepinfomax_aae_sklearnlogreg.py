@@ -204,14 +204,14 @@ class GcnInfomax(nn.Module):
         #node_latent = node_latent.cpu().numpy()
         #y = da
 
-        '''train_emb = node_latent[data.train_mask].cpu().numpy()
+        train_emb = node_latent[data.train_mask].cpu().numpy()
         train_y = data.y[data.train_mask].cpu().numpy()
         val_emb = node_latent[data.val_mask].cpu().numpy()
         val_y = data.y[data.val_mask].cpu().numpy()
         test_emb = node_latent[data.test_mask].cpu().numpy()
-        test_y = data.y[data.test_mask].cpu().numpy()'''
+        test_y = data.y[data.test_mask].cpu().numpy()
 
-        train_msk_exp = data.train_mask.unsqueeze(-1).expand_as(node_latent)
+        '''train_msk_exp = data.train_mask.unsqueeze(-1).expand_as(node_latent)
         val_msk_exp = data.val_mask.unsqueeze(-1).expand_as(node_latent)
         test_msk_exp = data.test_mask.unsqueeze(-1).expand_as(node_latent)
 
@@ -221,7 +221,7 @@ class GcnInfomax(nn.Module):
         val_emb = torch.masked_select(node_latent, val_msk_exp).cpu().numpy()
         val_y = torch.masked_select(data.y, data.val_mask).cpu().numpy()
         test_emb = torch.masked_select(node_latent, test_msk_exp).cpu().numpy()
-        test_y = torch.masked_select(data.y, data.test_mask).cpu().numpy()
+        test_y = torch.masked_select(data.y, data.test_mask).cpu().numpy()'''
 
 
 
