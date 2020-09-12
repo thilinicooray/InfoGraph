@@ -411,7 +411,7 @@ if __name__ == '__main__':
             z_real_gauss_node = Variable(torch.randn(data.x.shape[0], args.hidden_dim) * 5.).double().cuda()
             D_real_gauss_node = model.node_discriminator(z_real_gauss_node)
 
-            z_real_gauss_class = Variable(torch.randn(data.num_graphs, args.hidden_dim) * 5.).double().cuda()
+            z_real_gauss_class = Variable(torch.randn(1, args.hidden_dim) * 5.).double().cuda()
 
             z_real_gauss_class_exp = expand_group_rep(z_real_gauss_class,  data.x.shape[0], args.hidden_dim)
 
