@@ -27,6 +27,6 @@ class Discriminator(nn.Module):
         if s_bias2 is not None:
             sc_2 += s_bias2
 
-        logits = torch.cat((sc_1, sc_2), 1)
+        logits = torch.cat((sc_1, sc_2), 0)
 
         return logits

@@ -258,7 +258,6 @@ if __name__ == '__main__':
 
 
             idx = np.random.permutation(data.x.size(0))
-            print('idx ', idx)
             shuf_fts = torch.from_numpy(data.x.cpu().numpy()[idx, :]).double()
 
             lbl_1 = torch.ones(data.x.size(0))
@@ -270,6 +269,8 @@ if __name__ == '__main__':
                 lbl = lbl.cuda()
 
             logits = model(data.x.double(), shuf_fts, data.edge_index)
+
+            print('sizes ', logits.size(), lbl.size())
 
             loss = b_xent(logits, lbl)
 
