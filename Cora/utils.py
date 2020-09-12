@@ -11,7 +11,7 @@ def expand_group_rep (class_mu, node_count, dim):
     group_mu = group_mu.cuda()
 
     for i in range(node_count):
-        group_label = 1
+        group_label = 0
 
         group_mu[i] = class_mu[group_label]
 
