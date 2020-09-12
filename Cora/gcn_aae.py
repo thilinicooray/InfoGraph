@@ -98,7 +98,7 @@ class Decoder(torch.nn.Module):
             ('relu_1', ReLU()),
 
             ('linear_2', torch.nn.Linear(in_features=node_dim, out_features=feat_size, bias=True)),
-            ('relu_final', Sigmoid())
+            ('relu_final', Tanh())
         ]))
 
     def forward(self, x):
