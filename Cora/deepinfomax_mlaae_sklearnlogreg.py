@@ -419,8 +419,9 @@ if __name__ == '__main__':
             recon_loss = model.recon_loss1(X_sample, data.edge_index) + mse_loss(X_sample, data.x.double())
             recon_loss_all += recon_loss.item()
 
-            recon_loss.backward()
-            con_loss.backward()
+            tot_loss = recon_loss + con_loss
+
+            tot_loss.backward()
             optim_P.step()
             optim_Q_enc.step()
 

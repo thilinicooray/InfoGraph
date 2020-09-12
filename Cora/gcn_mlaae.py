@@ -79,8 +79,8 @@ class Encoder(torch.nn.Module):
 
         #out = torch.cat(xs, 1)
         j = self.num_gc_layers
-        node_latent_space = self.bns[j](torch.tanh(self.convs[j](x, edge_index)))
-        class_latent_space = self.bns[j+1](torch.tanh(self.convs[j+1](x, edge_index)))
+        node_latent_space = self.act(self.convs[j](x, edge_index))
+        class_latent_space = self.act(self.convs[j+1](x, edge_index))
 
 
         '''node_latent_space_mu = F.relu(self.node_mu(x))
