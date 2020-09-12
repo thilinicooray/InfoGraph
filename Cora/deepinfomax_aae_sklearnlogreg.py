@@ -424,8 +424,8 @@ if __name__ == '__main__':
 
 
             #encode to z
-            X_sample = model.decoder(z_sample) #decode to X reconstruction
-            recon_loss = model.recon_loss1(X_sample, data.edge_index)
+            #X_sample = model.decoder(z_sample) #decode to X reconstruction
+            recon_loss = model.recon_loss1(z_sample, data.edge_index)
             recon_loss_all += recon_loss.item()
 
             recon_loss.backward()
@@ -440,7 +440,7 @@ if __name__ == '__main__':
             #model.class_discriminator.zero_grad()
 
 
-            z_real_gauss_node = Variable(torch.randn(data.x.shape[0], args.hidden_dim*2)* 5.).double().cuda()
+            z_real_gauss_node = Variable(torch.randn(data.x.shape[0], args.hidden_dim*2)).double().cuda()
             D_real_gauss_node = model.node_discriminator(z_real_gauss_node)
 
 
