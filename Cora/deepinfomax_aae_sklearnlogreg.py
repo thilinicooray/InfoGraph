@@ -330,6 +330,8 @@ if __name__ == '__main__':
         print('cora dataset summary', dataset[0])
         data = dataset[0].to(device)
 
+        print('masks ', data.val_mask)
+
 
 
 
