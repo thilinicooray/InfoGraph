@@ -235,6 +235,25 @@ def test(train_z, train_y, val_z, val_y,test_z, test_y,  solver='lbfgs',
 
     return micro_f1_val, micro_f1_test
 
+class LogReg(nn.Module):
+    def __init__(self, ft_in, nb_classes):
+        super(LogReg, self).__init__()
+        self.fc = nn.Linear(ft_in, nb_classes)
+        self.sigm = nn.Sigmoid()
+
+        for m in self.modules():
+            self.weights_init(m)
+
+    def weights_init(self, m):
+        if isinstance(m, nn.Linear):
+            torch.nn.init.xavier_uniform_(m.weight.data)
+            if m.bias is not None:
+                m.bias.data.fill_(0.0)
+
+    def forward(self, seq):
+        ret = torch.log_softmax(self.fc(seq), dim=-1)
+        return ret
+
 
 class SimpleClassifier(nn.Module):
     def __init__(self, in_dim, hid_dim, out_dim, dropout):
@@ -337,6 +356,8 @@ if __name__ == '__main__':
         test_x = data.x[data.test_mask]
         test_y = data.y[data.test_mask]
 
+        nb_classes = np.unique(data.y.cpu().numpy()).shape[0]
+
 
         model = GcnInfomax(args.hidden_dim, args.num_gc_layers).double().to(device)
         #encode/decode optimizers
@@ -355,6 +376,8 @@ if __name__ == '__main__':
         print('num_features: {}'.format(dataset_num_features))
         print('hidden_dim: {}'.format(args.hidden_dim))
         print('num_gc_layers: {}'.format(args.num_gc_layers))
+        print('num_classes: {}'.format(nb_classes))
+
         print('================')
 
 
@@ -371,6 +394,7 @@ if __name__ == '__main__':
 
         best_val_round = -1
         best_val = 0
+        xent = nn.CrossEntropyLoss()
 
         #model.train()
         for epoch in range(1, epochs+1):
@@ -498,7 +522,7 @@ if __name__ == '__main__':
 
             train_emb, train_y, val_emb, val_y,test_emb, test_y  = model.get_embeddings(data)
 
-            from sklearn.preprocessing import StandardScaler
+            '''from sklearn.preprocessing import StandardScaler
             scaler = StandardScaler()
             scaler.fit(train_emb)
             train_emb = scaler.transform(train_emb)
@@ -521,15 +545,38 @@ if __name__ == '__main__':
             tot_acc_test = accuracy_score(test_y.flatten(), test_pred.flatten())
 
             if tot_acc_val > best_val:
-                best_val_round = epoch - 1
+                best_val_round = epoch - 1'''
+
+            accs = []
+            for _ in range(50):
+                log = LogReg(args.hidden_dim*2, nb_classes)
+                opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0)
+                log.cuda()
+                for _ in range(300):
+                    log.train()
+                    opt.zero_grad()
+
+                    logits = log(train_emb)
+                    loss = xent(logits, train_y)
+
+                    loss.backward()
+                    opt.step()
+
+                logits = log(test_emb)
+                preds = torch.argmax(logits, dim=1)
+                acc = torch.sum(preds == test_y).float() / test_y.shape[0]
+                accs.append(acc * 100)
+
+            accs = torch.stack(accs)
+            print(accs.mean().item(), accs.std().item())
 
 
-            logreg_val.append(tot_acc_val)
-            logreg_valbased_test.append(tot_acc_test)
+            logreg_val.append(accs.mean().item())
+            logreg_valbased_test.append(accs.mean().item())
 
             print('logreg val', logreg_val)
             print('logreg test', logreg_valbased_test)
 
-        print('best perf based on validation score val, test, in epoch', logreg_val[best_val_round], logreg_valbased_test[best_val_round], best_val_round)
+        #print('best perf based on validation score val, test, in epoch', logreg_val[best_val_round], logreg_valbased_test[best_val_round], best_val_round)
 
 
