@@ -308,7 +308,7 @@ if __name__ == '__main__':
 
         dataset = Planetoid(path, name=DS)
 
-        print('cora ', dataset)
+        print('cora ', dataset[0])
 
 
 
