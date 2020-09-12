@@ -58,8 +58,7 @@ class GcnInfomax(nn.Module):
 
         self.encoder = Encoder(dataset_num_features, hidden_dim, num_gc_layers)
         self.decoder = Decoder(hidden_dim, hidden_dim, dataset_num_features)
-        self.node_discriminator = D_net_gauss(hidden_dim, hidden_dim)
-        self.class_discriminator = D_net_gauss(hidden_dim, hidden_dim)
+        self.node_discriminator = D_net_gauss(hidden_dim*2, hidden_dim)
 
 
 
@@ -348,7 +347,6 @@ if __name__ == '__main__':
         optim_Q_gen = torch.optim.Adam(model.encoder.parameters(), lr=reg_lr)
         optim_D = torch.optim.Adam([
             {'params': model.node_discriminator.parameters()},
-            {'params': model.class_discriminator.parameters()}
         ], lr=reg_lr)
 
 
@@ -445,7 +443,7 @@ if __name__ == '__main__':
 
             G_loss_node = -torch.mean(torch.log(D_fake_gauss_node + EPS))
 
-            G_loss = G_loss_node 
+            G_loss = G_loss_node
             #G_loss = G_loss_node
 
             gen_loss_all += G_loss.item()
