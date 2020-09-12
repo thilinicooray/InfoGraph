@@ -332,6 +332,12 @@ if __name__ == '__main__':
         data = dataset[0].to(device)
 
 
+
+
+
+
+
+
         try:
             dataset_num_features = data.x.size(-1)
         except:
@@ -403,10 +409,6 @@ if __name__ == '__main__':
             model.zero_grad()
 
             z_sample, z_class = model.encoder(data.x.double(), data.edge_index)
-
-
-
-
             grouped_class = accumulate_group_rep(
                 z_class
             )
@@ -414,10 +416,8 @@ if __name__ == '__main__':
 
             #encode to z
             X_sample = model.decoder(z_sample, grouped_class) #decode to X reconstruction
-
             recon_loss = model.recon_loss1(X_sample, data.edge_index) + mse_loss(X_sample, data.x.double())
             recon_loss_all += recon_loss.item()
-
 
             recon_loss.backward()
             optim_P.step()
