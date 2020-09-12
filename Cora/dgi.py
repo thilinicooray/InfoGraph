@@ -261,9 +261,9 @@ if __name__ == '__main__':
             print('idx ', idx)
             shuf_fts = torch.from_numpy(data.x.cpu().numpy()[idx, :]).double()
 
-            lbl_1 = torch.ones(batch_size, data.x.size(0))
-            lbl_2 = torch.zeros(batch_size, data.x.size(0))
-            lbl = torch.cat((lbl_1, lbl_2), 1)
+            lbl_1 = torch.ones(data.x.size(0))
+            lbl_2 = torch.zeros(data.x.size(0))
+            lbl = torch.cat((lbl_1, lbl_2), 0)
 
             if torch.cuda.is_available():
                 shuf_fts = shuf_fts.cuda()
