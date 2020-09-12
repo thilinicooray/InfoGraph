@@ -522,6 +522,10 @@ if __name__ == '__main__':
 
             train_emb, train_y, val_emb, val_y,test_emb, test_y  = model.get_embeddings(data)
 
+            train_emb, train_lbls = torch.from_numpy(train_emb).cuda(), torch.from_numpy(train_y).cuda()
+            val_emb, val_lbls= torch.from_numpy(val_emb).cuda(), torch.from_numpy(val_y).cuda()
+            test_emb, test_lbls= torch.from_numpy(test_emb).cuda(), torch.from_numpy(test_y).cuda()
+
             '''from sklearn.preprocessing import StandardScaler
             scaler = StandardScaler()
             scaler.fit(train_emb)
@@ -549,7 +553,7 @@ if __name__ == '__main__':
 
             accs = []
             for _ in range(50):
-                log = LogReg(args.hidden_dim*2, nb_classes)
+                log = LogReg(args.hidden_dim*2, nb_classes).double().cuda()
                 opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0)
                 log.cuda()
                 for _ in range(300):
