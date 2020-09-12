@@ -123,7 +123,7 @@ class GcnInfomax(nn.Module):
         reconstructed_node = self.decoder(node_latent_embeddings)
 
         #reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
-        reconstruction_error = self.recon_loss1(reconstructed_node, edge_index)
+        reconstruction_error = self.recon_loss1(reconstructed_node, edge_index) + mse_loss(reconstructed_node, x)
 
 
         #class_kl_divergence_loss.backward(retain_graph=True)
@@ -430,6 +430,8 @@ if __name__ == '__main__':
                 val_f1, test_f1 = test(train_emb, train_y, val_emb, val_y,test_emb, test_y)
 
                 print('val and test micro F1', val_f1, test_f1)'''
+
+            print('all losses ', losses)
 
 
             model.eval()
