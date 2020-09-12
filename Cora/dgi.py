@@ -228,8 +228,8 @@ if __name__ == '__main__':
         path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', DS)
         # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
 
-        #dataset = Planetoid(path, name=DS)
-        dataset = CitationFull(path, name=DS)
+        dataset = Planetoid(path, name=DS)
+        #dataset = CitationFull(path, name=DS)
 
         print('cora dataset summary', dataset[0])
         data = dataset[0].to(device)
