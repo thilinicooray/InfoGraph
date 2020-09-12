@@ -201,12 +201,24 @@ class GcnInfomax(nn.Module):
 
             node_latent = self.encoder(x.double(), edge_index)
 
-        train_emb = node_latent[data.train_mask].cpu().numpy()
+        #node_latent = node_latent.cpu().numpy()
+        #y = da
+
+        '''train_emb = node_latent[data.train_mask].cpu().numpy()
         train_y = data.y[data.train_mask].cpu().numpy()
         val_emb = node_latent[data.val_mask].cpu().numpy()
         val_y = data.y[data.val_mask].cpu().numpy()
         test_emb = node_latent[data.test_mask].cpu().numpy()
-        test_y = data.y[data.test_mask].cpu().numpy()
+        test_y = data.y[data.test_mask].cpu().numpy()'''
+
+        train_emb = torch.masked_select(node_latent, data.train_mask).cpu().numpy()
+        train_y = torch.masked_select(data.y, data.train_mask).cpu().numpy()
+        val_emb = torch.masked_select(node_latent, data.val_mask).cpu().numpy()
+        val_y = torch.masked_select(data.y, data.val_mask).cpu().numpy()
+        test_emb = torch.masked_select(node_latent, data.test_mask).cpu().numpy()
+        test_y = torch.masked_select(data.y, data.test_mask).cpu().numpy()
+
+
 
         return train_emb, train_y, val_emb, val_y,test_emb, test_y
 
@@ -329,13 +341,6 @@ if __name__ == '__main__':
 
         print('cora dataset summary', dataset[0])
         data = dataset[0].to(device)
-
-        print('masks ', data.val_mask)
-
-
-
-
-
 
 
 
@@ -522,14 +527,14 @@ if __name__ == '__main__':
             print('Logistic regression started!')
 
 
-            train_emb, _, val_emb, _,test_emb, _  = model.get_embeddings(data)
+            train_emb, train_y_labels, val_emb, val_y_labels,test_emb, test_y_labels  = model.get_embeddings(data)
 
             print('emb', train_emb.size(), val_emb.size(), test_emb.size())
-            print('y',  train_y.size())
+            print('y',  train_y_labels.size())
 
-            train_emb, train_lbls = torch.from_numpy(train_emb).cuda(), train_y
-            val_emb, val_lbls= torch.from_numpy(val_emb).cuda(), val_y
-            test_emb, test_lbls= torch.from_numpy(test_emb).cuda(), test_y
+            train_emb, train_lbls = torch.from_numpy(train_emb).cuda(), train_y_labels
+            val_emb, val_lbls= torch.from_numpy(val_emb).cuda(), val_y_labels
+            test_emb, test_lbls= torch.from_numpy(test_emb).cuda(), test_y_labels
 
             '''from sklearn.preprocessing import StandardScaler
             scaler = StandardScaler()
