@@ -209,7 +209,9 @@ class GcnInfomax(nn.Module):
             x, edge_index = data.x, data.edge_index
 
 
-            node_latent, graph_latent = self.encoder(x.double(), edge_index)
+            node_mu, node_logvar, class_mu, class_logvar = self.encoder(x.double(), edge_index)
+
+            node_latent = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
 
         train_emb = node_latent[data.train_mask].cpu().numpy()
         train_y = data.y[data.train_mask].cpu().numpy()
