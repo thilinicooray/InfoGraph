@@ -214,7 +214,7 @@ class GcnInfomax(nn.Module):
         print('all sizes ', node_latent.size(), data.train_mask.size())
         train_msk_exp = data.train_mask.unsqueeze(-1).expand_as(node_latent)
 
-        print('masks ', train_msk_exp.size(), torch.equal(train_msk_exp[:,1], data.train_mask) )
+        print('masks ', train_msk_exp.size(), torch.equal(train_msk_exp[:,1000], data.train_mask) )
 
         train_emb = torch.masked_select(node_latent, data.train_mask).cpu().numpy()
         train_y = torch.masked_select(data.y, data.train_mask).cpu().numpy()
