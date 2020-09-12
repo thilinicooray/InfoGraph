@@ -411,6 +411,10 @@ if __name__ == '__main__':
             #encode to z
             X_sample = model.decoder(z_sample, grouped_class) #decode to X reconstruction
 
+            recon_nodes = torch.ones_like(X_sample)
+
+            recon_nodes = recon_nodes.masked_fill(X_sample <= 0, 0)
+
             print('node recon ', X_sample[0], data.x[0])
 
             recon_loss = model.recon_loss1(X_sample, data.edge_index) + mse_loss(X_sample, data.x.double())
