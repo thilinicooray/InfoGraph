@@ -41,7 +41,7 @@ import torch.nn as nn
 from layers import GCN, AvgReadout, Discriminator
 
 class DGI(nn.Module):
-    def __init__(self, n_in, n_h, activation):
+    def __init__(self, n_in, n_h):
         super(DGI, self).__init__()
         self.gcn = GCNConv(n_in, n_h)
         self.read = AvgReadout()
