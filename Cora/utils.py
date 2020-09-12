@@ -5,13 +5,13 @@ from torch.autograd import Variable
 from mpl_toolkits.axes_grid1 import ImageGrid
 
 
-def expand_group_rep (class_mu, batch, node_count, dim):
+def expand_group_rep (class_mu, node_count, dim):
     group_mu = torch.DoubleTensor(node_count, dim)
 
     group_mu = group_mu.cuda()
 
-    for i in range(len(batch)):
-        group_label = batch[i].item()
+    for i in range(node_count):
+        group_label = 1
 
         group_mu[i] = class_mu[group_label]
 
@@ -20,14 +20,14 @@ def expand_group_rep (class_mu, batch, node_count, dim):
     return Variable(group_mu, requires_grad=True)
 
 
-def accumulate_group_rep(class_mu, batch):
+def accumulate_group_rep(class_mu):
     mu_dict = {}
     mu_count_dict = {}
 
 
     # calculate mu for each group
-    for i in range(len(batch)):
-        group_label = batch[i].item()
+    for i in range(class_mu.size(0)):
+        group_label = 1
 
         if group_label in mu_dict.keys():
             mu_dict[group_label] += class_mu[i]
@@ -42,8 +42,8 @@ def accumulate_group_rep(class_mu, batch):
 
     group_mu = group_mu.cuda()
 
-    for i in range(len(batch)):
-        group_label = batch[i].item()
+    for i in range(class_mu.size(0)):
+        group_label = 1
 
         group_mu[i] = mu_dict[group_label]/mu_count_dict[group_label]
 

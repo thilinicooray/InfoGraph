@@ -153,7 +153,7 @@ class GcnInfomax(nn.Module):
 
 
 
-    def recon_loss1(self, z, edge_index, batch):
+    def recon_loss1(self, z, edge_index):
 
         EPS = 1e-15
         MAX_LOGSTD = 10
@@ -387,7 +387,7 @@ if __name__ == '__main__':
 
             z_sample, z_class = model.encoder(data.x.double(), data.edge_index)
             grouped_class = accumulate_group_rep(
-                z_class, data.batch
+                z_class
             )
 
 
@@ -408,12 +408,12 @@ if __name__ == '__main__':
             #model.class_discriminator.zero_grad()
 
 
-            z_real_gauss_node = Variable(torch.randn(data.batch.shape[0], args.hidden_dim) * 5.).double().cuda()
+            z_real_gauss_node = Variable(torch.randn(data.x.shape[0], args.hidden_dim) * 5.).double().cuda()
             D_real_gauss_node = model.node_discriminator(z_real_gauss_node)
 
             z_real_gauss_class = Variable(torch.randn(data.num_graphs, args.hidden_dim) * 5.).double().cuda()
 
-            z_real_gauss_class_exp = expand_group_rep(z_real_gauss_class, data.batch, data.batch.shape[0], args.hidden_dim)
+            z_real_gauss_class_exp = expand_group_rep(z_real_gauss_class,  data.x.shape[0], args.hidden_dim)
 
 
             D_real_gauss_class = model.class_discriminator(z_real_gauss_class_exp)
@@ -445,10 +445,10 @@ if __name__ == '__main__':
             # Generator
             model.encoder.train()
 
-            z_fake_gauss_node, z_fake_gauss_class = model.encoder(data.x.double(), data.edge_index, data.batch)
+            z_fake_gauss_node, z_fake_gauss_class = model.encoder(data.x.double(), data.edge_index)
 
             grouped_z_fake_gauss_class = accumulate_group_rep(
-                z_fake_gauss_class, data.batch
+                z_fake_gauss_class
             )
 
             D_fake_gauss_node = model.node_discriminator(z_fake_gauss_node)
