@@ -415,9 +415,9 @@ if __name__ == '__main__':
 
             recon_nodes = recon_nodes.masked_fill(X_sample <= 0, 0)
 
-            print('node recon ', X_sample[0], data.x[0])
+            print('node recon ', recon_nodes[0], data.x[0])
 
-            recon_loss = model.recon_loss1(X_sample, data.edge_index) + mse_loss(X_sample, data.x.double())
+            recon_loss = model.recon_loss1(X_sample, data.edge_index) + mse_loss(recon_nodes, data.x.double())
             recon_loss_all += recon_loss.item()
 
             recon_loss.backward()
