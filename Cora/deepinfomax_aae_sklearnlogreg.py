@@ -14,7 +14,7 @@ from sklearn.multioutput import MultiOutputClassifier
 from sklearn import preprocessing
 
 import torch_geometric
-from torch_geometric.datasets import PPI
+from torch_geometric.datasets import Planetoid
 from torch_geometric.data import DataLoader
 from torch_geometric.nn import global_mean_pool, global_add_pool, global_max_pool
 from torch_geometric.utils import negative_sampling, remove_self_loops, add_self_loops, to_dense_adj, to_dense_batch
@@ -24,7 +24,7 @@ from torch import optim
 
 from cortex_DIM.nn_modules.mi_networks import MIFCNet, MI1x1ConvNet
 from losses import *
-from gin_vae import Encoder, Decoder
+from gcn_aae import Encoder, Decoder
 from evaluate_embedding import evaluate_embedding, draw_plot
 from model import *
 from utils import imshow_grid, mse_loss, reparameterize, group_wise_reparameterize, accumulate_group_evidence, \
@@ -153,7 +153,7 @@ class GcnInfomax(nn.Module):
 
 
 
-    def recon_loss1(self, z, edge_index, batch):
+    def recon_loss1(self, z, edge_index):
 
         EPS = 1e-15
         MAX_LOGSTD = 10
@@ -189,28 +189,27 @@ class GcnInfomax(nn.Module):
 
         return norm*(pos_loss*pos_weight + neg_loss)
 
-    def get_embeddings(self, loader):
+    def get_embeddings(self, data):
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         ret = []
         y = []
         with torch.no_grad():
-            for data in loader:
 
-                data.to(device)
-                x, edge_index, batch = data.x, data.edge_index, data.batch
-
-
-                node_mu, node_logvar = self.encoder(x.double(), edge_index, batch)
+            data.to(device)
+            x, edge_index = data.x, data.edge_index
 
 
-                node_latent_embeddings = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
+            node_latent = self.encoder(x.double(), edge_index)
 
-                ret.append(node_latent_embeddings.cpu().numpy())
-                y.append(data.y.cpu().numpy())
-        ret = np.concatenate(ret, 0)
-        y = np.concatenate(y, 0)
-        return ret, y
+        train_emb = node_latent[data.train_mask].cpu().numpy()
+        train_y = data.y[data.train_mask].cpu().numpy()
+        val_emb = node_latent[data.val_mask].cpu().numpy()
+        val_y = data.y[data.val_mask].cpu().numpy()
+        test_emb = node_latent[data.test_mask].cpu().numpy()
+        test_y = data.y[data.test_mask].cpu().numpy()
+
+        return train_emb, train_y, val_emb, val_y,test_emb, test_y
 
 def test(train_z, train_y, val_z, val_y,test_z, test_y,  solver='lbfgs',
          multi_class='ovr', *args, **kwargs):
@@ -266,6 +265,8 @@ if __name__ == '__main__':
 
     args = arg_parse()
 
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
     #for seed in [32,42,52,62,72]:
     for seed in [52]:
 
@@ -302,23 +303,24 @@ if __name__ == '__main__':
         EPS = 1e-15
 
         #lr = 0.000001
-        DS = 'PPI'
+        DS = 'Cora'
         path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', DS)
         # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
 
-        #dataset = TUDataset(path, name=DS, pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=88)).shuffle()
+        dataset = Planetoid(path, name=DS)
 
-        train_dataset = PPI(path, split='train').shuffle()
-        val_dataset = PPI(path, split='val')
-        test_dataset = PPI(path, split='train')
-
+        print('cora dataset summary', dataset[0])
+        data = dataset[0].to(device)
 
 
 
 
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+
+
+
         try:
-            dataset_num_features = train_dataset.num_features
+            dataset_num_features = data.x.size(-1)
         except:
             dataset_num_features = 1
 
@@ -329,9 +331,12 @@ if __name__ == '__main__':
             #dataset_num_features = 5
             #input_feat = torch.ones((batch_size, 1)).to(device)
 
-        train_dataloader = DataLoader(train_dataset, batch_size=batch_size)
-        val_dataloader = DataLoader(val_dataset, batch_size=batch_size)
-        test_dataloader = DataLoader(test_dataset, batch_size=batch_size)
+        train_x = data.x[data.train_mask]
+        train_y = data.y[data.train_mask]
+        val_x = data.x[data.val_mask]
+        val_y = data.y[data.val_mask]
+        test_x = data.x[data.test_mask]
+        test_y = data.y[data.test_mask]
 
 
         model = GcnInfomax(args.hidden_dim, args.num_gc_layers).double().to(device)
@@ -366,44 +371,97 @@ if __name__ == '__main__':
         logreg_val = []
         logreg_valbased_test = []
 
+        best_val_round = -1
+        best_val = 0
+
         #model.train()
         for epoch in range(1, epochs+1):
             recon_loss_all = 0
-            kl_class_loss_all = 0
-            kl_node_loss_all = 0
+            gen_loss_all = 0
+            disc_loss_all = 0
             mi_loss_all = 0
             model.train()
-            for data in train_dataloader:
-                data = data.to(device)
+
+
+            model.zero_grad()
+
+            z_sample = model.encoder(data.x.double(), data.edge_index)
+
+
+
+            #encode to z
+            X_sample = model.decoder(z_sample) #decode to X reconstruction
+            recon_loss = model.recon_loss1(X_sample, data.edge_index)
+            recon_loss_all += recon_loss.item()
+
+            recon_loss.backward()
+            optim_P.step()
+            optim_Q_enc.step()
+
+            # Discriminator
+            ## true prior is random normal (randn)
+            ## this is constraining the Z-projection to be normal!
+            model.encoder.eval()
+            #model.class_discriminator.zero_grad()
+            #model.class_discriminator.zero_grad()
+
+
+            z_real_gauss_node = Variable(torch.randn(data.x.shape[0], args.hidden_dim) * 5.).double().cuda()
+            D_real_gauss_node = model.node_discriminator(z_real_gauss_node)
 
 
 
 
-                optimizer.zero_grad()
-                recon_loss, kl_class, kl_node = model(data.x.double(), data.edge_index, data.batch, data.num_graphs)
-                recon_loss_all += recon_loss
-                kl_class_loss_all += kl_class
-                kl_node_loss_all += kl_node
+            z_fake_gauss_node = model.encoder(data.x.double(), data.edge_index)
 
 
 
-                '''for name, param in model.named_parameters():
-                    print(name, param.grad)'''
+            D_fake_gauss_node = model.node_discriminator(z_fake_gauss_node)
+
+
+
+            D_loss_node = -torch.mean(torch.log(D_real_gauss_node + EPS) + torch.log(1 - D_fake_gauss_node + EPS))
 
 
 
 
-                #torch.nn.utils.clip_grad_norm_(model.parameters(), 0.25)
-                optimizer.step()
+            D_loss = D_loss_node
 
-            losses['recon'].append(recon_loss_all/ len(train_dataloader))
-            losses['node_kl'].append(kl_node_loss_all/ len(train_dataloader))
-            losses['class_kl'].append(kl_class_loss_all/ len(train_dataloader))
+            disc_loss_all += D_loss.item()
+
+            D_loss.backward()
+            optim_D.step()
+
+            # Generator
+            model.encoder.train()
+
+            z_fake_gauss_node = model.encoder(data.x.double(), data.edge_index)
 
 
 
-            print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(train_dataloader),
-                                                                                    kl_class_loss_all / len(train_dataloader), kl_node_loss_all / len(train_dataloader)))
+            D_fake_gauss_node = model.node_discriminator(z_fake_gauss_node)
+
+
+
+            G_loss_node = -torch.mean(torch.log(D_fake_gauss_node + EPS))
+
+            G_loss = G_loss_node 
+            #G_loss = G_loss_node
+
+            gen_loss_all += G_loss.item()
+
+            optim_Q_gen.zero_grad()
+            G_loss.backward()
+            optim_Q_gen.step()
+
+            losses['recon'].append(recon_loss_all)
+            losses['gen'].append(gen_loss_all)
+            losses['disc'].append(disc_loss_all)
+
+
+
+            print('Epoch {}, Recon Loss {} Gen Loss {} Disc Loss {}'.format(epoch, recon_loss_all ,
+                                                                            gen_loss_all , disc_loss_all ))
 
             #used during finetune phase
             '''if epoch % log_interval == 0:
@@ -423,6 +481,8 @@ if __name__ == '__main__':
 
                 print('val and test micro F1', val_f1, test_f1)'''
 
+            print('all losses ', losses)
+
 
             model.eval()
 
@@ -438,9 +498,7 @@ if __name__ == '__main__':
             print('Logistic regression started!')
 
 
-            train_emb, train_y = model.get_embeddings(train_dataloader)
-            val_emb, val_y = model.get_embeddings(val_dataloader)
-            test_emb, test_y = model.get_embeddings(test_dataloader)
+            train_emb, train_y, val_emb, val_y,test_emb, test_y  = model.get_embeddings(data)
 
             from sklearn.preprocessing import StandardScaler
             scaler = StandardScaler()
@@ -452,24 +510,28 @@ if __name__ == '__main__':
 
 
             from sklearn.linear_model import SGDClassifier
-            from sklearn.metrics import f1_score
-            from sklearn.multioutput import MultiOutputClassifier
-            log = MultiOutputClassifier(SGDClassifier(loss="log"), n_jobs=10)
+            from sklearn.metrics import accuracy_score
+            log = SGDClassifier(loss="log")
             log.fit(train_emb, train_y)
 
 
             val_pred = log.predict(val_emb)
             test_pred = log.predict(test_emb)
 
-            tot_f1_val = f1_score(val_y.flatten(), val_pred.flatten(), average='micro')
+            tot_acc_val = accuracy_score(val_y.flatten(), val_pred.flatten())
 
-            tot_f1_test = f1_score(test_y.flatten(), test_pred.flatten(), average='micro')
+            tot_acc_test = accuracy_score(test_y.flatten(), test_pred.flatten())
+
+            if tot_acc_val > best_val:
+                best_val_round = epoch - 1
 
 
-            logreg_val.append(tot_f1_val)
-            logreg_valbased_test.append(tot_f1_test)
+            logreg_val.append(tot_acc_val)
+            logreg_valbased_test.append(tot_acc_test)
 
             print('logreg val', logreg_val)
             print('logreg test', logreg_valbased_test)
+
+        print('best perf based on validation score val, test, in epoch', logreg_val[best_val_round], logreg_valbased_test[best_val_round], best_val_round)
 
 
