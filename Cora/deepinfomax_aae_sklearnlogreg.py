@@ -522,6 +522,8 @@ if __name__ == '__main__':
 
             train_emb, train_y, val_emb, val_y,test_emb, test_y  = model.get_embeddings(data)
 
+            print('train y', train_y.size())
+
             train_emb, train_lbls = torch.from_numpy(train_emb).cuda(), torch.from_numpy(train_y).cuda()
             val_emb, val_lbls= torch.from_numpy(val_emb).cuda(), torch.from_numpy(val_y).cuda()
             test_emb, test_lbls= torch.from_numpy(test_emb).cuda(), torch.from_numpy(test_y).cuda()
