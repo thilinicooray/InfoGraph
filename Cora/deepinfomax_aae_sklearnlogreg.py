@@ -520,13 +520,13 @@ if __name__ == '__main__':
             print('Logistic regression started!')
 
 
-            train_emb, train_y, val_emb, val_y,test_emb, test_y  = model.get_embeddings(data)
+            train_emb, _, val_emb, _,test_emb, _  = model.get_embeddings(data)
 
             print('train y', train_y.size())
 
-            train_emb, train_lbls = torch.from_numpy(train_emb).cuda(), torch.from_numpy(train_y).cuda()
-            val_emb, val_lbls= torch.from_numpy(val_emb).cuda(), torch.from_numpy(val_y).cuda()
-            test_emb, test_lbls= torch.from_numpy(test_emb).cuda(), torch.from_numpy(test_y).cuda()
+            train_emb, train_lbls = torch.from_numpy(train_emb).cuda(), train_y
+            val_emb, val_lbls= torch.from_numpy(val_emb).cuda(), val_y
+            test_emb, test_lbls= torch.from_numpy(test_emb).cuda(), test_y
 
             '''from sklearn.preprocessing import StandardScaler
             scaler = StandardScaler()
