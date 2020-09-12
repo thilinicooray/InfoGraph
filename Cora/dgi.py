@@ -14,7 +14,7 @@ from sklearn.multioutput import MultiOutputClassifier
 from sklearn import preprocessing
 
 import torch_geometric
-from torch_geometric.datasets import Planetoid, CitationFull
+from torch_geometric.datasets import Planetoid
 from torch_geometric.data import DataLoader
 from torch_geometric.nn import global_mean_pool, global_add_pool, global_max_pool
 from torch_geometric.utils import negative_sampling, remove_self_loops, add_self_loops, to_dense_adj, to_dense_batch
