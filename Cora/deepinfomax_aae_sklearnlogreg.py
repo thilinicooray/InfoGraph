@@ -211,16 +211,16 @@ class GcnInfomax(nn.Module):
         test_emb = node_latent[data.test_mask].cpu().numpy()
         test_y = data.y[data.test_mask].cpu().numpy()'''
 
-        print('all sizes ', node_latent.size(), data.train_mask.size())
         train_msk_exp = data.train_mask.unsqueeze(-1).expand_as(node_latent)
+        val_msk_exp = data.val_mask.unsqueeze(-1).expand_as(node_latent)
+        test_msk_exp = data.test_mask.unsqueeze(-1).expand_as(node_latent)
 
-        print('masks ', train_msk_exp.size(), torch.equal(train_msk_exp[:,1000], data.train_mask) )
 
-        train_emb = torch.masked_select(node_latent, data.train_mask).cpu().numpy()
+        train_emb = torch.masked_select(node_latent, train_msk_exp).cpu().numpy()
         train_y = torch.masked_select(data.y, data.train_mask).cpu().numpy()
-        val_emb = torch.masked_select(node_latent, data.val_mask).cpu().numpy()
+        val_emb = torch.masked_select(node_latent, val_msk_exp).cpu().numpy()
         val_y = torch.masked_select(data.y, data.val_mask).cpu().numpy()
-        test_emb = torch.masked_select(node_latent, data.test_mask).cpu().numpy()
+        test_emb = torch.masked_select(node_latent, test_msk_exp).cpu().numpy()
         test_y = torch.masked_select(data.y, data.test_mask).cpu().numpy()
 
 
@@ -535,7 +535,7 @@ if __name__ == '__main__':
             train_emb, train_y_labels, val_emb, val_y_labels,test_emb, test_y_labels  = model.get_embeddings(data)
 
             print('emb', train_emb.size(), val_emb.size(), test_emb.size())
-            print('y',  train_y_labels.size())
+            print('y',  train_y_labels.size(), val_y_labels.size(), test_y_labels.size())
 
             train_emb, train_lbls = torch.from_numpy(train_emb).cuda(), train_y_labels
             val_emb, val_lbls= torch.from_numpy(val_emb).cuda(), val_y_labels
