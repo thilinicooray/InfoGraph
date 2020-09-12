@@ -569,7 +569,7 @@ if __name__ == '__main__':
             accs_val = []
             accs_test = []
             for _ in range(50):
-                log = LogReg(args.hidden_dim*2, nb_classes).double().cuda()
+                log = LogReg(args.hidden_dim, nb_classes).double().cuda()
                 opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0)
                 log.cuda()
                 current_val_best = 0
@@ -587,24 +587,27 @@ if __name__ == '__main__':
                     loss.backward()
                     opt.step()
 
-                    logits_test = log(test_emb)
-                    preds_test = torch.argmax(logits_test, dim=1)
-                    acc_test = torch.sum(preds_test == test_lbls).float() / test_lbls.shape[0]
-                    current_test_list.append(acc_test)
+                logits_test = log(test_emb)
+                preds_test = torch.argmax(logits_test, dim=1)
+                acc_test = torch.sum(preds_test == test_lbls).float() / test_lbls.shape[0]
+                #current_test_list.append(acc_test)
 
 
-                    logits_val = log(val_emb)
-                    preds_val = torch.argmax(logits_val, dim=1)
-                    acc_val = torch.sum(preds_val == val_lbls).float() / val_lbls.shape[0]
-                    current_val_list.append(acc_val)
+                logits_val = log(val_emb)
+                preds_val = torch.argmax(logits_val, dim=1)
+                acc_val = torch.sum(preds_val == val_lbls).float() / val_lbls.shape[0]
+                #current_val_list.append(acc_val)
 
 
-                    if acc_val.item() > current_val_best:
-                        current_best_iter = iter
+                '''if acc_val.item() > current_val_best:
+                        current_best_iter = iter'''
 
 
-                accs_test.append(current_val_list[current_best_iter] * 100)
-                accs_val.append(current_test_list[current_best_iter] * 100)
+                #accs_test.append(current_val_list[current_best_iter] * 100)
+                #accs_val.append(current_test_list[current_best_iter] * 100)
+
+                accs_test.append(acc_test * 100)
+                accs_val.append(acc_val * 100)
 
             accs_test = torch.stack(accs_test)
             print('test ', accs_test.mean().item(), accs_test.std().item())
