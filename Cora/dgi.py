@@ -537,13 +537,6 @@ if __name__ == '__main__':
 
             train_emb, train_y_labels, val_emb, val_y_labels,test_emb, test_y_labels  = model.get_embeddings(data)
 
-            from sklearn.preprocessing import StandardScaler
-            scaler = StandardScaler()
-            scaler.fit(train_emb)
-            train_emb = scaler.transform(train_emb)
-            val_emb = scaler.transform(val_emb)
-            test_emb = scaler.transform(test_emb)
-
             train_emb, train_lbls = torch.from_numpy(train_emb).cuda(), torch.from_numpy(train_y_labels).cuda()
             val_emb, val_lbls= torch.from_numpy(val_emb).cuda(), torch.from_numpy(val_y_labels).cuda()
             test_emb, test_lbls= torch.from_numpy(test_emb).cuda(), torch.from_numpy(test_y_labels).cuda()
