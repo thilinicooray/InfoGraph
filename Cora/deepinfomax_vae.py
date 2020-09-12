@@ -14,7 +14,7 @@ from sklearn.multioutput import MultiOutputClassifier
 from sklearn import preprocessing
 
 import torch_geometric
-from torch_geometric.datasets import PPI
+from torch_geometric.datasets import Planetoid
 from torch_geometric.data import DataLoader
 from torch_geometric.nn import global_mean_pool, global_add_pool, global_max_pool
 from torch_geometric.utils import negative_sampling, remove_self_loops, add_self_loops, to_dense_adj, to_dense_batch
@@ -73,7 +73,7 @@ class GcnInfomax(nn.Module):
                     m.bias.data.fill_(0.0)
 
 
-    def forward(self, x, edge_index, batch, num_graphs):
+    def forward(self, x, edge_index):
 
 
 
@@ -81,14 +81,14 @@ class GcnInfomax(nn.Module):
 
         # batch_size = data.num_graphs
 
-        node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index, batch)
+        node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index)
 
 
 
 
 
         grouped_mu, grouped_logvar = accumulate_group_evidence(
-            class_mu.data, class_logvar.data, batch, True
+            class_mu.data, class_logvar.data, None, True
         )
 
 
@@ -110,8 +110,8 @@ class GcnInfomax(nn.Module):
         '''class_kl_divergence_loss = torch.mean(
             - 0.5 * torch.sum(1 + grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp())
         )'''
-        class_kl_divergence_loss = - 0.5  * torch.mean(global_mean_pool(torch.sum(
-            1 + 2 * grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp().pow(2), 1), batch))
+        class_kl_divergence_loss = - 0.5  * torch.mean(torch.sum(
+            1 + 2 * grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp().pow(2), 1))
 
         #print('class kl unwei ', class_kl_divergence_loss)
         class_kl_divergence_loss = class_kl_divergence_loss
@@ -125,14 +125,14 @@ class GcnInfomax(nn.Module):
         """
         node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
         class_latent_embeddings = group_wise_reparameterize(
-            training=True, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
+            training=True, mu=grouped_mu, logvar=grouped_logvar, labels_batch=None, cuda=True
         )
 
 
         reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
 
         #reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
-        reconstruction_error = self.recon_loss1(reconstructed_node, edge_index, batch)
+        reconstruction_error = self.recon_loss1(reconstructed_node, edge_index)
 
 
         #class_kl_divergence_loss.backward(retain_graph=True)
@@ -162,7 +162,7 @@ class GcnInfomax(nn.Module):
 
 
 
-    def recon_loss1(self, z, edge_index, batch):
+    def recon_loss1(self, z, edge_index):
 
         EPS = 1e-15
         MAX_LOGSTD = 10
@@ -198,35 +198,27 @@ class GcnInfomax(nn.Module):
 
         return norm*(pos_loss*pos_weight + neg_loss)
 
-    def get_embeddings(self, loader):
+    def get_embeddings(self, data):
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         ret = []
         y = []
         with torch.no_grad():
-            for data in loader:
 
-                data.to(device)
-                x, edge_index, batch = data.x, data.edge_index, data.batch
+            data.to(device)
+            x, edge_index = data.x, data.edge_index
 
 
-                node_mu, node_logvar, class_mu, class_logvar, entangledrep = self.encoder(x.double(), edge_index, batch)
+            node_latent, graph_latent = self.encoder(x.double(), edge_index)
 
-                '''grouped_mu, grouped_logvar = accumulate_group_evidence(
-                    class_mu.data, class_logvar.data, batch, True
-                )
-                class_latent_embeddings = group_wise_reparameterize(
-                    training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
-                )'''
+        train_emb = node_latent[data.train_mask].cpu().numpy()
+        train_y = data.y[data.train_mask].cpu().numpy()
+        val_emb = node_latent[data.val_mask].cpu().numpy()
+        val_y = data.y[data.val_mask].cpu().numpy()
+        test_emb = node_latent[data.test_mask].cpu().numpy()
+        test_y = data.y[data.test_mask].cpu().numpy()
 
-                node_latent_embeddings = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
-
-                #ret.append(torch.cat([node_latent_embeddings,class_latent_embeddings],-1).cpu().numpy())
-                ret.append(node_latent_embeddings.cpu().numpy())
-                y.append(data.y.cpu().numpy())
-        ret = np.concatenate(ret, 0)
-        y = np.concatenate(y, 0)
-        return ret, y
+        return train_emb, train_y, val_emb, val_y,test_emb, test_y
 
 def test(train_z, train_y, val_z, val_y,test_z, test_y,  solver='lbfgs',
          multi_class='ovr', *args, **kwargs):
@@ -252,6 +244,25 @@ def test(train_z, train_y, val_z, val_y,test_z, test_y,  solver='lbfgs',
     micro_f1_test = f1_score(test_y, predict_test, average='micro')
 
     return micro_f1_val, micro_f1_test
+
+class LogReg(nn.Module):
+    def __init__(self, ft_in, nb_classes):
+        super(LogReg, self).__init__()
+        self.fc = nn.Linear(ft_in, nb_classes)
+        self.sigm = nn.Sigmoid()
+
+        for m in self.modules():
+            self.weights_init(m)
+
+    def weights_init(self, m):
+        if isinstance(m, nn.Linear):
+            torch.nn.init.xavier_uniform_(m.weight.data)
+            if m.bias is not None:
+                m.bias.data.fill_(0.0)
+
+    def forward(self, seq):
+        ret = torch.log_softmax(self.fc(seq), dim=-1)
+        return ret
 
 
 class SimpleClassifier(nn.Module):
@@ -281,6 +292,8 @@ class SimpleClassifier(nn.Module):
 if __name__ == '__main__':
 
     args = arg_parse()
+
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     #for seed in [32,42,52,62,72]:
     for seed in [52]:
@@ -318,23 +331,18 @@ if __name__ == '__main__':
         EPS = 1e-15
 
         #lr = 0.000001
-        DS = 'PPI'
+        DS = 'Cora'
         path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', DS)
         # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
 
-        #dataset = TUDataset(path, name=DS, pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=88)).shuffle()
+        dataset = Planetoid(path, name=DS)
 
-        train_dataset = PPI(path, split='train').shuffle()
-        val_dataset = PPI(path, split='val')
-        test_dataset = PPI(path, split='train')
-
+        print('cora dataset summary', dataset[0])
+        data = dataset[0].to(device)
 
 
-
-
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         try:
-            dataset_num_features = train_dataset.num_features
+            dataset_num_features = data.x.size(-1)
         except:
             dataset_num_features = 1
 
@@ -345,9 +353,7 @@ if __name__ == '__main__':
             #dataset_num_features = 5
             #input_feat = torch.ones((batch_size, 1)).to(device)
 
-        train_dataloader = DataLoader(train_dataset, batch_size=batch_size)
-        val_dataloader = DataLoader(val_dataset, batch_size=batch_size)
-        test_dataloader = DataLoader(test_dataset, batch_size=batch_size)
+        nb_classes = np.unique(data.y.cpu().numpy()).shape[0]
 
 
         model = GcnInfomax(args.hidden_dim, args.num_gc_layers).double().to(device)
@@ -374,6 +380,11 @@ if __name__ == '__main__':
         logreg_val = []
         logreg_valbased_test = []
 
+        best_val_round = -1
+        best_val = 0
+
+        xent = nn.CrossEntropyLoss()
+
         #model.train()
         for epoch in range(1, epochs+1):
             recon_loss_all = 0
@@ -381,37 +392,35 @@ if __name__ == '__main__':
             kl_node_loss_all = 0
             mi_loss_all = 0
             model.train()
-            for data in train_dataloader:
-                data = data.to(device)
 
 
 
 
-                optimizer.zero_grad()
-                recon_loss, kl_class, kl_node = model(data.x.double(), data.edge_index, data.batch, data.num_graphs)
-                recon_loss_all += recon_loss
-                kl_class_loss_all += kl_class
-                kl_node_loss_all += kl_node
+            optimizer.zero_grad()
+            recon_loss, kl_class, kl_node = model(data.x.double(), data.edge_index)
+            recon_loss_all += recon_loss
+            kl_class_loss_all += kl_class
+            kl_node_loss_all += kl_node
 
 
 
-                '''for name, param in model.named_parameters():
-                    print(name, param.grad)'''
+            '''for name, param in model.named_parameters():
+                print(name, param.grad)'''
 
 
 
 
-                #torch.nn.utils.clip_grad_norm_(model.parameters(), 0.25)
-                optimizer.step()
+            #torch.nn.utils.clip_grad_norm_(model.parameters(), 0.25)
+            optimizer.step()
 
-            losses['recon'].append(recon_loss_all/ len(train_dataloader))
-            losses['node_kl'].append(kl_node_loss_all/ len(train_dataloader))
-            losses['class_kl'].append(kl_class_loss_all/ len(train_dataloader))
+            losses['recon'].append(recon_loss_all)
+            losses['node_kl'].append(kl_node_loss_all)
+            losses['class_kl'].append(kl_class_loss_all)
 
 
 
-            print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(train_dataloader),
-                                                                                    kl_class_loss_all / len(train_dataloader), kl_node_loss_all / len(train_dataloader)))
+            print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all ,
+                                                                                    kl_class_loss_all , kl_node_loss_all ))
 
             #used during finetune phase
             '''if epoch % log_interval == 0:
@@ -434,121 +443,107 @@ if __name__ == '__main__':
 
             model.eval()
 
-            #if epoch == epochs:
-
             accs = []
             best_f1 = 0
             best_round = 0
 
-
             print('Logistic regression started!')
 
-            log = SimpleClassifier(args.hidden_dim, args.hidden_dim, 121, 0.5)
-            opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0.0)
-            log.double().cuda()
 
-            train_emb, train_y = model.get_embeddings(train_dataloader)
-            val_emb, val_y = model.get_embeddings(val_dataloader)
-            test_emb, test_y = model.get_embeddings(test_dataloader)
+            train_emb, train_y_labels, val_emb, val_y_labels,test_emb, test_y_labels  = model.get_embeddings(data)
 
-            from sklearn.preprocessing import StandardScaler
+            train_emb, train_lbls = torch.from_numpy(train_emb).cuda(), torch.from_numpy(train_y_labels).cuda()
+            val_emb, val_lbls= torch.from_numpy(val_emb).cuda(), torch.from_numpy(val_y_labels).cuda()
+            test_emb, test_lbls= torch.from_numpy(test_emb).cuda(), torch.from_numpy(test_y_labels).cuda()
+
+            #print('emb', train_emb.size(), val_emb.size(), test_emb.size())
+            #print('y',  train_lbls.size(), val_lbls.size(), test_lbls.size())
+
+            '''from sklearn.preprocessing import StandardScaler
             scaler = StandardScaler()
             scaler.fit(train_emb)
             train_emb = scaler.transform(train_emb)
             val_emb = scaler.transform(val_emb)
             test_emb = scaler.transform(test_emb)
 
-            train_embs, train_lbls = torch.from_numpy(train_emb).cuda(), torch.from_numpy(train_y).cuda()
-            val_embs, val_lbls= torch.from_numpy(val_emb).cuda(), torch.from_numpy(val_y).cuda()
-            test_embs, test_lbls= torch.from_numpy(test_emb).cuda(), torch.from_numpy(test_y).cuda()
-
-            test_res = []
-
-            for round in range(300):
-
-                log.train()
-                opt.zero_grad()
-                logits = log(train_embs)
-
-                '''tot = torch.sum(data_new.y, 0)
-    
-                val = 1.0 / tot
-    
-                pos_weight = val'''
-
-                criterion = nn.BCEWithLogitsLoss()
-                loss = criterion(logits, train_lbls)
-
-                loss.backward()
-                opt.step()
-
-                log.eval()
-
-                pred_list = []
-                y_list = []
 
 
-                with torch.no_grad():
-
-                    logreg_out = torch.sigmoid(log(val_embs))
-                    pred = torch.ones_like(logreg_out)
-
-                    pred =  pred.masked_fill(logreg_out < 0.5, 0)
-
-                tot_f1_val = 0
-                num_nodes = val_lbls.size(0)
-
-                '''for val_id in range(num_nodes):
-                    mi_f1 = f1_score(val_lbls[val_id].cpu().numpy(), pred[val_id].cpu().numpy(), average='micro')
-                    tot_f1_val += mi_f1
-
-                tot_f1_val = tot_f1_val/num_nodes'''
-
-                val_lbl_flatten = val_lbls.contiguous().view(-1)
-                pred_flatten = pred.contiguous().view(-1)
-    
-                tot_f1_val = f1_score(val_lbl_flatten.cpu().numpy(), pred_flatten.cpu().numpy(), average='micro')
+            from sklearn.linear_model import SGDClassifier
+            from sklearn.metrics import accuracy_score
+            log = SGDClassifier(loss="log")
+            log.fit(train_emb, train_y)
 
 
+            val_pred = log.predict(val_emb)
+            test_pred = log.predict(test_emb)
 
-                if tot_f1_val > best_f1:
-                    best_f1 = tot_f1_val
-                    best_round = round
+            tot_acc_val = accuracy_score(val_y.flatten(), val_pred.flatten())
 
-                #test set
+            tot_acc_test = accuracy_score(test_y.flatten(), test_pred.flatten())
 
-                with torch.no_grad():
+            if tot_acc_val > best_val:
+                best_val_round = epoch - 1'''
 
-                    logreg_out_test = torch.sigmoid(log(test_embs))
-                    pred_test = torch.ones_like(logreg_out_test)
+            accs_val = []
+            accs_test = []
+            for _ in range(50):
+                log = LogReg(args.hidden_dim, nb_classes).double().cuda()
+                opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0)
+                log.cuda()
+                current_val_best = 0
+                current_best_iter = 0
+                current_val_list = []
+                current_test_list = []
 
-                    pred_test = pred_test.masked_fill(logreg_out_test < 0.5, 0)
+                for iter in range(300):
+                    log.train()
+                    opt.zero_grad()
 
-                tot_f1_test = 0
-                num_test_nodes = test_lbls.size(0)
+                    logits = log(train_emb)
+                    loss = xent(logits, train_lbls)
 
-                '''for test_id in range(num_test_nodes):
-                    mi_f1_test = f1_score(test_lbls[test_id].cpu().numpy(), pred_test[test_id].cpu().numpy(), average='micro')
-                    tot_f1_test += mi_f1_test
+                    loss.backward()
+                    opt.step()
 
-                tot_f1_test = tot_f1_test/num_test_nodes'''
-
-                test_lbls_flatten = test_lbls.contiguous().view(-1)
-                pred_test_flatten = pred_test.contiguous().view(-1)
-
-                tot_f1_test = f1_score(test_lbls_flatten.cpu().numpy(), pred_test_flatten.cpu().numpy(), average='micro')
+                logits_test = log(test_emb)
+                preds_test = torch.argmax(logits_test, dim=1)
+                acc_test = torch.sum(preds_test == test_lbls).float() / test_lbls.shape[0]
+                #current_test_list.append(acc_test)
 
 
-                test_res.append(tot_f1_test)
+                logits_val = log(val_emb)
+                preds_val = torch.argmax(logits_val, dim=1)
+                acc_val = torch.sum(preds_val == val_lbls).float() / val_lbls.shape[0]
+                #current_val_list.append(acc_val)
 
-                #print('current val, test ',round, tot_f1_val, tot_f1_test)
 
-            print('best f1 obtained in round:', best_f1, best_round, test_res[best_round])
-            logreg_val.append(best_f1)
-            logreg_valbased_test.append(test_res[best_round])
+                '''if acc_val.item() > current_val_best:
+                        current_best_iter = iter'''
+
+
+                #accs_test.append(current_val_list[current_best_iter] * 100)
+                #accs_val.append(current_test_list[current_best_iter] * 100)
+
+                accs_test.append(acc_test * 100)
+                accs_val.append(acc_val * 100)
+
+            accs_test = torch.stack(accs_test)
+            print('test ', accs_test.mean().item(), accs_test.std().item())
+
+            accs_val = torch.stack(accs_val)
+            print('val ', accs_val.mean().item(), accs_val.std().item())
+
+            if accs_val.mean().item() > best_val:
+                best_val_round = epoch - 1
+
+
+            logreg_val.append(accs_val.mean().item())
+            logreg_valbased_test.append(accs_test.mean().item())
 
             print('logreg val', logreg_val)
             print('logreg test', logreg_valbased_test)
+
+        print('best perf based on validation score val, test, in epoch', logreg_val[best_val_round], logreg_valbased_test[best_val_round], best_val_round)
 
 
 

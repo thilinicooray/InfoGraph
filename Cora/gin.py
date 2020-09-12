@@ -65,9 +65,7 @@ class Encoder(torch.nn.Module):
         self.class_logvar = Linear(in_features=dim, out_features=dim, bias=True)'''
 
 
-    def forward(self, x, edge_index, batch):
-        if x is None:
-            x = torch.ones((batch.shape[0], 1)).to(device)
+    def forward(self, x, edge_index):
 
         xs = []
         for i in range(self.num_gc_layers):

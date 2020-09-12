@@ -70,8 +70,8 @@ def accumulate_group_evidence(class_mu, class_logvar, batch, is_cuda):
 
     # calculate var inverse for each group using group vars
     #for nodeidx, graphidx in enumerate(labels_batch):
-    for i in range(len(batch)):
-        group_label = batch[i].item()
+    for i in range(class_mu.size(0)):
+        group_label = 1
 
         # remove 0 values from variances
         class_var[i][class_var[i] == float(0)] = 1e-6
@@ -86,8 +86,8 @@ def accumulate_group_evidence(class_mu, class_logvar, batch, is_cuda):
         var_dict[group_label] = 1 / var_dict[group_label]
 
     # calculate mu for each group
-    for i in range(len(batch)):
-        group_label = batch[i].item()
+    for i in range(class_mu.size(0)):
+        group_label = 1
 
         if group_label in mu_dict.keys():
             mu_dict[group_label] += class_mu[i] * (1 / class_var[i])
@@ -106,8 +106,8 @@ def accumulate_group_evidence(class_mu, class_logvar, batch, is_cuda):
         group_mu = group_mu.cuda()
         group_var = group_var.cuda()
 
-    for i in range(len(batch)):
-        group_label = batch[i].item()
+    for i in range(class_mu.size(0)):
+        group_label = 1
 
         group_mu[i] = mu_dict[group_label]
         group_var[i] = var_dict[group_label]
@@ -140,11 +140,13 @@ def group_wise_reparameterize(training, mu, logvar, labels_batch, cuda):
     eps_dict = {}
 
     # generate only 1 eps value per group label
-    for label in torch.unique(labels_batch):
+    '''for label in torch.unique(labels_batch):
         if cuda:
             eps_dict[label.item()] = torch.cuda.DoubleTensor(1, logvar.size(1)).normal_(0., 0.1)
         else:
-            eps_dict[label.item()] = torch.DoubleTensor(1, logvar.size(1)).normal_(0., 0.1)
+            eps_dict[label.item()] = torch.DoubleTensor(1, logvar.size(1)).normal_(0., 0.1)'''
+
+    eps_dict[0] = torch.cuda.DoubleTensor(1, logvar.size(1)).normal_(0., 0.1)
 
     if training:
         std = logvar.mul(0.5).exp_()
@@ -152,7 +154,7 @@ def group_wise_reparameterize(training, mu, logvar, labels_batch, cuda):
 
         # multiply std by correct eps and add mu
         for i in range(logvar.size(0)):
-            reparameterized_var[i] = std[i].mul(Variable(eps_dict[labels_batch[i].item()]))
+            reparameterized_var[i] = std[i].mul(Variable(eps_dict[0]))
             reparameterized_var[i].add_(mu[i])
 
         return reparameterized_var
