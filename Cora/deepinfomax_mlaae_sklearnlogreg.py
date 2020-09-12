@@ -411,7 +411,7 @@ if __name__ == '__main__':
             #encode to z
             X_sample = model.decoder(z_sample, grouped_class) #decode to X reconstruction
 
-            recon_loss = model.recon_loss1(X_sample, data.edge_index) + mse_loss(X_sample, data.x.double())
+            recon_loss = model.recon_loss1(X_sample, data.edge_index) #+ mse_loss(X_sample, data.x.double())
             recon_loss_all += recon_loss.item()
 
             recon_loss.backward()
