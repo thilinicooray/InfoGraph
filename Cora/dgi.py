@@ -65,11 +65,50 @@ class DGI(nn.Module):
         return ret
 
     # Detach the return variables
-    def embed(self, seq, adj, sparse, msk):
-        h_1 = self.gcn(seq, adj, sparse)
-        c = self.read(h_1, msk)
+    def embed(self, x, edge_index):
+        h_1 = self.act(self.gcn(x, edge_index))
+        c = self.read(h_1)
 
         return h_1.detach(), c.detach()
+
+    def get_embeddings(self, data):
+
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        ret = []
+        y = []
+        with torch.no_grad():
+
+            data.to(device)
+            x, edge_index = data.x, data.edge_index
+
+
+            node_latent, _ = self.embed(x.double(), edge_index)
+
+        #node_latent = node_latent.cpu().numpy()
+        #y = da
+
+        train_emb = node_latent[data.train_mask].cpu().numpy()
+        train_y = data.y[data.train_mask].cpu().numpy()
+        val_emb = node_latent[data.val_mask].cpu().numpy()
+        val_y = data.y[data.val_mask].cpu().numpy()
+        test_emb = node_latent[data.test_mask].cpu().numpy()
+        test_y = data.y[data.test_mask].cpu().numpy()
+
+        '''train_msk_exp = data.train_mask.unsqueeze(-1).expand_as(node_latent)
+        val_msk_exp = data.val_mask.unsqueeze(-1).expand_as(node_latent)
+        test_msk_exp = data.test_mask.unsqueeze(-1).expand_as(node_latent)
+
+
+        train_emb = torch.masked_select(node_latent, train_msk_exp).cpu().numpy()
+        train_y = torch.masked_select(data.y, data.train_mask).cpu().numpy()
+        val_emb = torch.masked_select(node_latent, val_msk_exp).cpu().numpy()
+        val_y = torch.masked_select(data.y, data.val_mask).cpu().numpy()
+        test_emb = torch.masked_select(node_latent, test_msk_exp).cpu().numpy()
+        test_y = torch.masked_select(data.y, data.test_mask).cpu().numpy()'''
+
+
+
+        return train_emb, train_y, val_emb, val_y,test_emb, test_y
 
 
 
@@ -269,8 +308,6 @@ if __name__ == '__main__':
                 lbl = lbl.cuda()
 
             logits = model(data.x.double(), shuf_fts, data.edge_index)
-
-            print('sizes ', logits.size(), lbl.size())
 
             loss = b_xent(logits, lbl)
 
