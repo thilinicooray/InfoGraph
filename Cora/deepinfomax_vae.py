@@ -442,6 +442,8 @@ if __name__ == '__main__':
 
                 print('val and test micro F1', val_f1, test_f1)'''
 
+            print('all losses ', losses)
+
 
             model.eval()
 
