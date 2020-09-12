@@ -79,8 +79,8 @@ class Encoder(torch.nn.Module):
 
         #out = torch.cat(xs, 1)
         j = self.num_gc_layers
-        node_latent_space = self.bns[j](torch.tanh(self.convs[j](x, edge_index)))
-        class_latent_space = self.bns[j+1](torch.tanh(self.convs[j+1](x, edge_index)))
+        node_latent_space = self.bns[j](F.relu(self.convs[j](x, edge_index)))
+        class_latent_space = self.bns[j+1](F.relu(self.convs[j+1](x, edge_index)))
 
 
         '''node_latent_space_mu = F.relu(self.node_mu(x))
@@ -99,7 +99,7 @@ class Decoder(torch.nn.Module):
             ('relu_1', ReLU()),
 
             ('linear_2', torch.nn.Linear(in_features=node_dim, out_features=feat_size, bias=True)),
-            ('relu_final', Tanh())
+            ('relu_final', Sigmoid())
         ]))
 
     def forward(self, node_latent_space, class_latent_space):
