@@ -265,6 +265,8 @@ if __name__ == '__main__':
 
     args = arg_parse()
 
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
     #for seed in [32,42,52,62,72]:
     for seed in [52]:
 
@@ -316,7 +318,7 @@ if __name__ == '__main__':
 
 
 
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
         try:
             dataset_num_features = data.x.size(-1)
         except:
