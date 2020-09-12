@@ -419,9 +419,11 @@ if __name__ == '__main__':
             recon_loss_all += recon_loss.item()
 
             #contrastive loss
-            #con_loss = local_global_loss_contrast(z_sample, z_class, 'JSD')
+            con_loss = local_global_loss_contrast(z_sample, z_class, 'JSD')
 
-            tot_loss = recon_loss #+ con_loss
+            print('contrastive loss ', con_loss.item())
+
+            tot_loss = recon_loss + con_loss
 
             tot_loss.backward()
             optim_P.step()
