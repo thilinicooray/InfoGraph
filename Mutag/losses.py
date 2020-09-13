@@ -126,7 +126,7 @@ def local_global_loss_for_mlgvae(l_node_enc, l_enc, g_enc, batch, measure):
     E_neg = get_negative_expectation_our(negative * pos_mask, measure, average=False).sum()
     E_neg = E_neg / num_nodes
 
-    print('exp ', E_pos, E_neg)
+    #print('exp ', E_pos, E_neg)
 
     return E_neg - E_pos
 

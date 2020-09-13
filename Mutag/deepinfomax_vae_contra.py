@@ -171,7 +171,7 @@ class GcnInfomax(nn.Module):
         #self.encoder.train()
 
 
-        return  reconstruction_error.item(), class_kl_divergence_loss.item() , node_kl_divergence_loss.item(), kl_div_between_nodegraph.item()
+        return  reconstruction_error.item(), class_kl_divergence_loss.item() , node_kl_divergence_loss.item(), contranstive.item()
         #return loss.item()
 
     def compute_two_gaussian_loss(self, mu1, logvar1, mu2, logvar2):
