@@ -464,7 +464,7 @@ if __name__ == '__main__':
 
             lbl_1 = torch.ones(data.x.shape[0])
             lbl_2 = torch.zeros( data.x.shape[0])
-            disc_lbl = torch.cat((lbl_1, lbl_2), 0).cuda()
+            disc_lbl = torch.cat((lbl_1, lbl_2), 0).double().cuda()
 
             D_real_node_node = model.nodeown_discriminator(z_fake_gauss_node)
             D_fake_node_class = model.nodeown_discriminator(z_fake_gauss_class)
