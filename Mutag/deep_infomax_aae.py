@@ -247,19 +247,25 @@ class GcnInfomax(nn.Module):
                 x, edge_index, batch = data.x, data.edge_index, data.batch
 
 
-                node_mu, class_mu = self.encoder(x[:,:18].double(), edge_index, batch)
+                node_mu, node_logvar, class_mu, class_logvar = self.encoder(x.double(), edge_index, batch)
 
-                grouped_mu = accumulate_group_rep(
-                    class_mu.data,  batch
+
+                node_latent_embeddings = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
+
+                grouped_mu, grouped_logvar = accumulate_group_evidence(
+                    class_mu.data, class_logvar.data, batch, True
                 )
 
+                accumulated_class_latent_embeddings = group_wise_reparameterize(
+                    training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
+                )
 
-                class_emb = global_mean_pool(grouped_mu, batch)
+                class_emb = global_mean_pool(accumulated_class_latent_embeddings, batch)
+                node_emb = global_mean_pool(node_latent_embeddings, batch)
 
 
-                ret_node.append(node_mu.cpu().numpy())
-                node_label_idx = (data.x[:,18:] != 0).nonzero()[:,1]
-                y_node.append(node_label_idx.cpu().numpy())
+                ret_node.append(node_emb.cpu().numpy())
+                y_node.append(data.y.cpu().numpy())
                 ret_class.append(class_emb.cpu().numpy())
                 y_class.append(data.y.cpu().numpy())
 
@@ -315,11 +321,11 @@ if __name__ == '__main__':
         # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
 
         #dataset = TUDataset(path, name=DS, pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=88)).shuffle()
-        dataset = TUDataset(path, use_node_attr=True, name=DS).shuffle()
+        dataset = TUDataset(path, name=DS).shuffle()
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         try:
-            dataset_num_features = 18
+            dataset_num_features = dataset.num_features
         except:
             dataset_num_features = 1
 
@@ -383,7 +389,7 @@ if __name__ == '__main__':
 
                 model.zero_grad()
 
-                z_sample, z_class = model.encoder(data.x[:,:18].double(), data.edge_index, data.batch)
+                z_sample, z_class = model.encoder(data.double(), data.edge_index, data.batch)
                 grouped_class = accumulate_group_rep(
                     z_class, data.batch
                 )
@@ -406,17 +412,17 @@ if __name__ == '__main__':
                 #model.class_discriminator.zero_grad()
 
 
-                z_real_gauss_node = Variable(torch.randn(data.batch.shape[0], args.hidden_dim) * 5.).double().cuda()
+                z_real_gauss_node = Variable(torch.randn(data.batch.shape[0], args.hidden_dim) ).double().cuda()
                 D_real_gauss_node = model.node_discriminator(z_real_gauss_node)
 
-                z_real_gauss_class = Variable(torch.randn(data.num_graphs, args.hidden_dim) * 5.).double().cuda()
+                z_real_gauss_class = Variable(torch.randn(data.num_graphs, args.hidden_dim)).double().cuda()
 
                 z_real_gauss_class_exp = expand_group_rep(z_real_gauss_class, data.batch, data.batch.shape[0], args.hidden_dim)
 
 
                 D_real_gauss_class = model.class_discriminator(z_real_gauss_class_exp)
 
-                z_fake_gauss_node, z_fake_gauss_class = model.encoder(data.x[:,:18].double(), data.edge_index, data.batch)
+                z_fake_gauss_node, z_fake_gauss_class = model.encoder(data.x.double(), data.edge_index, data.batch)
 
                 grouped_z_fake_gauss_class = accumulate_group_rep(
                     z_fake_gauss_class, data.batch
@@ -443,7 +449,7 @@ if __name__ == '__main__':
                 # Generator
                 model.encoder.train()
 
-                z_fake_gauss_node, z_fake_gauss_class = model.encoder(data.x[:,:18].double(), data.edge_index, data.batch)
+                z_fake_gauss_node, z_fake_gauss_class = model.encoder(data.x.double(), data.edge_index, data.batch)
 
                 grouped_z_fake_gauss_class = accumulate_group_rep(
                     z_fake_gauss_class, data.batch
@@ -504,13 +510,13 @@ if __name__ == '__main__':
                 accuracies_node['randomforest'].append(res[3])
                 print('node ', accuracies_node)
                 print('train_loss', losses)
-                '''print('graph classificaion')
+                print('graph classificaion')
                 res = evaluate_embedding(emb_class, y_class)
                 accuracies_class['logreg'].append(res[0])
                 accuracies_class['svc'].append(res[1])
                 accuracies_class['linearsvc'].append(res[2])
                 accuracies_class['randomforest'].append(res[3])
-                print('class ', accuracies_node)'''
+                print('class ', accuracies_class)
 
 
         '''model.eval()
