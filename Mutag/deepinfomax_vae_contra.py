@@ -155,17 +155,13 @@ class GcnInfomax(nn.Module):
                                                          global_mean_pool(class_latent_embeddings, batch), batch, measure)'''
 
 
-        #kl_div_between_nodegraph = self.compute_two_gaussian_loss(node_mu, node_logvar, grouped_mu, grouped_logvar)
+        kl_div_between_nodegraph = self.compute_two_gaussian_loss(node_mu, node_logvar, grouped_mu, grouped_logvar)
+
+        print('kl div between ', kl_div_between_nodegraph.item())
 
 
 
-        nodelevel_graph_latent_embeddings = reparameterize(training=True, mu=class_mu, logvar=class_logvar)
 
-        triplet_loss = nn.TripletMarginLoss(margin=torch.sum(nodelevel_graph_latent_embeddings*node_latent_embeddings), p=2)
-
-        trip_loss = triplet_loss(class_latent_embeddings, nodelevel_graph_latent_embeddings, node_latent_embeddings)
-
-        print('trip loss ', trip_loss.item())
 
 
 
