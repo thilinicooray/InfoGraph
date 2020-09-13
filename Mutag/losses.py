@@ -99,7 +99,7 @@ def local_global_loss_(l_enc, g_enc, batch, measure):
 
     return E_neg - E_pos
 
-def local_global_loss_for_mlgvae(l_node_enc, l_graph_enc, g_enc, batch, measure):
+def local_global_loss_for_mlgvae(l_node_enc, l_enc, g_enc, batch, measure):
     '''
     Args:
         l: Local feature map.
@@ -118,7 +118,7 @@ def local_global_loss_for_mlgvae(l_node_enc, l_graph_enc, g_enc, batch, measure)
         pos_mask[nodeidx][graphidx] = 1.
         neg_mask[nodeidx][graphidx] = 0.
 
-    positive = torch.mm(l_graph_enc, g_enc.t())
+    positive = torch.mm(l_node_enc, l_enc.t())
     negative = torch.mm(l_node_enc, g_enc.t())
 
     E_pos = get_positive_expectation_our(positive * pos_mask, measure, average=False).sum()
