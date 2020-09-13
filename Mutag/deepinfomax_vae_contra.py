@@ -251,7 +251,7 @@ class GcnInfomax(nn.Module):
                 x, edge_index, batch = data.x, data.edge_index, data.batch
 
 
-                node_mu, node_logvar, class_mu, class_logvar = self.encoder(x[:,:18].double(), edge_index, batch)
+                node_mu, node_logvar, class_mu, class_logvar = self.encoder(x.double(), edge_index, batch)
 
 
                 node_latent_embeddings = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
@@ -265,11 +265,11 @@ class GcnInfomax(nn.Module):
                 )
 
                 class_emb = global_mean_pool(accumulated_class_latent_embeddings, batch)
+                node_emb = global_mean_pool(node_latent_embeddings, batch)
 
 
-                ret_node.append(node_latent_embeddings.cpu().numpy())
-                node_label_idx = (data.x[:,18:] != 0).nonzero()[:,1]
-                y_node.append(node_label_idx.cpu().numpy())
+                ret_node.append(node_emb.cpu().numpy())
+                y_node.append(data.y.cpu().numpy())
                 ret_class.append(class_emb.cpu().numpy())
                 y_class.append(data.y.cpu().numpy())
 
@@ -376,11 +376,11 @@ if __name__ == '__main__':
         # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
 
         #dataset = TUDataset(path, name=DS, pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=88)).shuffle()
-        dataset = TUDataset(path, use_node_attr=True, name=DS).shuffle()
+        dataset = TUDataset(path, name=DS).shuffle()
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         try:
-            dataset_num_features = 18
+            dataset_num_features = dataset.num_features
         except:
             dataset_num_features = 1
 
@@ -426,7 +426,7 @@ if __name__ == '__main__':
                 data = data.to(device)
 
                 optimizer.zero_grad()
-                recon_loss, kl_class, kl_node = model(data.x[:,:18].double(), data.edge_index, data.batch, data.num_graphs)
+                recon_loss, kl_class, kl_node = model(data.x.double(), data.edge_index, data.batch, data.num_graphs)
                 #current_loss = model(data.x[:,:18].double(), data.edge_index, data.batch, data.num_graphs)
                 recon_loss_all += recon_loss
                 kl_class_loss_all += kl_class
@@ -460,21 +460,23 @@ if __name__ == '__main__':
                 model.eval()
 
                 emb_node, y_node, emb_class, y_class = model.get_embeddings(dataloader)
-                print('node classificaion')
+                print('node mean graph classificaion')
                 res = evaluate_embedding(emb_node, y_node)
                 accuracies_node['logreg'].append(res[0])
                 accuracies_node['svc'].append(res[1])
                 accuracies_node['linearsvc'].append(res[2])
                 accuracies_node['randomforest'].append(res[3])
                 print('node ', accuracies_node)
-                print('train_loss', losses)
-                '''print('graph classificaion')
+
+                print('graph latent graph classificaion')
                 res = evaluate_embedding(emb_class, y_class)
                 accuracies_class['logreg'].append(res[0])
                 accuracies_class['svc'].append(res[1])
                 accuracies_class['linearsvc'].append(res[2])
                 accuracies_class['randomforest'].append(res[3])
-                print('class ', accuracies_node)'''
+                print('class ', accuracies_class)
+
+                print('train_loss', losses)
 
 
 
