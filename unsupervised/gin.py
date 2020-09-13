@@ -65,18 +65,22 @@ class Encoder(torch.nn.Module):
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         ret = []
         y = []
+        ret_nodesum = []
         with torch.no_grad():
             for data in loader:
                 data.to(device)
                 x, edge_index, batch = data.x, data.edge_index, data.batch
                 if x is None:
                     x = torch.ones((batch.shape[0],1)).to(device)
-                x, _ = self.forward(x, edge_index, batch)
+                x, node = self.forward(x, edge_index, batch)
+                node_emb = global_add_pool(node, batch)
+                ret_nodesum.append(node_emb.cpu().numpy())
                 ret.append(x.cpu().numpy())
                 y.append(data.y.cpu().numpy())
         ret = np.concatenate(ret, 0)
         y = np.concatenate(y, 0)
-        return ret, y
+        ret_nodesum = np.concatenate(ret_nodesum, 0)
+        return ret, y, ret_nodesum
 
 
 

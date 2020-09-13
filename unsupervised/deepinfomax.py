@@ -87,6 +87,7 @@ if __name__ == '__main__':
     np.random.seed(seed)
     torch.manual_seed(seed)
     accuracies = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
+    accuracies_nodesum = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
     epochs = 25
     log_interval = 1
     batch_size = 128
@@ -136,24 +137,30 @@ if __name__ == '__main__':
             optimizer.step()
         print('Epoch {}, Loss {}'.format(epoch, loss_all / len(dataloader)))
 
-        '''if epoch % log_interval == 0:
+        if epoch % log_interval == 0:
             model.eval()
-            emb, y = model.encoder.get_embeddings(dataloader)
+            emb, y, nodesum = model.encoder.get_embeddings(dataloader)
             res = evaluate_embedding(emb, y)
             accuracies['logreg'].append(res[0])
             accuracies['svc'].append(res[1])
             accuracies['linearsvc'].append(res[2])
             accuracies['randomforest'].append(res[3])
-            print(accuracies)'''
+            print('graph ', accuracies)
+            res = evaluate_embedding(nodesum, y)
+            accuracies_nodesum['logreg'].append(res[0])
+            accuracies_nodesum['svc'].append(res[1])
+            accuracies_nodesum['linearsvc'].append(res[2])
+            accuracies_nodesum['randomforest'].append(res[3])
+            print('node_sum ', accuracies_nodesum)
 
-    model.eval()
+    '''model.eval()
     emb, y = model.encoder.get_embeddings(dataloader)
     res = evaluate_embedding(emb, y)
     accuracies['logreg'].append(res[0])
     accuracies['svc'].append(res[1])
     accuracies['linearsvc'].append(res[2])
     accuracies['randomforest'].append(res[3])
-    print(accuracies)
+    print(accuracies)'''
 
     with open('unsupervised.log', 'a+') as f:
         s = json.dumps(accuracies)
