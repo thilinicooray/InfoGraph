@@ -156,10 +156,9 @@ class GcnInfomax(nn.Module):
 
 
         kl_div_between_nodegraph = self.compute_two_gaussian_loss(node_mu, node_logvar, grouped_mu, grouped_logvar)
-        kl_div_between_graphraph = self.compute_two_gaussian_loss(class_mu, class_logvar, grouped_mu, grouped_logvar)
 
 
-        loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error - kl_div_between_nodegraph + kl_div_between_graphraph
+        loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error - kl_div_between_nodegraph
 
         loss.backward()
 
@@ -265,7 +264,7 @@ class GcnInfomax(nn.Module):
                 )
 
                 class_emb = global_mean_pool(accumulated_class_latent_embeddings, batch)
-                node_emb = global_mean_pool(node_latent_embeddings, batch)
+                node_emb = global_add_pool(node_latent_embeddings, batch)
 
 
                 ret_node.append(node_emb.cpu().numpy())
