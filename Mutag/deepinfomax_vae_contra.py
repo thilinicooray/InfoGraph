@@ -164,7 +164,7 @@ class GcnInfomax(nn.Module):
 
 
 
-        loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error
+        loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error + contranstive
 
         loss.backward()
 
