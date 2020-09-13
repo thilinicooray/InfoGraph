@@ -113,17 +113,17 @@ def local_global_loss_for_mlgvae(l_node_enc, l_graph_enc, g_enc, batch, measure)
     num_nodes = l_node_enc.shape[0]
 
     pos_mask = torch.zeros((num_nodes, num_graphs)).cuda()
-    #neg_mask = torch.ones((num_nodes, num_graphs)).cuda()
+    neg_mask = torch.ones((num_nodes, num_graphs)).cuda()
     for nodeidx, graphidx in enumerate(batch):
         pos_mask[nodeidx][graphidx] = 1.
-        #neg_mask[nodeidx][graphidx] = 0.
+        neg_mask[nodeidx][graphidx] = 0.
 
     positive = torch.mm(l_graph_enc, g_enc.t())
     negative = torch.mm(l_node_enc, g_enc.t())
 
     E_pos = get_positive_expectation_our(positive * pos_mask, measure, average=False).sum()
     E_pos = E_pos / num_nodes
-    E_neg = get_negative_expectation_our(negative * pos_mask, measure, average=False).sum()
+    E_neg = get_negative_expectation_our(positive * neg_mask, measure, average=False).sum()
     E_neg = E_neg / num_nodes
 
     print('exp ', E_pos, E_neg)
