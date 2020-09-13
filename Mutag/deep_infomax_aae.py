@@ -389,7 +389,7 @@ if __name__ == '__main__':
 
                 model.zero_grad()
 
-                z_sample, z_class = model.encoder(data.double(), data.edge_index, data.batch)
+                z_sample, z_class = model.encoder(data.x.double(), data.edge_index, data.batch)
                 grouped_class = accumulate_group_rep(
                     z_class, data.batch
                 )
@@ -502,7 +502,7 @@ if __name__ == '__main__':
                 model.eval()
 
                 emb_node, y_node, emb_class, y_class = model.get_embeddings(dataloader)
-                print('node classificaion')
+                print('node mean graph classificaion')
                 res = evaluate_embedding(emb_node, y_node)
                 accuracies_node['logreg'].append(res[0])
                 accuracies_node['svc'].append(res[1])
