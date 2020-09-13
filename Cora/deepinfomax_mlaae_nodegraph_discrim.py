@@ -468,7 +468,7 @@ if __name__ == '__main__':
 
             D_real_node_node = model.nodeown_discriminator(z_fake_gauss_node)
             D_fake_node_class = model.nodeown_discriminator(z_fake_gauss_class)
-            all = torch.cat([D_real_node_node, D_fake_node_class], -1)
+            all = torch.cat([D_real_node_node, D_fake_node_class], 0)
 
 
             D_loss_nodeown = bceloss(all, disc_lbl)
