@@ -150,7 +150,7 @@ class GcnInfomax(nn.Module):
         rank_loss = torch.mean(torch.max(torch.zeros(margin.size(0)).cuda().double(), margin.squeeze() - correct.squeeze()),0)'''
 
         measure='JSD'
-        nodelevel_graph_latent_embeddings = reparameterize(training=True, mu=class_mu, logvar=class_logvar)
+        nodelevel_graph_latent_embeddings = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
         local_global_loss = local_global_loss_for_mlgvae(torch.tanh(node_latent_embeddings), torch.tanh(nodelevel_graph_latent_embeddings),
                                                          torch.tanh(global_mean_pool(class_latent_embeddings, batch)), batch, measure)
 
