@@ -88,7 +88,7 @@ if __name__ == '__main__':
     torch.manual_seed(seed)
     accuracies = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
     accuracies_nodesum = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
-    epochs = 25
+    epochs = 5000
     log_interval = 1
     batch_size = 128
     lr = args.lr
