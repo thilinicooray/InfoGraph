@@ -156,6 +156,8 @@ class GcnInfomax(nn.Module):
 
 
 
+        print('losses minibatch ', class_kl_divergence_loss.item(), node_kl_divergence_loss.item(), reconstruction_error.item(),local_global_loss.item() )
+
 
 
 
