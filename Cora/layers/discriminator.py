@@ -16,6 +16,7 @@ class Discriminator(nn.Module):
                 m.bias.data.fill_(0.0)
 
     def forward(self, c, h_pl, h_mi, s_bias1=None, s_bias2=None):
+        print('sizes ', c.size(), h_pl.size(), h_mi.size())
         c_x = torch.unsqueeze(c, 0)
         c_x = c_x.expand_as(h_pl)
 
