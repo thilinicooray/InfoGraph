@@ -3,6 +3,37 @@ import torch.nn as nn
 import torch.nn.functional as F
 from cortex_DIM.functions.gan_losses import get_positive_expectation, get_negative_expectation
 
+def local_global_loss_for_mlgvae(l_node_enc, l_enc, g_enc, batch, measure):
+    '''
+    Args:
+        l: Local feature map.
+        g: Global features.
+        measure: Type of f-divergence. For use with mode `fd`
+        mode: Loss mode. Fenchel-dual `fd`, NCE `nce`, or Donsker-Vadadhan `dv`.
+    Returns:
+        torch.Tensor: Loss.
+    '''
+    num_graphs = g_enc.shape[0]
+    num_nodes = l_node_enc.shape[0]
+
+    pos_mask = torch.zeros((num_nodes, num_graphs)).cuda()
+    #neg_mask = torch.ones((num_nodes, num_graphs)).cuda()
+    for nodeidx, graphidx in enumerate(batch):
+        pos_mask[nodeidx][graphidx] = 1.
+        #neg_mask[nodeidx][graphidx] = 0.
+
+    positive = torch.mm(l_node_enc, l_enc.t())
+    negative = torch.mm(l_node_enc, g_enc.t())
+
+    E_pos = get_positive_expectation_our(positive * pos_mask, measure, average=False).sum()
+    E_pos = E_pos / num_nodes
+    E_neg = get_negative_expectation_our(negative * pos_mask, measure, average=False).sum()
+    E_neg = E_neg / num_nodes
+
+    #print('exp ', E_pos, E_neg)
+
+    return E_neg - E_pos
+
 def local_global_loss_(l_enc, g_enc, edge_index, batch, measure):
     '''
     Args:
