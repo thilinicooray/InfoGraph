@@ -424,7 +424,12 @@ if __name__ == '__main__':
             recon_loss = model.recon_loss1(X_sample, data.edge_index) + mse_loss(X_sample, data.x.double())
             recon_loss_all += recon_loss.item()
 
-            recon_loss.backward()
+
+            contrastive_loss = disentangled_loss(z_sample, z_class, grouped_class, 'JSD')
+
+            total_loss = recon_loss + contrastive_loss
+
+            total_loss.backward()
             optim_P.step()
             optim_Q_enc.step()
 
@@ -462,7 +467,7 @@ if __name__ == '__main__':
 
             #discrminate between graph and node to make sure they dont contain same information
 
-            lbl_1 = torch.ones(data.x.shape[0])
+            '''lbl_1 = torch.ones(data.x.shape[0])
             lbl_2 = torch.zeros( data.x.shape[0])
             disc_lbl = torch.cat((lbl_1, lbl_2), 0).double().cuda()
 
@@ -471,9 +476,9 @@ if __name__ == '__main__':
             all = torch.cat([D_real_node_node, D_fake_node_class], 0)
 
 
-            D_loss_nodeown = bceloss(all, disc_lbl)
+            D_loss_nodeown = bceloss(all, disc_lbl)'''
 
-            D_loss = D_loss_node + D_loss_class + D_loss_nodeown
+            D_loss = D_loss_node + D_loss_class
 
             disc_loss_all += D_loss.item()
 

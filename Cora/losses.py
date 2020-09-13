@@ -32,6 +32,29 @@ def local_global_loss_(l_enc, g_enc, edge_index, batch, measure):
     return E_neg - E_pos
 
 
+def disentangled_loss(l_enc_node, l_enc_graph, g_enc, measure):
+    '''
+    Args:
+        l: Local feature map.
+        g: Global features.
+        measure: Type of f-divergence. For use with mode `fd`
+        mode: Loss mode. Fenchel-dual `fd`, NCE `nce`, or Donsker-Vadadhan `dv`.
+    Returns:
+        torch.Tensor: Loss.
+    '''
+    num_nodes = l_enc_node.shape[0]
+
+    positive = torch.mm(l_enc_graph, g_enc.t())
+    negative = torch.mm(l_enc_node, g_enc.t())
+
+    E_pos = get_positive_expectation(positive, measure, average=False).sum()
+    E_pos = E_pos / num_nodes
+    E_neg = get_negative_expectation(negative, measure, average=False).sum()
+    E_neg = E_neg / num_nodes
+
+    return E_neg - E_pos
+
+
 def local_global_loss_contrast(l_enc, g_enc, measure):
     '''
     Args:
