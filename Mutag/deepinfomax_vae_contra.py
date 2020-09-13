@@ -156,8 +156,10 @@ class GcnInfomax(nn.Module):
 
 
         kl_div_between_nodegraph = self.compute_two_gaussian_loss(node_mu, node_logvar, grouped_mu, grouped_logvar)
+        kl_div_between_graphraph = self.compute_two_gaussian_loss(class_mu, class_logvar, grouped_mu, grouped_logvar)
 
-        loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error - kl_div_between_nodegraph
+
+        loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error - kl_div_between_nodegraph + kl_div_between_graphraph
 
         loss.backward()
 
