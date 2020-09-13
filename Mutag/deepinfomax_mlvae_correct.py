@@ -149,17 +149,14 @@ class GcnInfomax(nn.Module):
 
         rank_loss = torch.mean(torch.max(torch.zeros(margin.size(0)).cuda().double(), margin.squeeze() - correct.squeeze()),0)'''
 
-        measure='JSD'
-        nodelevel_graph_latent_embeddings = reparameterize(training=True, mu=class_mu, logvar=class_logvar)
-        local_global_loss = local_global_loss_for_mlgvae(node_latent_embeddings, nodelevel_graph_latent_embeddings,
-                                                         global_mean_pool(class_latent_embeddings, batch), batch, measure)
+        #measure='JSD'
+        #local_global_loss = local_global_loss_(node_latent_embeddings, global_mean_pool(class_latent_embeddings, batch), batch, measure)
 
 
 
 
 
-
-        loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error + local_global_loss
+        loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error
 
         loss.backward()
 
