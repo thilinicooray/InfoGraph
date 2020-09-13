@@ -247,16 +247,16 @@ class GcnInfomax(nn.Module):
                 x, edge_index, batch = data.x, data.edge_index, data.batch
 
 
-                node_mu, class_mu = self.encoder(x.double(), edge_index, batch)
+                node_z, class_z = self.encoder(x.double(), edge_index, batch)
 
                 grouped_class = accumulate_group_rep(
-                    z_class, batch
+                    class_z, batch
                 )
 
 
 
                 class_emb = global_mean_pool(grouped_class, batch)
-                node_emb = global_mean_pool(node_mu, batch)
+                node_emb = global_mean_pool(node_z, batch)
 
 
                 ret_node.append(node_emb.cpu().numpy())
