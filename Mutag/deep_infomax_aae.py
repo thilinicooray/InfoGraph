@@ -250,7 +250,7 @@ class GcnInfomax(nn.Module):
                 node_mu, class_mu = self.encoder(x.double(), edge_index, batch)
 
                 grouped_class = accumulate_group_rep(
-                    z_class, data.batch
+                    z_class, batch
                 )
 
 
