@@ -157,13 +157,6 @@ class GcnInfomax(nn.Module):
 
         kl_div_between_nodegraph = self.compute_two_gaussian_loss(node_mu, node_logvar, grouped_mu, grouped_logvar)
 
-        print('kl div between ', kl_div_between_nodegraph.item())
-
-
-
-
-
-
 
 
         loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error
@@ -173,7 +166,7 @@ class GcnInfomax(nn.Module):
         #self.encoder.train()
 
 
-        return  reconstruction_error.item(), class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
+        return  reconstruction_error.item(), class_kl_divergence_loss.item() , node_kl_divergence_loss.item(), kl_div_between_nodegraph.item()
         #return loss.item()
 
     def compute_two_gaussian_loss(self, mu1, logvar1, mu2, logvar2):
@@ -365,7 +358,7 @@ if __name__ == '__main__':
         accuracies_node = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
         accuracies_class = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
 
-        losses = {'recon':[], 'node_kl':[], 'class_kl': []}
+        losses = {'recon':[], 'node_kl':[], 'class_kl': [], 'kl_div': []}
         #losses = []
 
         warmup_steps = 0
@@ -428,16 +421,18 @@ if __name__ == '__main__':
             kl_class_loss_all = 0
             kl_node_loss_all = 0
             mi_loss_all = 0
+            kl_div_all = 0
             model.train()
             for data in dataloader:
                 data = data.to(device)
 
                 optimizer.zero_grad()
-                recon_loss, kl_class, kl_node = model(data.x.double(), data.edge_index, data.batch, data.num_graphs)
+                recon_loss, kl_class, kl_node, kl_div = model(data.x.double(), data.edge_index, data.batch, data.num_graphs)
                 #current_loss = model(data.x[:,:18].double(), data.edge_index, data.batch, data.num_graphs)
                 recon_loss_all += recon_loss
                 kl_class_loss_all += kl_class
                 kl_node_loss_all += kl_node
+                kl_div_all += kl_div
                 #tot_loss += current_loss
 
 
@@ -454,6 +449,8 @@ if __name__ == '__main__':
             losses['recon'].append(recon_loss_all/ len(dataloader))
             losses['node_kl'].append(kl_node_loss_all/ len(dataloader))
             losses['class_kl'].append(kl_class_loss_all/ len(dataloader))
+            losses['kl_div'].append(kl_div_all/ len(dataloader))
+
             #losses.append(tot_loss/ len(dataloader))
 
 
