@@ -3,6 +3,74 @@ import torch.nn as nn
 import torch.nn.functional as F
 from cortex_DIM.functions.gan_losses import get_positive_expectation, get_negative_expectation
 
+import numpy as np
+
+def get_positive_expectation_our(p_samples, measure, average=True):
+    """Computes the positive part of a divergence / difference.
+    Args:
+        p_samples: Positive samples.
+        measure: Measure to compute for.
+        average: Average the result over samples.
+    Returns:
+        torch.Tensor
+    """
+    log_2 = np.log(2.)
+
+    if measure == 'GAN':
+        Ep = - F.softplus(-p_samples)
+    elif measure == 'JSD':
+        Ep = log_2 - F.softplus(- p_samples)
+    elif measure == 'X2':
+        Ep = p_samples ** 2
+    elif measure == 'KL':
+        Ep = p_samples + 1.
+    elif measure == 'RKL':
+        Ep = -torch.exp(-p_samples)
+    elif measure == 'DV':
+        Ep = p_samples
+    elif measure == 'H2':
+        Ep = 1. - torch.exp(-p_samples)
+    elif measure == 'W1':
+        Ep = p_samples
+
+    if average:
+        return Ep.mean()
+    else:
+        return Ep
+
+
+# Borrowed from https://github.com/fanyun-sun/InfoGraph
+def get_negative_expectation_our(q_samples, measure, average=True):
+    """Computes the negative part of a divergence / difference.
+    Args:
+        q_samples: Negative samples.
+        measure: Measure to compute for.
+        average: Average the result over samples.
+    Returns:
+        torch.Tensor
+    """
+    log_2 = np.log(2.)
+
+    if measure == 'GAN':
+        Eq = F.softplus(-q_samples) + q_samples
+    elif measure == 'JSD':
+        Eq = F.softplus(-q_samples) + q_samples - log_2
+    elif measure == 'X2':
+        Eq = -0.5 * ((torch.sqrt(q_samples ** 2) + 1.) ** 2)
+    elif measure == 'KL':
+        Eq = torch.exp(q_samples)
+    elif measure == 'RKL':
+        Eq = q_samples - 1.
+    elif measure == 'H2':
+        Eq = torch.exp(q_samples) - 1.
+    elif measure == 'W1':
+        Eq = q_samples
+
+    if average:
+        return Eq.mean()
+    else:
+        return Eq
+
 def local_global_loss_for_mlgvae(l_node_enc, l_enc, g_enc, batch, measure):
     '''
     Args:
