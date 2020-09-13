@@ -429,7 +429,7 @@ if __name__ == '__main__':
             lbl_2 = torch.zeros( data.x.shape[0])
             disc_lbl = torch.cat((lbl_1, lbl_2), 0).double().cuda()
 
-            logits = model.disc(grouped_class, z_class, z_sample)
+            logits = model.disc(grouped_class[0], z_class, z_sample)
             contrastive_loss = b_xent(logits, disc_lbl)
 
             total_loss = recon_loss + contrastive_loss
