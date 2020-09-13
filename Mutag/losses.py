@@ -53,7 +53,8 @@ def local_global_loss_for_mlgvae(l_node_enc, l_graph_enc, g_enc, batch, measure)
     positive = torch.mm(l_graph_enc, g_enc.t())
     negative = torch.mm(l_node_enc, g_enc.t())
 
-    print('sizes  ', positive.size(), positive[0,:10])
+    print('positive  ', positive.size(), positive[0,:50])
+    print('negative  ', negative.size(), negative[0,:50])
 
     E_pos = get_positive_expectation(positive * pos_mask, measure, average=False).sum()
     E_pos = E_pos / num_nodes
