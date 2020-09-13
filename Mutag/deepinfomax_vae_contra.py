@@ -159,20 +159,19 @@ class GcnInfomax(nn.Module):
 
         measure='JSD'
 
-        '''contranstive = local_global_loss_for_mlgvae(node_latent_embeddings, global_add_pool(node_latent_embeddings, batch),
-                                                    global_mean_pool(class_latent_embeddings, batch), batch, measure)'''
+        contranstive = local_global_loss_for_mlgvae(node_latent_embeddings, global_add_pool(node_latent_embeddings, batch),
+                                                    global_mean_pool(class_latent_embeddings, batch), batch, measure)
 
 
 
-        loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error
-                #+ contranstive
+        loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error + contranstive
 
         loss.backward()
 
         #self.encoder.train()
 
 
-        return  reconstruction_error.item(), class_kl_divergence_loss.item() , node_kl_divergence_loss.item(), 0.0
+        return  reconstruction_error.item(), class_kl_divergence_loss.item() , node_kl_divergence_loss.item(), contranstive.item()
         #return loss.item()
 
     def compute_two_gaussian_loss(self, mu1, logvar1, mu2, logvar2):
