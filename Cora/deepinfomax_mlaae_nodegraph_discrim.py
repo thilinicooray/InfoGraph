@@ -423,14 +423,14 @@ if __name__ == '__main__':
             recon_loss_all += recon_loss.item()
 
 
-            #contrastive_loss = disentangled_loss(z_sample, z_class, grouped_class, 'JSD')
+            contrastive_loss = disentangled_loss(z_sample, z_class, grouped_class[0], 'JSD')
 
-            lbl_1 = torch.ones(data.x.shape[0])
+            '''lbl_1 = torch.ones(data.x.shape[0])
             lbl_2 = torch.zeros( data.x.shape[0])
             disc_lbl = torch.cat((lbl_1, lbl_2), 0).double().cuda()
 
             logits = model.disc(grouped_class[0], z_class, z_sample)
-            contrastive_loss = b_xent(logits, disc_lbl)
+            contrastive_loss = b_xent(logits, disc_lbl)'''
 
             total_loss = recon_loss + contrastive_loss
 
