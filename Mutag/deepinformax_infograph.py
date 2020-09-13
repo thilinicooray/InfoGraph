@@ -78,7 +78,7 @@ class GcnInfomax(nn.Module):
 
         mode='fd'
         measure='JSD'
-        local_global_loss = local_global_loss_(l_enc, g_enc, edge_index, batch, measure)
+        local_global_loss = local_global_loss_(l_enc, g_enc, batch, measure)
 
         if self.prior:
             prior = torch.rand_like(y)
