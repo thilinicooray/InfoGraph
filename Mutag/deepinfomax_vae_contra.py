@@ -105,9 +105,6 @@ class GcnInfomax(nn.Module):
 
         node_kl_divergence_loss = node_kl_divergence_loss
 
-        indiclass_kl_divergence_loss = -0.5  * torch.mean(torch.sum(
-            1 + 2 * class_logvar - class_mu.pow(2) - class_logvar.exp().pow(2), 1))
-
 
         # kl-divergence error for class latent space
         '''class_kl_divergence_loss = torch.mean(
@@ -152,19 +149,15 @@ class GcnInfomax(nn.Module):
 
         rank_loss = torch.mean(torch.max(torch.zeros(margin.size(0)).cuda().double(), margin.squeeze() - correct.squeeze()),0)'''
 
-        measure='JSD'
+        '''measure='JSD'
         nodelevel_graph_latent_embeddings = reparameterize(training=True, mu=class_mu, logvar=class_logvar)
         local_global_loss = local_global_loss_for_mlgvae(node_latent_embeddings, nodelevel_graph_latent_embeddings,
-                                                         global_mean_pool(class_latent_embeddings, batch), batch, measure)
-
-
-
-        print('losses minibatch ', class_kl_divergence_loss.item(), node_kl_divergence_loss.item(), reconstruction_error.item(),local_global_loss.item() )
+                                                         global_mean_pool(class_latent_embeddings, batch), batch, measure)'''
 
 
 
 
-        loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error + indiclass_kl_divergence_loss + local_global_loss
+        loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error
 
         loss.backward()
 
