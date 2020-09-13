@@ -423,7 +423,7 @@ if __name__ == '__main__':
             recon_loss_all += recon_loss.item()
 
 
-            contrastive_loss = disentangled_loss(z_sample, z_class, grouped_class[0], 'JSD')
+            contrastive_loss = disentangled_loss(z_sample, z_class, grouped_class[0].unsqueeze(0), 'JSD')
 
             '''lbl_1 = torch.ones(data.x.shape[0])
             lbl_2 = torch.zeros( data.x.shape[0])
