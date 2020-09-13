@@ -30,6 +30,8 @@ from model import *
 from utils import imshow_grid, mse_loss, reparameterize, group_wise_reparameterize, accumulate_group_evidence, \
     accumulate_group_rep, expand_group_rep
 
+from layers import Discriminator
+
 from sklearn.linear_model import LogisticRegression
 
 from arguments import arg_parse
@@ -62,6 +64,7 @@ class GcnInfomax(nn.Module):
         self.class_discriminator = D_net_gauss(hidden_dim, hidden_dim)
         self.nodeown_discriminator = D_net_gauss(hidden_dim, hidden_dim)
         self.classgraph_discriminator = D_net_gauss(hidden_dim, hidden_dim)
+        self.disc = Discriminator(hidden_dim)
 
 
 
@@ -352,12 +355,6 @@ if __name__ == '__main__':
             #dataset_num_features = 5
             #input_feat = torch.ones((batch_size, 1)).to(device)
 
-        train_x = data.x[data.train_mask]
-        train_y = data.y[data.train_mask]
-        val_x = data.x[data.val_mask]
-        val_y = data.y[data.val_mask]
-        test_x = data.x[data.test_mask]
-        test_y = data.y[data.test_mask]
 
         nb_classes = np.unique(data.y.cpu().numpy()).shape[0]
 
@@ -401,6 +398,7 @@ if __name__ == '__main__':
 
         xent = nn.CrossEntropyLoss()
         bceloss = nn.BCELoss()
+        b_xent = nn.BCEWithLogitsLoss()
 
         #model.train()
         for epoch in range(1, epochs+1):
@@ -425,7 +423,14 @@ if __name__ == '__main__':
             recon_loss_all += recon_loss.item()
 
 
-            contrastive_loss = disentangled_loss(z_sample, z_class, grouped_class, 'JSD')
+            #contrastive_loss = disentangled_loss(z_sample, z_class, grouped_class, 'JSD')
+
+            lbl_1 = torch.ones(data.x.shape[0])
+            lbl_2 = torch.zeros( data.x.shape[0])
+            disc_lbl = torch.cat((lbl_1, lbl_2), 0).double().cuda()
+
+            out = model.disc(grouped_class, z_class, z_sample)
+            contrastive_loss = b_xent(logits, disc_lbl)
 
             total_loss = recon_loss + contrastive_loss
 
