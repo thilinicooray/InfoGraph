@@ -162,12 +162,12 @@ if __name__ == '__main__':
         # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
 
         #dataset = TUDataset(path, name=DS, pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=88)).shuffle()
-        dataset = TUDataset(path, use_node_attr=True, name=DS).shuffle()
+        dataset = TUDataset(path, name=DS).shuffle()
 
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         try:
-            dataset_num_features = dataset.num_features - 3
+            dataset_num_features = dataset.num_features
         except:
             dataset_num_features = 1
 
@@ -215,7 +215,7 @@ if __name__ == '__main__':
                 data.x = data.x.double()
 
                 optimizer.zero_grad()
-                loss = model(data.x[:,:18].double(), data.edge_index, data.batch, data.num_graphs)
+                loss = model(data.x.double(), data.edge_index, data.batch, data.num_graphs)
                 loss_all += loss.item() * data.num_graphs
                 loss.backward()
                 optimizer.step()
@@ -226,20 +226,20 @@ if __name__ == '__main__':
                 model.eval()
 
                 emb_node, y_node, emb_class, y_class = model.encoder.get_embeddings(dataloader)
-                print('node classificaion')
+                print('node sum graph classificaion')
                 res = evaluate_embedding(emb_node, y_node)
                 accuracies_node['logreg'].append(res[0])
                 accuracies_node['svc'].append(res[1])
                 accuracies_node['linearsvc'].append(res[2])
                 accuracies_node['randomforest'].append(res[3])
                 print('node ', accuracies_node)
-                '''print('graph classificaion')
+                print('graph classificaion')
                 res = evaluate_embedding(emb_class, y_class)
                 accuracies_class['logreg'].append(res[0])
                 accuracies_class['svc'].append(res[1])
                 accuracies_class['linearsvc'].append(res[2])
                 accuracies_class['randomforest'].append(res[3])
-                print('class ', accuracies_node)'''
+                print('class ', accuracies_class)
 
 
 

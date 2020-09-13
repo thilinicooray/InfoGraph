@@ -32,16 +32,16 @@ class Encoder(torch.nn.Module):
 
         for i in range(num_gc_layers):
 
-            '''if i:
+            if i:
                 nn = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim))
             else:
                 nn = Sequential(Linear(num_features, dim), ReLU(), Linear(dim, dim))
-            conv = GINConv(nn)'''
+            conv = GINConv(nn)
 
-            if i:
+            '''if i:
                 conv = GCNConv(dim, dim)
             else:
-                conv = GCNConv(num_features, dim)
+                conv = GCNConv(num_features, dim)'''
             bn = torch.nn.BatchNorm1d(dim)
 
             self.convs.append(conv)
@@ -77,13 +77,15 @@ class Encoder(torch.nn.Module):
                 data.to(device)
                 x, edge_index, batch = data.x, data.edge_index, data.batch
 
-                x_graph, x_node = self.forward(x[:,:18].double(), edge_index, batch)
+                x_graph, x_node = self.forward(x.double(), edge_index, batch)
+
+                class_emb = x_graph
+                node_emb = global_add_pool(x_node, batch)
 
 
-                ret_node.append(x_node.cpu().numpy())
-                node_label_idx = (data.x[:,18:] != 0).nonzero()[:,1]
-                y_node.append(node_label_idx.cpu().numpy())
-                ret_class.append(x_graph.cpu().numpy())
+                ret_node.append(node_emb.cpu().numpy())
+                y_node.append(data.y.cpu().numpy())
+                ret_class.append(class_emb.cpu().numpy())
                 y_class.append(data.y.cpu().numpy())
 
         ret_node = np.concatenate(ret_node, 0)
