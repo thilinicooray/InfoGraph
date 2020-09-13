@@ -247,21 +247,16 @@ class GcnInfomax(nn.Module):
                 x, edge_index, batch = data.x, data.edge_index, data.batch
 
 
-                node_mu, node_logvar, class_mu, class_logvar = self.encoder(x.double(), edge_index, batch)
+                node_mu, class_mu = self.encoder(x.double(), edge_index, batch)
 
-
-                node_latent_embeddings = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
-
-                grouped_mu, grouped_logvar = accumulate_group_evidence(
-                    class_mu.data, class_logvar.data, batch, True
+                grouped_class = accumulate_group_rep(
+                    z_class, data.batch
                 )
 
-                accumulated_class_latent_embeddings = group_wise_reparameterize(
-                    training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
-                )
 
-                class_emb = global_mean_pool(accumulated_class_latent_embeddings, batch)
-                node_emb = global_mean_pool(node_latent_embeddings, batch)
+
+                class_emb = global_mean_pool(grouped_class, batch)
+                node_emb = global_mean_pool(node_mu, batch)
 
 
                 ret_node.append(node_emb.cpu().numpy())
