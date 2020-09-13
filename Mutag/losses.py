@@ -3,6 +3,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from cortex_DIM.functions.gan_losses import get_positive_expectation, get_negative_expectation
 
+import numpy as np
+
 def get_positive_expectation_our(p_samples, measure, average=True):
     """Computes the positive part of a divergence / difference.
     Args:
