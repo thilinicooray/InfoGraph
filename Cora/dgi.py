@@ -54,7 +54,7 @@ class DGI(nn.Module):
         self.disc = Discriminator(n_h)
 
     def forward(self, x, x_permute, edge_index):
-        h_1 = self.bn(self.act(self.gcn(x, edge_index)))
+        h_1 = self.act(self.gcn(x, edge_index))
 
         c = self.read(h_1, None)
         c = self.sigm(c)
