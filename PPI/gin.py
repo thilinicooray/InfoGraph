@@ -20,7 +20,7 @@ from sklearn.metrics import accuracy_score
 import sys
 
 class Encoder(torch.nn.Module):
-    def __init__(self, num_features, dim, num_gc_layers):
+    def __init__(self, num_features, dim, num_gc_layers, node_dim, class_dim):
         super(Encoder, self).__init__()
 
         # num_features = dataset.num_features
@@ -45,12 +45,16 @@ class Encoder(torch.nn.Module):
 
             if i == 0:
                 conv = GCNConv(num_features, dim)
-            elif i >= num_gc_layers:
-                conv = GCNConv(dim, dim)
+                bn = torch.nn.BatchNorm1d(dim)
+            elif i >= num_gc_layers and i < num_gc_layers +2:
+                conv = GCNConv(dim, node_dim)
+                bn = torch.nn.BatchNorm1d(node_dim)
+            elif i >= num_gc_layers and i >= num_gc_layers +2:
+                conv = GCNConv(dim, class_dim)
+                bn = torch.nn.BatchNorm1d(class_dim)
             else:
                 conv = GCNConv(dim, dim)
-
-            bn = torch.nn.BatchNorm1d(dim)
+                bn = torch.nn.BatchNorm1d(dim)
 
             self.convs.append(conv)
             self.bns.append(bn)
@@ -106,11 +110,11 @@ class Decoder(torch.nn.Module):
         super(Decoder, self).__init__()
 
         self.linear_model = torch.nn.Sequential(OrderedDict([
-            ('linear_1', torch.nn.Linear(in_features=node_dim + class_dim, out_features=node_dim, bias=True)),
-            ('relu_1', ReLU()),
+            ('linear_1', torch.nn.Linear(in_features=node_dim + class_dim, out_features=feat_size, bias=True)),
+            ('relu_1', Tanh()),
 
-            ('linear_2', torch.nn.Linear(in_features=node_dim, out_features=feat_size, bias=True)),
-            ('relu_final', Tanh())
+            #('linear_2', torch.nn.Linear(in_features=node_dim, out_features=feat_size, bias=True)),
+            #('relu_final', Tanh())
         ]))
 
     def forward(self, node_latent_space, class_latent_space):

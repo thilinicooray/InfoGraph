@@ -48,7 +48,7 @@ class D_net_gauss(nn.Module):
         return torch.sigmoid(self.lin3(x))
 
 class GcnInfomax(nn.Module):
-    def __init__(self, hidden_dim, num_gc_layers, alpha=0.5, beta=1., gamma=.1):
+    def __init__(self, hidden_dim, num_gc_layers, node_dim, class_dim, alpha=0.5, beta=1., gamma=.1):
         super(GcnInfomax, self).__init__()
 
         self.alpha = alpha
@@ -56,7 +56,7 @@ class GcnInfomax(nn.Module):
         self.gamma = gamma
         self.prior = args.prior
 
-        self.encoder = Encoder(dataset_num_features, hidden_dim, num_gc_layers)
+        self.encoder = Encoder(dataset_num_features, hidden_dim, num_gc_layers, node_dim, class_dim)
         self.decoder = Decoder(hidden_dim, hidden_dim, dataset_num_features)
         self.node_discriminator = D_net_gauss(hidden_dim, hidden_dim)
         self.class_discriminator = D_net_gauss(hidden_dim, hidden_dim)
@@ -334,7 +334,8 @@ if __name__ == '__main__':
         test_dataset = PPI(path, split='train')
 
 
-
+        node_dim = 16
+        class_dim = 64 - node_dim
 
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -355,7 +356,7 @@ if __name__ == '__main__':
         test_dataloader = DataLoader(test_dataset, batch_size=batch_size)
 
 
-        model = GcnInfomax(args.hidden_dim, args.num_gc_layers).double().to(device)
+        model = GcnInfomax(args.hidden_dim, args.num_gc_layers, node_dim, class_dim).double().to(device)
         #encode/decode optimizers
         optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
@@ -378,6 +379,9 @@ if __name__ == '__main__':
 
         logreg_val = []
         logreg_valbased_test = []
+
+        best_val_round = -1
+        best_val = 0
 
         #model.train()
         for epoch in range(1, epochs+1):
@@ -460,28 +464,46 @@ if __name__ == '__main__':
             val_emb = scaler.transform(val_emb)
             test_emb = scaler.transform(test_emb)
 
+            accs_val = []
+            accs_test = []
+
+            for _ in range(10):
+
+                from sklearn.linear_model import SGDClassifier
+                from sklearn.metrics import f1_score
+                from sklearn.multioutput import MultiOutputClassifier
+                log = MultiOutputClassifier(SGDClassifier(loss="log"), n_jobs=10)
+                log.fit(train_emb, train_y)
 
 
-            from sklearn.linear_model import SGDClassifier
-            from sklearn.metrics import f1_score
-            from sklearn.multioutput import MultiOutputClassifier
-            log = MultiOutputClassifier(SGDClassifier(loss="log"), n_jobs=10)
-            log.fit(train_emb, train_y)
+                val_pred = log.predict(val_emb)
+                test_pred = log.predict(test_emb)
+
+                tot_f1_val = f1_score(val_y.flatten(), val_pred.flatten(), average='micro')
+
+                tot_f1_test = f1_score(test_y.flatten(), test_pred.flatten(), average='micro')
+
+                accs_test.append(tot_f1_test)
+                accs_val.append(tot_f1_val)
+
+            accs_test = torch.stack(accs_test)
+            print('test ', accs_test.mean().item(), accs_test.std().item())
+
+            accs_val = torch.stack(accs_val)
+            print('val ', accs_val.mean().item(), accs_val.std().item())
+
+            if accs_val.mean().item() > best_val:
+                best_val_round = epoch - 1
 
 
-            val_pred = log.predict(val_emb)
-            test_pred = log.predict(test_emb)
+            logreg_val.append(accs_val.mean().item())
+            logreg_valbased_test.append(accs_test.mean().item())
 
-            tot_f1_val = f1_score(val_y.flatten(), val_pred.flatten(), average='micro')
-
-            tot_f1_test = f1_score(test_y.flatten(), test_pred.flatten(), average='micro')
-
-
-            logreg_val.append(tot_f1_val)
-            logreg_valbased_test.append(tot_f1_test)
 
             print('logreg val', logreg_val)
             print('logreg test', logreg_valbased_test)
+
+        print('best perf based on validation score val, test, in epoch', logreg_val[best_val_round], logreg_valbased_test[best_val_round], best_val_round)
 
 
 
