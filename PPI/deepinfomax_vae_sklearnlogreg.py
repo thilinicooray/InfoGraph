@@ -483,8 +483,8 @@ if __name__ == '__main__':
 
                 tot_f1_test = f1_score(test_y.flatten(), test_pred.flatten(), average='micro')
 
-                accs_test.append(tot_f1_test)
-                accs_val.append(tot_f1_val)
+                accs_test.append(torch.from_numpy(tot_f1_test))
+                accs_val.append(torch.from_numpy(tot_f1_val))
 
             accs_test = torch.stack(accs_test)
             print('test ', accs_test.mean().item(), accs_test.std().item())
