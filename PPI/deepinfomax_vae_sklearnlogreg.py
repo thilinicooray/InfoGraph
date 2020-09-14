@@ -334,7 +334,7 @@ if __name__ == '__main__':
         test_dataset = PPI(path, split='train')
 
 
-        node_dim = 16
+        node_dim = 16*3
         class_dim = 64 - node_dim
 
 
