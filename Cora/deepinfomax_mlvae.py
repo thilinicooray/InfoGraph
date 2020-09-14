@@ -211,7 +211,7 @@ class GcnInfomax(nn.Module):
             x, edge_index = data.x, data.edge_index
 
 
-            node_mu, node_logvar, class_mu, class_logvar, entangledrep = self.encoder(x.double(), edge_index)
+            node_mu, node_logvar, class_mu, class_logvar = self.encoder(x.double(), edge_index)
 
             '''grouped_mu, grouped_logvar = accumulate_group_evidence(
                 class_mu.data, class_logvar.data, batch, True
