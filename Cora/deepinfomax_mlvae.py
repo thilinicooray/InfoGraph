@@ -81,12 +81,15 @@ class GcnInfomax(nn.Module):
 
         # batch_size = data.num_graphs
 
-        node_mu, node_logvar = self.encoder(x, edge_index)
+        node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index)
 
 
 
 
 
+        grouped_mu, grouped_logvar = accumulate_group_evidence(
+            class_mu.data, class_logvar.data, None, True
+        )
 
 
 
@@ -107,8 +110,11 @@ class GcnInfomax(nn.Module):
         '''class_kl_divergence_loss = torch.mean(
             - 0.5 * torch.sum(1 + grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp())
         )'''
+        class_kl_divergence_loss = - 0.5  * torch.mean(global_mean_pool(torch.sum(
+            1 + 2 * grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp().pow(2), 1), None))
 
         #print('class kl unwei ', class_kl_divergence_loss)
+        class_kl_divergence_loss = class_kl_divergence_loss
         #print('class kl wei ', class_kl_divergence_loss)
 
 
@@ -118,9 +124,12 @@ class GcnInfomax(nn.Module):
         the decoder consider class latent embeddings as random noise and ignore them 
         """
         node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
+        class_latent_embeddings = group_wise_reparameterize(
+            training=True, mu=grouped_mu, logvar=grouped_logvar, labels_batch=None, cuda=True
+        )
 
 
-        reconstructed_node = self.decoder(node_latent_embeddings)
+        reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
 
         #reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
         reconstruction_error = self.recon_loss1(reconstructed_node, edge_index)
@@ -130,12 +139,12 @@ class GcnInfomax(nn.Module):
         #node_kl_divergence_loss.backward(retain_graph=True)
         #reconstruction_error.backward()
 
-        loss =   node_kl_divergence_loss + reconstruction_error
+        loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error
 
         loss.backward()
 
 
-        return  reconstruction_error.item(), 0 , node_kl_divergence_loss.item()
+        return  reconstruction_error.item(), class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
 
 
     def edge_recon(self, z, edge_index, sigmoid=True):
