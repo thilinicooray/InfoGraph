@@ -483,8 +483,8 @@ if __name__ == '__main__':
 
                 tot_f1_test = f1_score(test_y.flatten(), test_pred.flatten(), average='micro')
 
-                accs_test.append(torch.FloatTensor(tot_f1_test))
-                accs_val.append(torch.FloatTensor(tot_f1_val))
+                accs_test.append(torch.FloatTensor(np.array([tot_f1_test])).cuda())
+                accs_val.append(torch.FloatTensor(np.array([tot_f1_val])).cuda())
 
             accs_test = torch.stack(accs_test,0)
             print('test ', accs_test.mean().item(), accs_test.std().item())
