@@ -500,7 +500,7 @@ if __name__ == '__main__':
             accs_val = []
             accs_test = []
             for _ in range(50):
-                log = LogReg(args.hidden_dim, nb_classes).double().cuda()
+                log = LogReg(args.hidden_dim*2, nb_classes).double().cuda()
                 opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0)
                 log.cuda()
                 current_val_best = 0
