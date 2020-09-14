@@ -352,7 +352,7 @@ if __name__ == '__main__':
         data = dataset[0].to(device)
 
 
-        node_dim = 256*3
+        node_dim = 128*7
         class_dim = 1024 - node_dim
 
 
