@@ -48,7 +48,7 @@ class D_net_gauss(nn.Module):
         return torch.sigmoid(self.lin3(x))
 
 class GcnInfomax(nn.Module):
-    def __init__(self, hidden_dim, num_gc_layers, alpha=0.5, beta=1., gamma=.1):
+    def __init__(self, hidden_dim, num_gc_layers, node_dim, class_dim, alpha=0.5, beta=1., gamma=.1):
         super(GcnInfomax, self).__init__()
 
         self.alpha = alpha
@@ -56,7 +56,7 @@ class GcnInfomax(nn.Module):
         self.gamma = gamma
         self.prior = args.prior
 
-        self.encoder = Encoder(dataset_num_features, hidden_dim, num_gc_layers)
+        self.encoder = Encoder(dataset_num_features, hidden_dim, num_gc_layers, node_dim, class_dim,)
         self.decoder = Decoder(hidden_dim, hidden_dim, dataset_num_features)
         self.node_discriminator = D_net_gauss(hidden_dim, hidden_dim)
         self.class_discriminator = D_net_gauss(hidden_dim, hidden_dim)
@@ -352,7 +352,8 @@ if __name__ == '__main__':
         data = dataset[0].to(device)
 
 
-
+        node_dim = 256
+        class_dim = 1024 - node_dim
 
 
 
@@ -380,7 +381,7 @@ if __name__ == '__main__':
         nb_classes = np.unique(data.y.cpu().numpy()).shape[0]
 
 
-        model = GcnInfomax(args.hidden_dim, args.num_gc_layers).double().to(device)
+        model = GcnInfomax(args.hidden_dim, args.num_gc_layers, node_dim, class_dim).double().to(device)
         #encode/decode optimizers
         #optimizer = torch.optim.Adam(model.parameters(), lr=lr)
         optimizer = torch.optim.Adam(model.parameters(), lr=lr)
@@ -508,7 +509,7 @@ if __name__ == '__main__':
             accs_val = []
             accs_test = []
             for _ in range(50):
-                log = LogReg(args.hidden_dim, nb_classes).double().cuda()
+                log = LogReg(node_dim, nb_classes).double().cuda()
                 opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0)
                 log.cuda()
                 current_val_best = 0
