@@ -141,10 +141,10 @@ class GcnInfomax(nn.Module):
 
         measure='JSD'
 
-        contranstive = local_global_loss_for_mlgvae(node_latent_embeddings, global_add_pool(node_latent_embeddings, batch),
-                                                    global_mean_pool(class_latent_embeddings, batch), batch, measure)
+        '''contranstive = local_global_loss_for_mlgvae(node_latent_embeddings, global_add_pool(node_latent_embeddings, batch),
+                                                    global_mean_pool(class_latent_embeddings, batch), batch, measure)'''
 
-        loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error + contranstive
+        loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error
 
         loss.backward()
 
