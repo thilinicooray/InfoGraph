@@ -358,6 +358,9 @@ if __name__ == '__main__':
         logreg_val = []
         logreg_valbased_test = []
 
+        best_val_round = -1
+        best_val = 0
+
         #model.train()
         for epoch in range(1, epochs+1):
             recon_loss_all = 0
@@ -443,25 +446,45 @@ if __name__ == '__main__':
 
 
 
-            from sklearn.linear_model import SGDClassifier
-            from sklearn.metrics import f1_score
-            from sklearn.multioutput import MultiOutputClassifier
-            log = MultiOutputClassifier(SGDClassifier(loss="log"), n_jobs=10)
-            log.fit(train_emb, train_y)
+            accs_val = []
+            accs_test = []
+
+            for _ in range(10):
+
+                from sklearn.linear_model import SGDClassifier
+                from sklearn.metrics import f1_score
+                from sklearn.multioutput import MultiOutputClassifier
+                log = MultiOutputClassifier(SGDClassifier(loss="log"), n_jobs=10)
+                log.fit(train_emb, train_y)
 
 
-            val_pred = log.predict(val_emb)
-            test_pred = log.predict(test_emb)
+                val_pred = log.predict(val_emb)
+                test_pred = log.predict(test_emb)
 
-            tot_f1_val = f1_score(val_y.flatten(), val_pred.flatten(), average='micro')
+                tot_f1_val = f1_score(val_y.flatten(), val_pred.flatten(), average='micro')
 
-            tot_f1_test = f1_score(test_y.flatten(), test_pred.flatten(), average='micro')
+                tot_f1_test = f1_score(test_y.flatten(), test_pred.flatten(), average='micro')
+
+                accs_test.append(torch.FloatTensor(np.array([tot_f1_test])).cuda())
+                accs_val.append(torch.FloatTensor(np.array([tot_f1_val])).cuda())
+
+            accs_test = torch.stack(accs_test,0)
+            print('test ', accs_test.mean().item(), accs_test.std().item())
+
+            accs_val = torch.stack(accs_val,0)
+            print('val ', accs_val.mean().item(), accs_val.std().item())
+
+            if accs_val.mean().item() > best_val:
+                best_val_round = epoch - 1
 
 
-            logreg_val.append(tot_f1_val)
-            logreg_valbased_test.append(tot_f1_test)
+            logreg_val.append(accs_val.mean().item())
+            logreg_valbased_test.append(accs_test.mean().item())
+
 
             print('logreg val', logreg_val)
             print('logreg test', logreg_valbased_test)
+
+        print('best perf based on validation score val, test, in epoch', logreg_val[best_val_round], logreg_valbased_test[best_val_round], best_val_round)
 
 
