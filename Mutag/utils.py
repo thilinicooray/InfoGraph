@@ -252,6 +252,35 @@ def group_wise_reparameterize_edge(training, mu, logvar, labels_batch, edge_inde
     else:
         return mu
 
+def group_wise_reparameterize_edge_eval(training, mu, logvar, labels_batch, edge_index, cuda):
+    eps_dict = {}
+    edge_b = []
+
+    # generate only 1 eps value per group label
+    for label in torch.unique(labels_batch):
+        if cuda:
+            eps_dict[label.item()] = torch.cuda.DoubleTensor(1, logvar.size(1)).normal_(0., 0.1)
+        else:
+            eps_dict[label.item()] = torch.DoubleTensor(1, logvar.size(1)).normal_(0., 0.1)
+
+    if training:
+        std = logvar.mul(0.5).exp_()
+        reparameterized_var = Variable(std.data.new(std.size()))
+
+        # multiply std by correct eps and add mu
+        for i in range(logvar.size(0)):
+            n_id = edge_index[i]
+            edge_b.append(labels_batch[n_id].item())
+            reparameterized_var[i] = std[i].mul(Variable(eps_dict[labels_batch[n_id].item()]))
+            reparameterized_var[i].add_(mu[i])
+
+        return reparameterized_var
+    else:
+        for i in range(logvar.size(0)):
+            n_id = edge_index[i]
+            edge_b.append(labels_batch[n_id])
+        return mu, torch.stack(edge_b, 0)
+
 
 def weights_init(layer):
     if isinstance(layer, nn.Conv2d):

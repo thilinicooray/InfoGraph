@@ -28,7 +28,7 @@ from gin_vae_nodeedge import Encoder, Decoder
 from evaluate_embedding import evaluate_embedding, draw_plot
 from model import *
 from utils import imshow_grid, mse_loss, reparameterize, group_wise_reparameterize, accumulate_group_evidence, \
-    accumulate_group_rep, expand_group_rep, accumulate_edgegroup_evidence, group_wise_reparameterize_edge
+    accumulate_group_rep, expand_group_rep, accumulate_edgegroup_evidence, group_wise_reparameterize_edge, group_wise_reparameterize_edge_eval
 
 from sklearn.linear_model import LogisticRegression
 
@@ -285,7 +285,7 @@ class GcnInfomax(nn.Module):
                 x, edge_index, batch = data.x, data.edge_index, data.batch
 
 
-                node_mu, node_logvar, class_mu, class_logvar = self.encoder(x.double(), edge_index, batch)
+                node_mu, node_logvar, class_mu, class_logvar,edge_mu, edge_logvar, class_emu, class_elogvar  = self.encoder(x.double(), edge_index, batch)
 
 
                 node_latent_embeddings = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
@@ -298,13 +298,24 @@ class GcnInfomax(nn.Module):
                     training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
                 )
 
+                grouped_emu, grouped_elogvar = accumulate_edgegroup_evidence(
+                    class_emu.data, class_elogvar.data, batch, edge_index[0], True
+                )
+
+                accumulated_edgeclass_latent_embeddings, edge_batch = group_wise_reparameterize_edge_eval(
+                    training=False, mu=grouped_emu, logvar=grouped_elogvar, labels_batch=batch, edge_index=edge_index[0], cuda=True
+                )
+
+                print('batch ', batch, edge_batch)
+
                 class_emb = global_mean_pool(accumulated_class_latent_embeddings, batch)
+                edge_class_emb = global_mean_pool(accumulated_edgeclass_latent_embeddings, edge_batch)
                 node_emb = global_add_pool(node_latent_embeddings, batch)
 
 
                 ret_node.append(node_emb.cpu().numpy())
                 y_node.append(data.y.cpu().numpy())
-                ret_class.append(class_emb.cpu().numpy())
+                ret_class.append((class_emb +edge_class_emb).cpu().numpy())
                 y_class.append(data.y.cpu().numpy())
 
         ret_node = np.concatenate(ret_node, 0)
