@@ -149,7 +149,7 @@ class GcnInfomax(nn.Module):
 
         edge_latent_embeddings = reparameterize(training=True, mu=edge_mu, logvar=edge_logvar)
         eclass_latent_embeddings = group_wise_reparameterize_edge(
-            training=True, mu=grouped_emu, logvar=grouped_elogvar, labels_batch=batch, edge_index=edge_index, cuda=True
+            training=True, mu=grouped_emu, logvar=grouped_elogvar, labels_batch=batch, edge_index=edge_index[0], cuda=True
         )
 
 
