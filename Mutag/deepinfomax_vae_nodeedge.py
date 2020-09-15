@@ -163,7 +163,7 @@ class GcnInfomax(nn.Module):
         recon_edge = self.edge_decoder(edge_latent_embeddings, eclass_latent_embeddings)
 
 
-        #edge_similarity_loss = mse_loss(reconstructed_node[edge_index[0]] * reconstructed_node[edge_index[1]], recon_edge)
+        edge_similarity_loss = mse_loss(reconstructed_node[edge_index[0]] * reconstructed_node[edge_index[1]], recon_edge)
 
 
         #class_kl_divergence_loss.backward(retain_graph=True)
@@ -193,7 +193,7 @@ class GcnInfomax(nn.Module):
 
 
         edge_related_loss = edge_kl_divergence_loss + \
-                            eclass_kl_divergence_loss  + class_class_kl_div
+                            eclass_kl_divergence_loss  + edge_similarity_loss
 
         loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error + edge_related_loss
 
