@@ -306,11 +306,7 @@ class GcnInfomax(nn.Module):
                     training=False, mu=grouped_emu, logvar=grouped_elogvar, labels_batch=batch, edge_index=edge_index[0], cuda=True
                 )
 
-                print('batch ', accumulated_edgeclass_latent_embeddings.size())
-
                 class_emb = global_mean_pool(accumulated_class_latent_embeddings, batch)
-                print('class ', class_emb.size())
-                #edge_class_emb = global_mean_pool(accumulated_edgeclass_latent_embeddings, edge_batch)
                 node_emb = global_add_pool(node_latent_embeddings, batch)
 
 
