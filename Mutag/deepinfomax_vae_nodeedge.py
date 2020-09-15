@@ -194,8 +194,8 @@ class GcnInfomax(nn.Module):
 
         edge_related_loss =  edge_similarity_loss + class_class_kl_div
 
-        print('edge losses e_kl, class kl, edge ce, class to class kl ', edge_kl_divergence_loss.item(),
-              eclass_kl_divergence_loss.item(), edge_similarity_loss.item(), class_class_kl_div.item())
+        '''print('edge losses e_kl, class kl, edge ce, class to class kl ', edge_kl_divergence_loss.item(),
+              eclass_kl_divergence_loss.item(), edge_similarity_loss.item(), class_class_kl_div.item())'''
 
         loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error + edge_related_loss
 
