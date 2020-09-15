@@ -244,7 +244,8 @@ def group_wise_reparameterize_edge(training, mu, logvar, labels_batch, edge_inde
 
         # multiply std by correct eps and add mu
         for i in range(logvar.size(0)):
-            reparameterized_var[i] = std[i].mul(Variable(eps_dict[labels_batch[i].item()]))
+            n_id = edge_index[i]
+            reparameterized_var[i] = std[i].mul(Variable(eps_dict[labels_batch[n_id].item()]))
             reparameterized_var[i].add_(mu[i])
 
         return reparameterized_var

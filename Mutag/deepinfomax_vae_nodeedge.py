@@ -28,7 +28,7 @@ from gin_vae_nodeedge import Encoder, Decoder
 from evaluate_embedding import evaluate_embedding, draw_plot
 from model import *
 from utils import imshow_grid, mse_loss, reparameterize, group_wise_reparameterize, accumulate_group_evidence, \
-    accumulate_group_rep, expand_group_rep, accumulate_edgegroup_evidence
+    accumulate_group_rep, expand_group_rep, accumulate_edgegroup_evidence, group_wise_reparameterize_edge
 
 from sklearn.linear_model import LogisticRegression
 
@@ -148,8 +148,8 @@ class GcnInfomax(nn.Module):
         )
 
         edge_latent_embeddings = reparameterize(training=True, mu=edge_mu, logvar=edge_logvar)
-        eclass_latent_embeddings = group_wise_reparameterize(
-            training=True, mu=grouped_emu, logvar=grouped_elogvar, labels_batch=batch, cuda=True
+        eclass_latent_embeddings = group_wise_reparameterize_edge(
+            training=True, mu=grouped_emu, logvar=grouped_elogvar, labels_batch=batch, edge_index=edge_index, cuda=True
         )
 
 
