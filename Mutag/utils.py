@@ -254,7 +254,8 @@ def group_wise_reparameterize_edge(training, mu, logvar, labels_batch, edge_inde
 
 def group_wise_reparameterize_edge_eval(training, mu, logvar, labels_batch, edge_index, cuda):
     eps_dict = {}
-    edge_b = []
+    edge_b = {}
+    edge_latent = []
 
     # generate only 1 eps value per group label
     for label in torch.unique(labels_batch):
@@ -276,10 +277,18 @@ def group_wise_reparameterize_edge_eval(training, mu, logvar, labels_batch, edge
 
         return reparameterized_var
     else:
-        for i in range(logvar.size(0)):
-            n_id = edge_index[i]
-            edge_b.append(labels_batch[n_id])
-        return mu, torch.stack(edge_b, 0)
+
+        for j in range(int(labels_batch.max().item() + 1)):
+
+            for i in range(logvar.size(0)):
+                n_id = edge_index[i]
+                group_id = labels_batch[n_id]
+
+                if j == group_id:
+                    edge_latent.append(mu[i])
+                    break
+
+        return torch.stack(edge_latent, 0)
 
 
 def weights_init(layer):

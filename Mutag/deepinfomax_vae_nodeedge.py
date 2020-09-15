@@ -302,20 +302,21 @@ class GcnInfomax(nn.Module):
                     class_emu.data, class_elogvar.data, batch, edge_index[0], True
                 )
 
-                accumulated_edgeclass_latent_embeddings, edge_batch = group_wise_reparameterize_edge_eval(
+                accumulated_edgeclass_latent_embeddings = group_wise_reparameterize_edge_eval(
                     training=False, mu=grouped_emu, logvar=grouped_elogvar, labels_batch=batch, edge_index=edge_index[0], cuda=True
                 )
 
-                print('batch ', batch, edge_batch)
+                print('batch ', accumulated_edgeclass_latent_embeddings.size())
 
                 class_emb = global_mean_pool(accumulated_class_latent_embeddings, batch)
-                edge_class_emb = global_mean_pool(accumulated_edgeclass_latent_embeddings, edge_batch)
+                print('class ', class_emb.size())
+                #edge_class_emb = global_mean_pool(accumulated_edgeclass_latent_embeddings, edge_batch)
                 node_emb = global_add_pool(node_latent_embeddings, batch)
 
 
                 ret_node.append(node_emb.cpu().numpy())
                 y_node.append(data.y.cpu().numpy())
-                ret_class.append((class_emb +edge_class_emb).cpu().numpy())
+                ret_class.append((class_emb + accumulated_edgeclass_latent_embeddings).cpu().numpy())
                 y_class.append(data.y.cpu().numpy())
 
         ret_node = np.concatenate(ret_node, 0)
