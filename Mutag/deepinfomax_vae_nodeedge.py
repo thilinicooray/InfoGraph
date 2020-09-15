@@ -14,7 +14,7 @@ from sklearn.multioutput import MultiOutputClassifier
 from sklearn import preprocessing
 
 import torch_geometric
-from torch_geometric.datasets import PPI
+from torch_geometric.datasets import TUDataset
 from torch_geometric.data import DataLoader
 from torch_geometric.nn import global_mean_pool, global_add_pool, global_max_pool
 from torch_geometric.utils import negative_sampling, remove_self_loops, add_self_loops, to_dense_adj, to_dense_batch
@@ -24,11 +24,11 @@ from torch import optim
 
 from cortex_DIM.nn_modules.mi_networks import MIFCNet, MI1x1ConvNet
 from losses import *
-from gin import Encoder, Decoder
+from gin_vae_nodeedge import Encoder, Decoder
 from evaluate_embedding import evaluate_embedding, draw_plot
 from model import *
 from utils import imshow_grid, mse_loss, reparameterize, group_wise_reparameterize, accumulate_group_evidence, \
-    accumulate_group_rep, expand_group_rep
+    accumulate_group_rep, expand_group_rep, accumulate_edgegroup_evidence
 
 from sklearn.linear_model import LogisticRegression
 
@@ -48,7 +48,7 @@ class D_net_gauss(nn.Module):
         return torch.sigmoid(self.lin3(x))
 
 class GcnInfomax(nn.Module):
-    def __init__(self, hidden_dim, num_gc_layers, node_dim, class_dim, alpha=0.5, beta=1., gamma=.1):
+    def __init__(self, hidden_dim, num_gc_layers, alpha=0.5, beta=1., gamma=.1):
         super(GcnInfomax, self).__init__()
 
         self.alpha = alpha
@@ -56,8 +56,9 @@ class GcnInfomax(nn.Module):
         self.gamma = gamma
         self.prior = args.prior
 
-        self.encoder = Encoder(dataset_num_features, hidden_dim, num_gc_layers, node_dim, class_dim)
+        self.encoder = Encoder(dataset_num_features, hidden_dim, num_gc_layers)
         self.decoder = Decoder(hidden_dim, hidden_dim, dataset_num_features)
+        self.edge_decoder = Decoder(hidden_dim, hidden_dim, dataset_num_features)
         self.node_discriminator = D_net_gauss(hidden_dim, hidden_dim)
         self.class_discriminator = D_net_gauss(hidden_dim, hidden_dim)
 
@@ -81,7 +82,7 @@ class GcnInfomax(nn.Module):
 
         # batch_size = data.num_graphs
 
-        node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index, batch)
+        node_mu, node_logvar, class_mu, class_logvar, edge_mu, edge_logvar, eclass_mu, eclass_logvar = self.encoder(x, edge_index, batch)
 
 
 
@@ -89,6 +90,10 @@ class GcnInfomax(nn.Module):
 
         grouped_mu, grouped_logvar = accumulate_group_evidence(
             class_mu.data, class_logvar.data, batch, True
+        )
+
+        grouped_emu, grouped_elogvar = accumulate_edgegroup_evidence(
+            eclass_mu.data, eclass_logvar.data, batch, edge_index[0], True
         )
 
 
@@ -99,11 +104,17 @@ class GcnInfomax(nn.Module):
             - 0.5 * torch.sum(1 + node_logvar - node_mu.pow(2) - node_logvar.exp())
         )'''
 
-        node_kl_divergence_loss = -0.5 * torch.mean(torch.sum(
+        node_kl_divergence_loss = -0.5  * torch.mean(torch.sum(
             1 + 2 * node_logvar - node_mu.pow(2) - node_logvar.exp().pow(2), 1))
 
 
         node_kl_divergence_loss = node_kl_divergence_loss
+
+        edge_kl_divergence_loss = -0.5  * torch.mean(torch.sum(
+            1 + 2 * edge_logvar - edge_mu.pow(2) - edge_logvar.exp().pow(2), 1))
+
+
+        edge_kl_divergence_loss = edge_kl_divergence_loss
 
 
         # kl-divergence error for class latent space
@@ -115,6 +126,14 @@ class GcnInfomax(nn.Module):
 
         #print('class kl unwei ', class_kl_divergence_loss)
         class_kl_divergence_loss = class_kl_divergence_loss
+
+        eclass_kl_divergence_loss = - 0.5  * torch.mean(torch.sum(
+            1 + 2 * grouped_elogvar - grouped_emu.pow(2) - grouped_elogvar.exp().pow(2), 1))
+
+        class_kl_divergence_loss = class_kl_divergence_loss
+
+        #print('class kl unwei ', class_kl_divergence_loss)
+        eclass_kl_divergence_loss = eclass_kl_divergence_loss
         #print('class kl wei ', class_kl_divergence_loss)
 
 
@@ -128,28 +147,77 @@ class GcnInfomax(nn.Module):
             training=True, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
         )
 
+        edge_latent_embeddings = reparameterize(training=True, mu=edge_mu, logvar=edge_logvar)
+        eclass_latent_embeddings = group_wise_reparameterize(
+            training=True, mu=grouped_emu, logvar=grouped_elogvar, labels_batch=batch, cuda=True
+        )
 
-        reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
+
+        reconstructed_node = self.decoder(node_latent_embeddings, torch.zeros_like(class_latent_embeddings))
+        #reconstructed_node = torch.cat([node_latent_embeddings, class_latent_embeddings], -1)
+        #reconstructed_node = node_latent_embeddings + class_latent_embeddings
 
         #reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
         reconstruction_error = self.recon_loss1(reconstructed_node, edge_index, batch)
+
+        recon_edge = self.edge_decoder(edge_latent_embeddings, eclass_latent_embeddings)
+
+
+        edge_similarity_loss = mse_loss(reconstructed_node[edge_index[0]] * reconstructed_node[edge_index[1]], recon_edge)
 
 
         #class_kl_divergence_loss.backward(retain_graph=True)
         #node_kl_divergence_loss.backward(retain_graph=True)
         #reconstruction_error.backward()
 
-        measure='JSD'
+        '''reconstructed_node_fake = self.decoder(node_latent_embeddings, torch.zeros_like(class_latent_embeddings))
 
-        '''contranstive = local_global_loss_for_mlgvae(node_latent_embeddings, global_add_pool(node_latent_embeddings, batch),
-                                                    global_mean_pool(class_latent_embeddings, batch), batch, measure)'''
+        correct = torch.sum(x * reconstructed_node, -1)
+        wrong = torch.sum(x * reconstructed_node_fake, -1)
+        margin = torch.sum(reconstructed_node * reconstructed_node_fake, -1)
 
-        loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error
+        rank_loss = torch.mean(torch.max(torch.zeros(margin.size(0)).cuda().double(), margin.squeeze() - correct.squeeze()),0)'''
+
+        '''measure='JSD'
+        nodelevel_graph_latent_embeddings = reparameterize(training=True, mu=class_mu, logvar=class_logvar)
+        local_global_loss = local_global_loss_for_mlgvae(node_latent_embeddings, nodelevel_graph_latent_embeddings,
+                                                         global_mean_pool(class_latent_embeddings, batch), batch, measure)'''
+
+
+        #kl_div_between_nodegraph = self.compute_two_gaussian_loss(node_mu, node_logvar, grouped_mu, grouped_logvar)
+
+        class_class_kl_div = self.compute_two_gaussian_loss(grouped_mu[0], grouped_logvar[0], grouped_emu[0], grouped_elogvar[0])
+
+        edge_related_loss = edge_kl_divergence_loss + \
+                            eclass_kl_divergence_loss + edge_similarity_loss + class_class_kl_div
+
+
+        loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error + edge_kl_divergence_loss + \
+        eclass_kl_divergence_loss + edge_similarity_loss + class_class_kl_div
 
         loss.backward()
 
+        #self.encoder.train()
 
-        return  reconstruction_error.item(), class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
+
+        return  reconstruction_error.item(), class_kl_divergence_loss.item() , node_kl_divergence_loss.item(), edge_related_loss.item()
+        #return loss.item()
+
+    def compute_two_gaussian_loss(self, mu1, logvar1, mu2, logvar2):
+        """Computes the KL loss between the embedding attained from the answers
+        and the categories.
+        KL divergence between two gaussians:
+            log(sigma_2/sigma_1) + (sigma_2^2 + (mu_1 - mu_2)^2)/(2sigma_1^2) - 0.5
+        Args:
+            mu1: Means from first space.
+            logvar1: Log variances from first space.
+            mu2: Means from second space.
+            logvar2: Means from second space.
+        """
+        numerator = logvar1.exp() + torch.pow(mu1 - mu2, 2)
+        fraction = torch.div(numerator, (logvar2.exp() + 1e-8))
+        kl = 0.5 * torch.sum(logvar2 - logvar1 + fraction - 1)
+        return kl / (mu1.size(0) + 1e-8)
 
 
     def edge_recon(self, z, edge_index, sigmoid=True):
@@ -206,8 +274,10 @@ class GcnInfomax(nn.Module):
     def get_embeddings(self, loader):
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        ret = []
-        y = []
+        ret_node = []
+        y_node = []
+        ret_class = []
+        y_class = []
         with torch.no_grad():
             for data in loader:
 
@@ -215,23 +285,33 @@ class GcnInfomax(nn.Module):
                 x, edge_index, batch = data.x, data.edge_index, data.batch
 
 
-                node_mu, node_logvar, class_mu, class_logvar, entangledrep = self.encoder(x.double(), edge_index, batch)
+                node_mu, node_logvar, class_mu, class_logvar = self.encoder(x.double(), edge_index, batch)
 
-                '''grouped_mu, grouped_logvar = accumulate_group_evidence(
-                    class_mu.data, class_logvar.data, batch, True
-                )
-                class_latent_embeddings = group_wise_reparameterize(
-                    training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
-                )'''
 
                 node_latent_embeddings = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
 
-                #ret.append(torch.cat([node_latent_embeddings,class_latent_embeddings],-1).cpu().numpy())
-                ret.append(node_latent_embeddings.cpu().numpy())
-                y.append(data.y.cpu().numpy())
-        ret = np.concatenate(ret, 0)
-        y = np.concatenate(y, 0)
-        return ret, y
+                grouped_mu, grouped_logvar = accumulate_group_evidence(
+                    class_mu.data, class_logvar.data, batch, True
+                )
+
+                accumulated_class_latent_embeddings = group_wise_reparameterize(
+                    training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
+                )
+
+                class_emb = global_mean_pool(accumulated_class_latent_embeddings, batch)
+                node_emb = global_add_pool(node_latent_embeddings, batch)
+
+
+                ret_node.append(node_emb.cpu().numpy())
+                y_node.append(data.y.cpu().numpy())
+                ret_class.append(class_emb.cpu().numpy())
+                y_class.append(data.y.cpu().numpy())
+
+        ret_node = np.concatenate(ret_node, 0)
+        y_node = np.concatenate(y_node, 0)
+        ret_class = np.concatenate(ret_class, 0)
+        y_class = np.concatenate(y_class, 0)
+        return ret_node, y_node, ret_class, y_class
 
 def test(train_z, train_y, val_z, val_y,test_z, test_y,  solver='lbfgs',
          multi_class='ovr', *args, **kwargs):
@@ -309,11 +389,13 @@ if __name__ == '__main__':
 
         print('init seed, seed ', torch.initial_seed(), seed)
 
-        accuracies = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
+        accuracies_node = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
+        accuracies_class = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
 
-        losses = {'recon':[], 'node_kl':[], 'class_kl': []}
+        losses = {'recon':[], 'node_kl':[], 'class_kl': [], 'kl_div': []}
+        #losses = []
 
-        log_interval = 10
+        warmup_steps = 0
         #batch_size = 128
         batch_size = args.batch_size
         lr = args.lr
@@ -323,24 +405,16 @@ if __name__ == '__main__':
         EPS = 1e-15
 
         #lr = 0.000001
-        DS = 'PPI'
+        DS = args.DS
         path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', DS)
         # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
 
         #dataset = TUDataset(path, name=DS, pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=88)).shuffle()
-
-        train_dataset = PPI(path, split='train').shuffle()
-        val_dataset = PPI(path, split='val')
-        test_dataset = PPI(path, split='train')
-
-
-        node_dim = 16*3
-        class_dim = 64 - node_dim
-
+        dataset = TUDataset(path, name=DS).shuffle()
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         try:
-            dataset_num_features = train_dataset.num_features
+            dataset_num_features = dataset.num_features
         except:
             dataset_num_features = 1
 
@@ -351,13 +425,10 @@ if __name__ == '__main__':
             #dataset_num_features = 5
             #input_feat = torch.ones((batch_size, 1)).to(device)
 
-        train_dataloader = DataLoader(train_dataset, batch_size=batch_size)
-        val_dataloader = DataLoader(val_dataset, batch_size=batch_size)
-        test_dataloader = DataLoader(test_dataset, batch_size=batch_size)
+        dataloader = DataLoader(dataset, batch_size=batch_size)
 
 
-        model = GcnInfomax(args.hidden_dim, args.num_gc_layers, node_dim, class_dim).double().to(device)
-        #encode/decode optimizers
+        model = GcnInfomax(args.hidden_dim, args.num_gc_layers).double().to(device)
         optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
 
@@ -377,30 +448,26 @@ if __name__ == '__main__':
         accuracies['linearsvc'].append(res[2])
         accuracies['randomforest'].append(res[3])'''
 
-        logreg_val = []
-        logreg_valbased_test = []
-
-        best_val_round = -1
-        best_val = 0
-
         #model.train()
         for epoch in range(1, epochs+1):
+            tot_loss = 0
             recon_loss_all = 0
             kl_class_loss_all = 0
             kl_node_loss_all = 0
             mi_loss_all = 0
+            kl_div_all = 0
             model.train()
-            for data in train_dataloader:
+            for data in dataloader:
                 data = data.to(device)
 
-
-
-
                 optimizer.zero_grad()
-                recon_loss, kl_class, kl_node = model(data.x.double(), data.edge_index, data.batch, data.num_graphs)
+                recon_loss, kl_class, kl_node, kl_div = model(data.x.double(), data.edge_index, data.batch, data.num_graphs)
+                #current_loss = model(data.x[:,:18].double(), data.edge_index, data.batch, data.num_graphs)
                 recon_loss_all += recon_loss
                 kl_class_loss_all += kl_class
                 kl_node_loss_all += kl_node
+                kl_div_all += kl_div
+                #tot_loss += current_loss
 
 
 
@@ -413,98 +480,52 @@ if __name__ == '__main__':
                 #torch.nn.utils.clip_grad_norm_(model.parameters(), 0.25)
                 optimizer.step()
 
-            losses['recon'].append(recon_loss_all/ len(train_dataloader))
-            losses['node_kl'].append(kl_node_loss_all/ len(train_dataloader))
-            losses['class_kl'].append(kl_class_loss_all/ len(train_dataloader))
+            losses['recon'].append(recon_loss_all/ len(dataloader))
+            losses['node_kl'].append(kl_node_loss_all/ len(dataloader))
+            losses['class_kl'].append(kl_class_loss_all/ len(dataloader))
+            losses['kl_div'].append(kl_div_all/ len(dataloader))
+
+            #losses.append(tot_loss/ len(dataloader))
 
 
 
-            print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(train_dataloader),
-                                                                                    kl_class_loss_all / len(train_dataloader), kl_node_loss_all / len(train_dataloader)))
+            print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(dataloader),
+                                                                                    kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
+            #print('Epoch {}, Loss {}'.format(epoch, tot_loss / len(dataloader)))
 
             #used during finetune phase
-            '''if epoch % log_interval == 0:
+            if epoch > warmup_steps :
                 model.eval()
-                #first train logistic regressor
-                #put it eval mode
-                #get eval F1
-                #get test F1
+
+                emb_node, y_node, emb_class, y_class = model.get_embeddings(dataloader)
+                print('node mean graph classificaion')
+                res = evaluate_embedding(emb_node, y_node)
+                accuracies_node['logreg'].append(res[0])
+                accuracies_node['svc'].append(res[1])
+                accuracies_node['linearsvc'].append(res[2])
+                accuracies_node['randomforest'].append(res[3])
+                print('node ', accuracies_node)
+
+                print('graph latent graph classificaion')
+                res = evaluate_embedding(emb_class, y_class)
+                accuracies_class['logreg'].append(res[0])
+                accuracies_class['svc'].append(res[1])
+                accuracies_class['linearsvc'].append(res[2])
+                accuracies_class['randomforest'].append(res[3])
+                print('class ', accuracies_class)
+
+                print('train_loss', losses)
 
 
 
 
-                train_emb, train_y = model.get_embeddings(train_dataloader)
-                val_emb, val_y = model.get_embeddings(val_dataloader)
-                test_emb, test_y = model.get_embeddings(test_dataloader)
-                val_f1, test_f1 = test(train_emb, train_y, val_emb, val_y,test_emb, test_y)
-
-                print('val and test micro F1', val_f1, test_f1)'''
-
-
-            model.eval()
-
-            #if epoch == epochs:
-
-            accs = []
-            best_f1 = 0
-            best_round = 0
-
-
-            print('Logistic regression started!')
-
-
-            train_emb, train_y = model.get_embeddings(train_dataloader)
-            val_emb, val_y = model.get_embeddings(val_dataloader)
-            test_emb, test_y = model.get_embeddings(test_dataloader)
-
-            from sklearn.preprocessing import StandardScaler
-            scaler = StandardScaler()
-            scaler.fit(train_emb)
-            train_emb = scaler.transform(train_emb)
-            val_emb = scaler.transform(val_emb)
-            test_emb = scaler.transform(test_emb)
-
-            accs_val = []
-            accs_test = []
-
-            for _ in range(10):
-
-                from sklearn.linear_model import SGDClassifier
-                from sklearn.metrics import f1_score
-                from sklearn.multioutput import MultiOutputClassifier
-                log = MultiOutputClassifier(SGDClassifier(loss="log"), n_jobs=10)
-                log.fit(train_emb, train_y)
-
-
-                val_pred = log.predict(val_emb)
-                test_pred = log.predict(test_emb)
-
-                tot_f1_val = f1_score(val_y.flatten(), val_pred.flatten(), average='micro')
-
-                tot_f1_test = f1_score(test_y.flatten(), test_pred.flatten(), average='micro')
-
-                accs_test.append(torch.FloatTensor(np.array([tot_f1_test])).cuda())
-                accs_val.append(torch.FloatTensor(np.array([tot_f1_val])).cuda())
-
-            accs_test = torch.stack(accs_test,0)
-            print('test ', accs_test.mean().item(), accs_test.std().item())
-
-            accs_val = torch.stack(accs_val,0)
-            print('val ', accs_val.mean().item(), accs_val.std().item())
-
-            if accs_val.mean().item() > best_val:
-                best_val_round = epoch - 1
-
-
-            logreg_val.append(accs_val.mean().item())
-            logreg_valbased_test.append(accs_test.mean().item())
-
-
-            print('logreg val', logreg_val)
-            print('logreg test', logreg_valbased_test)
-
-        print('best perf based on validation score val, test, in epoch', logreg_val[best_val_round], logreg_valbased_test[best_val_round], best_val_round)
 
 
 
 
+
+        #draw_plot(y, emb, 'imdb_b_normal.png')
+
+        '''with open('unsupervised.log', 'a+') as f:
+            s = json.dumps(accuracies)
+            f.write('{},{},{},{},{},{}\n'.format(args.DS, args.num_gc_layers, epochs, log_interval, lr, s))'''
