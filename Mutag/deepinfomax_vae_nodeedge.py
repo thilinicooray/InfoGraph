@@ -163,7 +163,7 @@ class GcnInfomax(nn.Module):
         recon_edge = self.edge_decoder(edge_latent_embeddings, eclass_latent_embeddings)
 
 
-        edge_similarity_loss = mse_loss(reconstructed_node[edge_index[0]] * reconstructed_node[edge_index[1]], recon_edge)
+        edge_similarity_loss = self.recon_edge_loss(reconstructed_node, reconstructed_node.size(0), recon_edge, edge_index)
 
 
         #class_kl_divergence_loss.backward(retain_graph=True)
@@ -193,7 +193,10 @@ class GcnInfomax(nn.Module):
 
 
         edge_related_loss = edge_kl_divergence_loss + \
-                            eclass_kl_divergence_loss  + edge_similarity_loss
+                            eclass_kl_divergence_loss  + edge_similarity_loss + class_class_kl_div
+
+        print('edge losses e_kl, class kl, edge ce, class to class kl ', edge_kl_divergence_loss.item(),
+              eclass_kl_divergence_loss.item(), edge_similarity_loss.item(), class_class_kl_div.item())
 
         loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error + edge_related_loss
 
@@ -234,6 +237,43 @@ class GcnInfomax(nn.Module):
         """
         value = (z[edge_index[0]] * z[edge_index[1]]).sum(dim=1)
         return torch.sigmoid(value) if sigmoid else value
+
+
+    def recon_edge_loss(self, node_recon, node_count, recon_edge, edge_index):
+
+        EPS = 1e-15
+        MAX_LOGSTD = 10
+        r"""Given latent variables :obj:`z`, computes the binary cross
+        entropy loss for positive edges :obj:`pos_edge_index` and negative
+        sampled edges.
+  
+        Args:
+            z (Tensor): The latent space :math:`\mathbf{Z}`.
+            pos_edge_index (LongTensor): The positive edges to train against.
+        """
+
+        #org_adj = to_dense_adj(edge_index, batch)
+        pos_weight = float(node_count * node_count - edge_index.size(0)) / edge_index.size(0)
+        norm = node_count * node_count / float((node_count * node_count - edge_index.size(0)) * 2)
+
+
+
+        recon_adj = torch.sigmoid(recon_edge.sum(dim=1))
+
+
+        pos_loss = -torch.log(
+            recon_adj + EPS).mean()
+
+        # Do not include self-loops in negative samples
+        pos_edge_index, _ = remove_self_loops(edge_index)
+        pos_edge_index, _ = add_self_loops(pos_edge_index)
+
+        neg_edge_index = negative_sampling(pos_edge_index, node_count) #random thingggg
+        neg_loss = -torch.log(1 -
+                              self.edge_recon(node_recon, neg_edge_index) +
+                              EPS).mean()
+
+        return norm*(pos_loss*pos_weight + neg_loss)
 
 
 
