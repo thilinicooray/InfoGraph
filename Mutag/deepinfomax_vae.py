@@ -133,8 +133,7 @@ class GcnInfomax(nn.Module):
         #reconstructed_node = torch.cat([node_latent_embeddings, class_latent_embeddings], -1)
         #reconstructed_node = node_latent_embeddings + class_latent_embeddings
 
-        reconstruction_error_node =  mse_loss(reconstructed_node, x) * num_graphs
-        reconstruction_error = self.recon_loss1(reconstructed_node, edge_index, batch) + reconstruction_error_node
+        reconstruction_error = self.recon_loss1(reconstructed_node, edge_index, batch)
 
 
         #class_kl_divergence_loss.backward(retain_graph=True)
@@ -324,7 +323,7 @@ if __name__ == '__main__':
     args = arg_parse()
 
     #for seed in [32,42,52,62,72]:
-    for seed in [123]:
+    for seed in [42]:
 
         #seed = 42
         #epochs = 37
