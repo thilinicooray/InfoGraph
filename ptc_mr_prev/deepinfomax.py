@@ -159,7 +159,7 @@ if __name__ == '__main__':
                 log_interval = 1
                 batch_size = 128
                 lr = args.lr
-                lr = 0.000001
+                #lr = 0.000001
                 DS = args.DS
                 path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', DS)
                 # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
