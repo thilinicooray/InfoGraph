@@ -118,7 +118,7 @@ def svc_classify(x, y, search):
             params = {'C':[1,10,100,1000]}
             classifier = GridSearchCV(SVC(), params, cv=5, scoring='accuracy', verbose=0)
         else:
-            classifier = SVC(C=100)
+            classifier = SVC(C=10)
         classifier.fit(x_train, y_train)
         accuracies.append(accuracy_score(y_test, classifier.predict(x_test)))
         val_acc.append(accuracy_score(y_val, classifier.predict(x_val)))
