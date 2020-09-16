@@ -452,13 +452,13 @@ if __name__ == '__main__':
                 model.eval()
 
                 emb_node, y_node, emb_class, y_class = model.get_embeddings(dataloader)
-                print('node mean graph classificaion')
+                '''print('node mean graph classificaion')
                 res = evaluate_embedding(emb_node, y_node)
                 accuracies_node['logreg'].append(res[0])
                 accuracies_node['svc'].append(res[1])
                 accuracies_node['linearsvc'].append(res[2])
                 accuracies_node['randomforest'].append(res[3])
-                print('node ', accuracies_node)
+                print('node ', accuracies_node)'''
 
                 print('graph latent graph classificaion')
                 res = evaluate_embedding(emb_class, y_class)
