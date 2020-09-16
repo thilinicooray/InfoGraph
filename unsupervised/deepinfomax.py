@@ -82,92 +82,96 @@ if __name__ == '__main__':
     
     args = arg_parse()
 
-    hidden_sizes = [16, 32, 64, 128, 256, 512]
+    hidden_sizes = [32]
 
-    for hid in hidden_sizes:
+    for seed in range(100):
 
-        seed = 42
-        random.seed(seed)
-        np.random.seed(seed)
-        torch.manual_seed(seed)
-        accuracies = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
-        accuracies_nodesum = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
-        epochs = 100
-        log_interval = 1
-        batch_size = 128
-        lr = args.lr
-        DS = args.DS
-        path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', DS)
-        # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
+        for hid in hidden_sizes:
 
-        dataset = TUDataset(path, name=DS).shuffle()
-        try:
-            dataset_num_features = dataset.num_features
-        except:
-            dataset_num_features = 1
+            print('seed ', seed)
 
-        dataloader = DataLoader(dataset, batch_size=batch_size)
+            #seed = 42
+            random.seed(seed)
+            np.random.seed(seed)
+            torch.manual_seed(seed)
+            accuracies = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
+            accuracies_nodesum = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
+            epochs = 100
+            log_interval = 1
+            batch_size = 128
+            lr = args.lr
+            DS = args.DS
+            path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', DS)
+            # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
 
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        model = GcnInfomax(args.hidden_dim, args.num_gc_layers).to(device)
-        optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+            dataset = TUDataset(path, name=DS).shuffle()
+            try:
+                dataset_num_features = dataset.num_features
+            except:
+                dataset_num_features = 1
 
-        args.hidden_dim = hid
+            dataloader = DataLoader(dataset, batch_size=batch_size)
 
-        print('================')
-        print('lr: {}'.format(lr))
-        print('num_features: {}'.format(dataset_num_features))
-        print('hidden_dim: {}'.format(args.hidden_dim))
-        print('num_gc_layers: {}'.format(args.num_gc_layers))
-        print('================')
+            device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+            model = GcnInfomax(args.hidden_dim, args.num_gc_layers).to(device)
+            optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
+            args.hidden_dim = hid
 
-        '''model.eval()
-        emb, y = model.encoder.get_embeddings(dataloader)
-        res = evaluate_embedding(emb, y)
-        accuracies['logreg'].append(res[0])
-        accuracies['svc'].append(res[1])
-        accuracies['linearsvc'].append(res[2])
-        accuracies['randomforest'].append(res[3])'''
+            print('================')
+            print('lr: {}'.format(lr))
+            print('num_features: {}'.format(dataset_num_features))
+            print('hidden_dim: {}'.format(args.hidden_dim))
+            print('num_gc_layers: {}'.format(args.num_gc_layers))
+            print('================')
 
 
-        for epoch in range(1, epochs+1):
-            loss_all = 0
-            model.train()
-            for data in dataloader:
-                data = data.to(device)
-                optimizer.zero_grad()
-                loss = model(data.x, data.edge_index, data.batch, data.num_graphs)
-                loss_all += loss.item() * data.num_graphs
-                loss.backward()
-                optimizer.step()
-            print('Epoch {}, Loss {}'.format(epoch, loss_all / len(dataloader)))
+            '''model.eval()
+            emb, y = model.encoder.get_embeddings(dataloader)
+            res = evaluate_embedding(emb, y)
+            accuracies['logreg'].append(res[0])
+            accuracies['svc'].append(res[1])
+            accuracies['linearsvc'].append(res[2])
+            accuracies['randomforest'].append(res[3])'''
 
-            if epoch % log_interval == 0:
-                model.eval()
-                emb, y, nodesum = model.encoder.get_embeddings(dataloader)
-                res = evaluate_embedding(emb, y)
-                accuracies['logreg'].append(res[0])
-                accuracies['svc'].append(res[1])
-                accuracies['linearsvc'].append(res[2])
-                accuracies['randomforest'].append(res[3])
-                print('graph ', accuracies)
-                '''res = evaluate_embedding(nodesum, y)
-                accuracies_nodesum['logreg'].append(res[0])
-                accuracies_nodesum['svc'].append(res[1])
-                accuracies_nodesum['linearsvc'].append(res[2])
-                accuracies_nodesum['randomforest'].append(res[3])
-                print('node_sum ', accuracies_nodesum)'''
 
-        '''model.eval()
-        emb, y = model.encoder.get_embeddings(dataloader)
-        res = evaluate_embedding(emb, y)
-        accuracies['logreg'].append(res[0])
-        accuracies['svc'].append(res[1])
-        accuracies['linearsvc'].append(res[2])
-        accuracies['randomforest'].append(res[3])
-        print(accuracies)'''
+            for epoch in range(1, epochs+1):
+                loss_all = 0
+                model.train()
+                for data in dataloader:
+                    data = data.to(device)
+                    optimizer.zero_grad()
+                    loss = model(data.x, data.edge_index, data.batch, data.num_graphs)
+                    loss_all += loss.item() * data.num_graphs
+                    loss.backward()
+                    optimizer.step()
+                print('Epoch {}, Loss {}'.format(epoch, loss_all / len(dataloader)))
 
-        with open('unsupervised.log', 'a+') as f:
-            s = json.dumps(accuracies)
-            f.write('{},{},{},{},{},{}\n'.format(args.DS, args.num_gc_layers, epochs, log_interval, lr, s))
+                if epoch % log_interval == 0:
+                    model.eval()
+                    emb, y, nodesum = model.encoder.get_embeddings(dataloader)
+                    res = evaluate_embedding(emb, y)
+                    accuracies['logreg'].append(res[0])
+                    accuracies['svc'].append(res[1])
+                    accuracies['linearsvc'].append(res[2])
+                    accuracies['randomforest'].append(res[3])
+                    print('graph ', accuracies)
+                    '''res = evaluate_embedding(nodesum, y)
+                    accuracies_nodesum['logreg'].append(res[0])
+                    accuracies_nodesum['svc'].append(res[1])
+                    accuracies_nodesum['linearsvc'].append(res[2])
+                    accuracies_nodesum['randomforest'].append(res[3])
+                    print('node_sum ', accuracies_nodesum)'''
+
+            '''model.eval()
+            emb, y = model.encoder.get_embeddings(dataloader)
+            res = evaluate_embedding(emb, y)
+            accuracies['logreg'].append(res[0])
+            accuracies['svc'].append(res[1])
+            accuracies['linearsvc'].append(res[2])
+            accuracies['randomforest'].append(res[3])
+            print(accuracies)'''
+
+            with open('unsupervised.log', 'a+') as f:
+                s = json.dumps(accuracies)
+                f.write('{},{},{},{},{},{}\n'.format(args.DS, args.num_gc_layers, epochs, log_interval, lr, s))
