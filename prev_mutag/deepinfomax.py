@@ -141,7 +141,8 @@ if __name__ == '__main__':
     84 26 93.07 5.82
     42 29 92.48 6.46
     '''
-    seed = 17
+    #seed = 17
+    seed = 42
     #epochs = 30
     epochs = int(args.num_epochs)
 
