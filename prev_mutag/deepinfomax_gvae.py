@@ -78,6 +78,8 @@ class GcnInfomax(nn.Module):
         """
         node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
 
+        print('latent size ', node_latent_embeddings.size())
+
         #need to reduce ml between node and class latents
         '''measure='JSD'
         mi_loss = local_global_loss_disen(node_latent_embeddings, class_latent_embeddings, edge_index, batch, measure)
