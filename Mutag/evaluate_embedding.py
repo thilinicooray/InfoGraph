@@ -98,12 +98,15 @@ def logistic_classify(x, y):
         accs.append(acc.item())
     return np.mean(accs)
 
-def svc_classify(x, y, search):
+def svc_classify(data, y, search):
 
+    scaler = StandardScaler()
+    scaler.fit(data)
+    x = scaler.transform(data)
 
-    for c in [1,10,100,1000, 10000]:
+    for c in [1,10,100,1000]:
 
-        kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
+        kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=80)
         accuracies = []
         for train_index, test_index in kf.split(x, y):
 
