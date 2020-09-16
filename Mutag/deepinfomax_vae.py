@@ -107,14 +107,14 @@ class GcnInfomax(nn.Module):
 
 
         # kl-divergence error for class latent space
-        class_kl_divergence_loss = torch.mean(
+        '''class_kl_divergence_loss = torch.mean(
             - 0.5 * torch.sum(1 + grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp())
-        )
-        '''class_kl_divergence_loss = - 0.5  * torch.mean(global_mean_pool(torch.sum(
-            1 + 2 * grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp().pow(2), 1), batch))'''
+        )'''
+        class_kl_divergence_loss = - 0.5 * torch.mean(global_mean_pool(torch.sum(
+            1 + 2 * grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp().pow(2), 1), batch))
 
         #print('class kl unwei ', class_kl_divergence_loss)
-        class_kl_divergence_loss = 0.0000001* class_kl_divergence_loss
+        class_kl_divergence_loss =  class_kl_divergence_loss
         #print('class kl wei ', class_kl_divergence_loss)
 
 
@@ -133,7 +133,7 @@ class GcnInfomax(nn.Module):
         #reconstructed_node = torch.cat([node_latent_embeddings, class_latent_embeddings], -1)
         #reconstructed_node = node_latent_embeddings + class_latent_embeddings
 
-        reconstruction_error = 0.1* self.recon_loss1(reconstructed_node, edge_index, batch)
+        reconstruction_error = self.recon_loss1(reconstructed_node, edge_index, batch)
 
 
         #class_kl_divergence_loss.backward(retain_graph=True)
