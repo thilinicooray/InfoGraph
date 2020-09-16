@@ -98,16 +98,17 @@ def logistic_classify(x, y):
         accs.append(acc.item())
     return np.mean(accs)
 
-def svc_classify(data, y, search):
+def svc_classify(x, y, search):
 
-    scaler = StandardScaler()
+    '''scaler = StandardScaler()
     scaler.fit(data)
-    x = scaler.transform(data)
+    x = scaler.transform(data)'''
 
     for c in [1,10,100,1000]:
 
         kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=80)
         accuracies = []
+        train_acc = []
         for train_index, test_index in kf.split(x, y):
 
             x_train, x_test = x[train_index], x[test_index]
@@ -120,11 +121,13 @@ def svc_classify(data, y, search):
                 classifier = SVC(C=c)
             classifier.fit(x_train, y_train)
             accuracies.append(accuracy_score(y_test, classifier.predict(x_test)))
+            train_acc.append(accuracy_score(y_train, classifier.predict(x_train)))
 
         mean = np.mean(accuracies)
         std = np.std(accuracies)
 
-        print('mean libsvm ', c, mean, 'std ', std)
+        print('test mean libsvm ', c, mean, 'std ', std)
+        print('train mean libsvm ', c, np.mean(train_acc), 'std ', np.std(train_acc))
 
     return mean
 
