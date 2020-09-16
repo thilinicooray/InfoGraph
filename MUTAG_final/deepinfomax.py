@@ -133,10 +133,10 @@ if __name__ == '__main__':
     
     args = arg_parse()
 
-    #seeds = [32,42,52,62,72]
+    seeds = [32,42,52,62,72]
 
     #seed = 42
-    seeds = [123,132,213,231,312,321]
+    #seeds = [123,132,213,231,312,321]
     epochs_list = [20, 30, 40, 50]
     node_ratio = [0.25, 0.5, 0.75]
     for seed in seeds:
@@ -220,7 +220,7 @@ if __name__ == '__main__':
                     print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(dataloader),
                                                                                                        kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
                     print('all losses ', losses)
-    
+
 
                 model.eval()
                 emb, y = model.get_embeddings(dataloader)
