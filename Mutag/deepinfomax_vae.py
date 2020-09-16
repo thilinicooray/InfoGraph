@@ -321,165 +321,170 @@ class SimpleClassifier(nn.Module):
 if __name__ == '__main__':
 
     args = arg_parse()
+    layers = [2,3,4,5]
+    batch = [32,64,128, 256]
+    #epoch = [20, 40, 100]
 
-    #for seed in [32,42,52,62,72]:
-    for seed in [42]:
+    for seed in [32,42,52,62,72]:
+    #for seed in [42]:
+        for batch_size in batch:
+            for num_layer_count in layers:
 
-        #seed = 42
-        #epochs = 37
-        epochs = int(args.num_epochs)
+                #seed = 42
+                #epochs = 37
+                epochs = int(args.num_epochs)
 
-        #for epochs in range(20,41):
+                #for epochs in range(20,41):
+                print('current setup ', seed, batch_size, num_layer_count)
 
-        print('seed ', seed, 'epochs ', epochs)
-
-
-        random.seed(seed)
-        np.random.seed(seed)
-        torch.manual_seed(seed)
-        torch.cuda.manual_seed(seed)
-        torch.backends.cudnn.deterministic = True
-        torch.backends.cudnn.benchmark = False
-        os.environ['PYTHONHASHSEED'] = str(seed)
-
-        print('init seed, seed ', torch.initial_seed())
-
-        accuracies_node = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
-        accuracies_class = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
-
-        losses = {'recon':[], 'node_kl':[], 'class_kl': [], 'tot':[]}
-        #losses = []
-
-        warmup_steps = 0
-        #batch_size = 128
-        batch_size = args.batch_size
-        lr = args.lr
-        gen_lr = 1 * lr
-        reg_lr = 0.5 * lr
-
-        EPS = 1e-15
-
-        #lr = 0.000001
-        DS = args.DS
-        path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', DS)
-        # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
-
-        #dataset = TUDataset(path, name=DS, pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=88)).shuffle()
-        dataset = TUDataset(path, name=DS).shuffle()
-
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        try:
-            dataset_num_features = dataset.num_features
-        except:
-            dataset_num_features = 1
-
-        if not dataset_num_features:
-
-            dataset_num_features = 5
-
-            #dataset_num_features = 5
-            #input_feat = torch.ones((batch_size, 1)).to(device)
-
-        dataloader = DataLoader(dataset, batch_size=batch_size)
+                print('seed ', seed, 'epochs ', epochs)
 
 
-        model = GcnInfomax(args.hidden_dim, args.num_gc_layers).double().to(device)
-        optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+                random.seed(seed)
+                np.random.seed(seed)
+                torch.manual_seed(seed)
+                torch.cuda.manual_seed(seed)
+                torch.backends.cudnn.deterministic = True
+                torch.backends.cudnn.benchmark = False
+                os.environ['PYTHONHASHSEED'] = str(seed)
+
+                print('init seed, seed ', torch.initial_seed())
+
+                accuracies_node = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
+                accuracies_class = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
+
+                losses = {'recon':[], 'node_kl':[], 'class_kl': [], 'tot':[]}
+                #losses = []
+
+                warmup_steps = 0
+                #batch_size = 128
+                #batch_size = args.batch_size
+                lr = args.lr
+
+                EPS = 1e-15
+
+                #lr = 0.000001
+                DS = args.DS
+                path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', DS)
+                # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
+
+                #dataset = TUDataset(path, name=DS, pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=88)).shuffle()
+                dataset = TUDataset(path, name=DS).shuffle()
+
+                device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+                try:
+                    dataset_num_features = dataset.num_features
+                except:
+                    dataset_num_features = 1
+
+                if not dataset_num_features:
+
+                    dataset_num_features = 5
+
+                    #dataset_num_features = 5
+                    #input_feat = torch.ones((batch_size, 1)).to(device)
+
+                dataloader = DataLoader(dataset, batch_size=batch_size)
+                args.num_gc_layers = num_layer_count
 
 
-
-        print('================')
-        print('num_features: {}'.format(dataset_num_features))
-        print('hidden_dim: {}'.format(args.hidden_dim))
-        print('num_gc_layers: {}'.format(args.num_gc_layers))
-        print('================')
-
-
-        '''model.eval()
-        emb, y = model.get_embeddings(dataloader)
-        res = evaluate_embedding(emb, y)
-        accuracies['logreg'].append(res[0])
-        accuracies['svc'].append(res[1])
-        accuracies['linearsvc'].append(res[2])
-        accuracies['randomforest'].append(res[3])'''
-
-        #model.train()
-        for epoch in range(1, epochs+1):
-            tot_loss = 0
-            recon_loss_all = 0
-            kl_class_loss_all = 0
-            kl_node_loss_all = 0
-            mi_loss_all = 0
-            tot_loss_all = 0
-            model.train()
-            for data in dataloader:
-                data = data.to(device)
-
-                optimizer.zero_grad()
-                recon_loss, kl_class, kl_node = model(data.x.double(), data.edge_index, data.batch, data.num_graphs)
-                #current_loss = model(data.x[:,:18].double(), data.edge_index, data.batch, data.num_graphs)
-                recon_loss_all += recon_loss
-                kl_class_loss_all += kl_class
-                kl_node_loss_all += kl_node
-                tot_loss_all += (recon_loss + kl_class + kl_node)
-                #tot_loss += current_loss
+                model = GcnInfomax(args.hidden_dim, args.num_gc_layers).double().to(device)
+                optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
 
 
-                '''for name, param in model.named_parameters():
-                    print(name, param.grad)'''
+                print('================')
+                print('num_features: {}'.format(dataset_num_features))
+                print('hidden_dim: {}'.format(args.hidden_dim))
+                print('num_gc_layers: {}'.format(args.num_gc_layers))
+                print('================')
+
+
+                '''model.eval()
+                emb, y = model.get_embeddings(dataloader)
+                res = evaluate_embedding(emb, y)
+                accuracies['logreg'].append(res[0])
+                accuracies['svc'].append(res[1])
+                accuracies['linearsvc'].append(res[2])
+                accuracies['randomforest'].append(res[3])'''
+
+                #model.train()
+                for epoch in range(1, epochs+1):
+                    tot_loss = 0
+                    recon_loss_all = 0
+                    kl_class_loss_all = 0
+                    kl_node_loss_all = 0
+                    mi_loss_all = 0
+                    tot_loss_all = 0
+                    model.train()
+                    for data in dataloader:
+                        data = data.to(device)
+
+                        optimizer.zero_grad()
+                        recon_loss, kl_class, kl_node = model(data.x.double(), data.edge_index, data.batch, data.num_graphs)
+                        #current_loss = model(data.x[:,:18].double(), data.edge_index, data.batch, data.num_graphs)
+                        recon_loss_all += recon_loss
+                        kl_class_loss_all += kl_class
+                        kl_node_loss_all += kl_node
+                        tot_loss_all += (recon_loss + kl_class + kl_node)
+                        #tot_loss += current_loss
 
 
 
-
-                #torch.nn.utils.clip_grad_norm_(model.parameters(), 0.25)
-                optimizer.step()
-
-            losses['recon'].append(recon_loss_all/ len(dataloader))
-            losses['node_kl'].append(kl_node_loss_all/ len(dataloader))
-            losses['class_kl'].append(kl_class_loss_all/ len(dataloader))
-            losses['tot'].append(tot_loss_all/ len(dataloader))
-            #losses.append(tot_loss/ len(dataloader))
-
-
-
-            print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(dataloader),
-                                                                                    kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
-            #print('Epoch {}, Loss {}'.format(epoch, tot_loss / len(dataloader)))
-
-            #used during finetune phase
-            if epoch > warmup_steps :
-                model.eval()
-
-                emb_node, y_node, emb_class, y_class = model.get_embeddings(dataloader)
-                '''print('node mean graph classificaion')
-                res = evaluate_embedding(emb_node, y_node)
-                accuracies_node['logreg'].append(res[0])
-                accuracies_node['svc'].append(res[1])
-                accuracies_node['linearsvc'].append(res[2])
-                accuracies_node['randomforest'].append(res[3])
-                print('node ', accuracies_node)'''
-
-                print('graph latent graph classificaion')
-                res = evaluate_embedding(emb_class, y_class)
-                accuracies_class['logreg'].append(res[0])
-                accuracies_class['svc'].append(res[1])
-                accuracies_class['linearsvc'].append(res[2])
-                accuracies_class['randomforest'].append(res[3])
-                print('class ', accuracies_class)
-
-                print('train_loss', losses)
+                        '''for name, param in model.named_parameters():
+                            print(name, param.grad)'''
 
 
 
 
+                        #torch.nn.utils.clip_grad_norm_(model.parameters(), 0.25)
+                        optimizer.step()
+
+                    losses['recon'].append(recon_loss_all/ len(dataloader))
+                    losses['node_kl'].append(kl_node_loss_all/ len(dataloader))
+                    losses['class_kl'].append(kl_class_loss_all/ len(dataloader))
+                    losses['tot'].append(tot_loss_all/ len(dataloader))
+                    #losses.append(tot_loss/ len(dataloader))
+
+
+
+                    print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(dataloader),
+                                                                                            kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
+                    #print('Epoch {}, Loss {}'.format(epoch, tot_loss / len(dataloader)))
+
+                    #used during finetune phase
+                    if epoch > warmup_steps :
+                        model.eval()
+
+                        emb_node, y_node, emb_class, y_class = model.get_embeddings(dataloader)
+                        '''print('node mean graph classificaion')
+                        res = evaluate_embedding(emb_node, y_node)
+                        accuracies_node['logreg'].append(res[0])
+                        accuracies_node['svc'].append(res[1])
+                        accuracies_node['linearsvc'].append(res[2])
+                        accuracies_node['randomforest'].append(res[3])
+                        print('node ', accuracies_node)'''
+
+                        print('graph latent graph classificaion')
+                        res = evaluate_embedding(emb_class, y_class)
+                        accuracies_class['logreg'].append(res[0])
+                        accuracies_class['svc'].append(res[1])
+                        accuracies_class['linearsvc'].append(res[2])
+                        accuracies_class['randomforest'].append(res[3])
+                        print('class ', accuracies_class)
+
+                        print('train_loss', losses)
 
 
 
 
 
-        #draw_plot(y, emb, 'imdb_b_normal.png')
 
-        '''with open('unsupervised.log', 'a+') as f:
-            s = json.dumps(accuracies)
-            f.write('{},{},{},{},{},{}\n'.format(args.DS, args.num_gc_layers, epochs, log_interval, lr, s))'''
+
+
+
+                #draw_plot(y, emb, 'imdb_b_normal.png')
+
+                '''with open('unsupervised.log', 'a+') as f:
+                    s = json.dumps(accuracies)
+                    f.write('{},{},{},{},{},{}\n'.format(args.DS, args.num_gc_layers, epochs, log_interval, lr, s))'''

@@ -126,7 +126,8 @@ def svc_classify(x, y, search):
     mean = np.mean(accuracies)
     std = np.std(accuracies)
 
-    print(' mean libsvm ', 'test ', mean, 'std ', std, 'val ', np.mean(val_acc), np.std(val_acc))
+    #print(' mean libsvm ', 'test ', mean, 'std ', std, 'val ', np.mean(val_acc), np.std(val_acc))
+    print(' mean libsvm ', mean, 'std ', std)
 
     return mean
 
