@@ -114,7 +114,7 @@ class GcnInfomax(nn.Module):
             1 + 2 * grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp().pow(2), 1), batch))
 
         #print('class kl unwei ', class_kl_divergence_loss)
-        class_kl_divergence_loss = class_kl_divergence_loss
+        class_kl_divergence_loss = 0.01* class_kl_divergence_loss
         #print('class kl wei ', class_kl_divergence_loss)
 
 
@@ -133,7 +133,7 @@ class GcnInfomax(nn.Module):
         #reconstructed_node = torch.cat([node_latent_embeddings, class_latent_embeddings], -1)
         #reconstructed_node = node_latent_embeddings + class_latent_embeddings
 
-        reconstruction_error = self.recon_loss1(reconstructed_node, edge_index, batch)
+        reconstruction_error = 0.01* self.recon_loss1(reconstructed_node, edge_index, batch)
 
 
         #class_kl_divergence_loss.backward(retain_graph=True)
