@@ -331,7 +331,7 @@ if __name__ == '__main__':
 
     #for epochs in range(20,41):
 
-    print('seed ', seed, 'epochs ', epochs)
+    '''print('seed ', seed, 'epochs ', epochs)
 
 
     random.seed(seed)
@@ -340,9 +340,9 @@ if __name__ == '__main__':
     torch.cuda.manual_seed(seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
-    os.environ['PYTHONHASHSEED'] = str(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)'''
 
-    print('init seed, seed ', torch.initial_seed(), seed)
+    print('init seed, seed ', torch.initial_seed())
 
     accuracies_node = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
     accuracies_class = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
