@@ -348,7 +348,7 @@ if __name__ == '__main__':
         accuracies_node = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
         accuracies_class = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
 
-        losses = {'recon':[], 'node_kl':[], 'class_kl': []}
+        losses = {'recon':[], 'node_kl':[], 'class_kl': [], 'tot':[]}
         #losses = []
 
         warmup_steps = 0
@@ -411,6 +411,7 @@ if __name__ == '__main__':
             kl_class_loss_all = 0
             kl_node_loss_all = 0
             mi_loss_all = 0
+            tot_loss_all = 0
             model.train()
             for data in dataloader:
                 data = data.to(device)
@@ -421,6 +422,7 @@ if __name__ == '__main__':
                 recon_loss_all += recon_loss
                 kl_class_loss_all += kl_class
                 kl_node_loss_all += kl_node
+                tot_loss_all += (recon_loss + kl_class + kl_node)
                 #tot_loss += current_loss
 
 
@@ -437,6 +439,7 @@ if __name__ == '__main__':
             losses['recon'].append(recon_loss_all/ len(dataloader))
             losses['node_kl'].append(kl_node_loss_all/ len(dataloader))
             losses['class_kl'].append(kl_class_loss_all/ len(dataloader))
+            losses['tot'].append(tot_loss_all/ len(dataloader))
             #losses.append(tot_loss/ len(dataloader))
 
 
@@ -450,13 +453,13 @@ if __name__ == '__main__':
                 model.eval()
 
                 emb_node, y_node, emb_class, y_class = model.get_embeddings(dataloader)
-                print('node mean graph classificaion')
+                '''print('node mean graph classificaion')
                 res = evaluate_embedding(emb_node, y_node)
                 accuracies_node['logreg'].append(res[0])
                 accuracies_node['svc'].append(res[1])
                 accuracies_node['linearsvc'].append(res[2])
                 accuracies_node['randomforest'].append(res[3])
-                print('node ', accuracies_node)
+                print('node ', accuracies_node)'''
 
                 print('graph latent graph classificaion')
                 res = evaluate_embedding(emb_class, y_class)
