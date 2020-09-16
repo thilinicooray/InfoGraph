@@ -20,7 +20,7 @@ from sklearn.metrics import accuracy_score
 import sys
 
 class Encoder(torch.nn.Module):
-    def __init__(self, num_features, dim, num_gc_layers):
+    def __init__(self, num_features, dim, num_gc_layers, node_dim, class_dim):
         super(Encoder, self).__init__()
 
         # num_features = dataset.num_features
@@ -41,9 +41,12 @@ class Encoder(torch.nn.Module):
             if i == 0:
                 nn = Sequential(Linear(num_features, dim), ReLU(), Linear(dim, dim))
                 bn = torch.nn.BatchNorm1d(dim)
-            elif i >= num_gc_layers:
-                nn = Sequential(Linear(dim*num_gc_layers, dim), ReLU(), Linear(dim, dim))
-                bn = torch.nn.BatchNorm1d(dim)
+            elif i >= num_gc_layers and i < num_gc_layers +2:
+                nn = Sequential(Linear(dim*num_gc_layers, dim), ReLU(), Linear(dim, node_dim))
+                bn = torch.nn.BatchNorm1d(node_dim)
+            elif i >= num_gc_layers and i >= num_gc_layers +2:
+                nn = Sequential(Linear(dim*num_gc_layers, dim), ReLU(), Linear(dim, class_dim))
+                bn = torch.nn.BatchNorm1d(class_dim)
             else:
                 nn = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim))
                 bn = torch.nn.BatchNorm1d(dim)
