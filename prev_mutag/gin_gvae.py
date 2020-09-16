@@ -33,14 +33,14 @@ class Encoder(torch.nn.Module):
 
         for i in range(num_gc_layers+2):
 
-            if i:
-                nn = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim))
+            if i == 0:
+                nn = Sequential(Linear(num_features, dim), ReLU(), Linear(dim, dim))
                 bn = torch.nn.BatchNorm1d(dim)
             elif i >= num_gc_layers:
                 nn = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim*2))
                 bn = torch.nn.BatchNorm1d(dim*2)
             else:
-                nn = Sequential(Linear(num_features, dim), ReLU(), Linear(dim, dim))
+                nn = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim))
                 bn = torch.nn.BatchNorm1d(dim)
             conv = GINConv(nn)
 
