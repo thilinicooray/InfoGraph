@@ -104,30 +104,29 @@ def svc_classify(x, y, search):
     scaler.fit(data)
     x = scaler.transform(data)'''
 
-    for c in [1,10,100,1000]:
+    #for c in [1,10,100,1000]:
 
-        kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=80)
-        accuracies = []
-        train_acc = []
-        for train_index, test_index in kf.split(x, y):
+    kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
+    accuracies = []
+    train_acc = []
+    for train_index, test_index in kf.split(x, y):
 
-            x_train, x_test = x[train_index], x[test_index]
-            y_train, y_test = y[train_index], y[test_index]
-            # x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.1)
-            if search:
-                params = {'C':[1,10,100,1000]}
-                classifier = GridSearchCV(SVC(), params, cv=5, scoring='accuracy', verbose=0)
-            else:
-                classifier = SVC(C=c)
-            classifier.fit(x_train, y_train)
-            accuracies.append(accuracy_score(y_test, classifier.predict(x_test)))
-            train_acc.append(accuracy_score(y_train, classifier.predict(x_train)))
+        x_train, x_test = x[train_index], x[test_index]
+        y_train, y_test = y[train_index], y[test_index]
+        # x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.1)
+        if search:
+            params = {'C':[1,10,100,1000]}
+            classifier = GridSearchCV(SVC(), params, cv=5, scoring='accuracy', verbose=0)
+        else:
+            classifier = SVC(C=10)
+        classifier.fit(x_train, y_train)
+        accuracies.append(accuracy_score(y_test, classifier.predict(x_test)))
+        #train_acc.append(accuracy_score(y_train, classifier.predict(x_train)))
 
-        mean = np.mean(accuracies)
-        std = np.std(accuracies)
+    mean = np.mean(accuracies)
+    std = np.std(accuracies)
 
-        print('test mean libsvm ', c, mean, 'std ', std)
-        print('train mean libsvm ', c, np.mean(train_acc), 'std ', np.std(train_acc))
+    print(' mean libsvm ', mean, 'std ', std)
 
     return mean
 
