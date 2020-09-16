@@ -324,7 +324,7 @@ if __name__ == '__main__':
     args = arg_parse()
 
     #for seed in [32,42,52,62,72]:
-    for seed in [52]:
+    for seed in [42]:
 
         #seed = 42
         #epochs = 37
