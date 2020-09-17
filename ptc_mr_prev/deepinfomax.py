@@ -136,7 +136,7 @@ if __name__ == '__main__':
     seeds = [32,42,52,62,72]
     #seeds = [123,132,213,231,312,321]
 
-    epochs_list = [20, 30, 40, 50]
+    epochs_list = [30, 40, 50, 100]
     node_ratio = [0.25, 0.5, 0.75]
     for seed in seeds:
         for epochs in epochs_list:
