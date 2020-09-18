@@ -353,7 +353,7 @@ if __name__ == '__main__':
 
             model = GcnInfomax(args.hidden_dim, args.num_gc_layers, node_dim, class_dim).double().to(device)
             init = 'init'
-            torch.save(model.state_dict(), f'{init}.pkl')
+            #torch.save(model.state_dict(), f'{init}.pkl')
             optimizer = torch.optim.Adam(model.parameters(), lr=lr)
             #scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
 
@@ -411,8 +411,8 @@ if __name__ == '__main__':
                 print('all losses', losses, '\n')
 
                 if epoch in epochs_list: #this gives same perf as training separate models for each epoch number
-                    torch.save(model.state_dict(), f'{model_id}.pkl')
-                    model_id += 1
+                    #torch.save(model.state_dict(), f'{model_id}.pkl')
+                    #model_id += 1
                     #model.load_state_dict(torch.load(f'{dataset}-{gpu}.pkl'))
                     model.eval()
                     emb, y = model.get_embeddings(dataloader)
