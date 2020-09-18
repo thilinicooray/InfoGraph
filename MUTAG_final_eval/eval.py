@@ -136,7 +136,7 @@ class GcnInfomax(nn.Module):
                 np_node_emb = node_mu.t().cpu().numpy()
                 np_graph_emb = grouped_mu.t().cpu().numpy()
 
-                print('start corr')
+                print('start corr ', np_entangled.shape, np_graph_emb.shape)
 
                 n_rho, n_pval = stats.spearmanr(np_entangled, np_node_emb )
                 print('start graph')
