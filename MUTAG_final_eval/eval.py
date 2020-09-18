@@ -126,8 +126,8 @@ class GcnInfomax(nn.Module):
                     training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
                 )
 
-                sim_node = torch.sigmoid(torch.matmul(entangled[0].unsqueeze(0).t(), node_latent_embeddings[0].unsqueeze(0))).cpu().numpy()
-                graph_node = torch.sigmoid(torch.matmul(entangled[1].unsqueeze(0).t(), node_latent_embeddings[1].unsqueeze(0))).cpu().numpy()
+                sim_node = torch.sigmoid(torch.matmul(entangled.t(), node_latent_embeddings)).cpu().numpy()
+                graph_node = torch.sigmoid(torch.matmul(entangled.t(), accumulated_class_latent_embeddings)).cpu().numpy()
 
                 '''np_entangled = entangled.cpu().numpy()
                 np_node_emb = node_latent_embeddings.cpu().numpy()
