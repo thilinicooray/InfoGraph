@@ -127,7 +127,7 @@ class GcnInfomax(nn.Module):
                     training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
                 )
 
-                sim_node = torch.sigmoid(torch.matmul(node_mu.t(), node_mu)).cpu().numpy()
+                sim_node = torch.sigmoid(torch.matmul(node_mu.t(), class_mu)).cpu().numpy()
                 graph_node = torch.sigmoid(torch.matmul(class_mu.t(), class_mu)).cpu().numpy()
                 savetxt('node.csv', sim_node, delimiter=',')
                 savetxt('graph.csv', graph_node, delimiter=',')
