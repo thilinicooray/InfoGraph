@@ -140,7 +140,7 @@ class GcnInfomax(nn.Module):
 
                 n_rho, n_pval = stats.spearmanr(np_node_emb, np_entangled, axis=0 )
                 print('start graph')
-                g_rho, g_pval = stats.spearmanr(np_graph_emb,np_entangled, axis=0)
+                g_rho, g_pval = stats.spearmanr(np_graph_emb[0],np_entangled[0], axis=0)
 
                 print('sizes ', n_rho.shape, g_rho.shape)
 
