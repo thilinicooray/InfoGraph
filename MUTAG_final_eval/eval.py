@@ -153,6 +153,13 @@ if __name__ == '__main__':
 
     args = arg_parse()
 
+    seed = 42
+
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+
     batch_size = 1
     lr = args.lr
     DS = args.DS
