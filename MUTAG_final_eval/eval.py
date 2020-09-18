@@ -138,7 +138,7 @@ class GcnInfomax(nn.Module):
 
                 print('start corr')
 
-                n_rho, n_pval = stats.spearmanr(np_node_emb, np_entangled )
+                n_rho, n_pval = stats.spearmanr(np_entangled, np_node_emb )
                 print('start graph')
                 g_rho, g_pval = stats.spearmanr(np_entangled, np_graph_emb)
 
@@ -153,6 +153,8 @@ class GcnInfomax(nn.Module):
 
                 if k == 56:
                     break'''
+
+                break
 
         return None
 
