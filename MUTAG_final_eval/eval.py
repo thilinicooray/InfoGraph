@@ -126,7 +126,10 @@ class GcnInfomax(nn.Module):
                     training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
                 )
 
-                np_entangled = entangled.cpu().numpy()
+                sim_node = torch.matmul(entangled.t(), node_latent_embeddings.t())
+                graph_node = torch.matmul(entangled.t(), accumulated_class_latent_embeddings.t())
+
+                '''np_entangled = entangled.cpu().numpy()
                 np_node_emb = node_latent_embeddings.cpu().numpy()
                 np_graph_emb = accumulated_class_latent_embeddings.cpu().numpy()
 
@@ -136,7 +139,10 @@ class GcnInfomax(nn.Module):
                 savetxt('node_rho.csv', n_rho, delimiter=',')
                 savetxt('node_p.csv', n_pval, delimiter=',')
                 savetxt('graph_rho.csv', g_rho, delimiter=',')
-                savetxt('graph_pval.csv', g_pval, delimiter=',')
+                savetxt('graph_pval.csv', g_pval, delimiter=',')'''
+
+                savetxt('node.csv', sim_node, delimiter=',')
+                savetxt('graph.csv', graph_node, delimiter=',')
 
 
                 break
