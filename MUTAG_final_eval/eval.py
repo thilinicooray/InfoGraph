@@ -126,7 +126,7 @@ class GcnInfomax(nn.Module):
                     training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
                 )
 
-                sim_node = torch.tanh(torch.matmul(entangled.t(), node_mu)).cpu().numpy()
+                sim_node = torch.tanh(torch.matmul(entangled.t(), class_logvar)).cpu().numpy()
                 graph_node = torch.tanh(torch.matmul(entangled.t(), class_mu)).cpu().numpy()
 
                 '''np_entangled = entangled.cpu().numpy()
