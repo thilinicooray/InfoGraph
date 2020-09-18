@@ -109,6 +109,7 @@ class GcnInfomax(nn.Module):
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         ret = []
         y = []
+        k = 0
         with torch.no_grad():
             for data in loader:
                 data.to(device)
@@ -144,8 +145,10 @@ class GcnInfomax(nn.Module):
                 savetxt('node.csv', sim_node, delimiter=',')
                 savetxt('graph.csv', graph_node, delimiter=',')
 
+                k +=1
 
-                break
+                if k == 8:
+                    break
 
         return None
 
