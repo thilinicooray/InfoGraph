@@ -133,14 +133,16 @@ class GcnInfomax(nn.Module):
                 savetxt('graph.csv', graph_node, delimiter=',')'''
 
                 np_entangled = entangled.t().cpu().numpy()
-                np_node_emb = node_latent_embeddings.t().cpu().numpy()
-                np_graph_emb = accumulated_class_latent_embeddings.t().cpu().numpy()
+                np_node_emb = node_mu.t().cpu().numpy()
+                np_graph_emb = grouped_mu.t().cpu().numpy()
 
                 print('start corr')
 
                 n_rho, n_pval = stats.spearmanr(np_entangled, np_node_emb )
                 print('start graph')
                 g_rho, g_pval = stats.spearmanr(np_entangled, np_graph_emb)
+
+                print('sizes ', n_rho.shape, g_rho.shape)
 
                 savetxt('node_rho.csv', n_rho, delimiter=',')
                 savetxt('node_p.csv', n_pval, delimiter=',')
