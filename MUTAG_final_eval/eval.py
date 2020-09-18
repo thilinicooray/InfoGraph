@@ -127,12 +127,12 @@ class GcnInfomax(nn.Module):
                     training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
                 )
 
-                '''sim_node = torch.sigmoid(torch.matmul(entangled.t(), node_latent_embeddings)).cpu().numpy()
+                sim_node = torch.sigmoid(torch.matmul(entangled.t(), entangled)).cpu().numpy()
                 graph_node = torch.sigmoid(torch.matmul(entangled.t(), accumulated_class_latent_embeddings)).cpu().numpy()
                 savetxt('node.csv', sim_node, delimiter=',')
-                savetxt('graph.csv', graph_node, delimiter=',')'''
+                savetxt('graph.csv', graph_node, delimiter=',')
 
-                np_entangled = torch.sigmoid(entangled).cpu().numpy()
+                '''np_entangled = torch.sigmoid(entangled).cpu().numpy()
                 np_node_emb = torch.sigmoid(node_mu).cpu().numpy()
                 np_graph_emb = torch.sigmoid(grouped_mu).cpu().numpy()
 
@@ -140,14 +140,14 @@ class GcnInfomax(nn.Module):
 
                 n_rho, n_pval = stats.spearmanr(np_node_emb, np_entangled, axis=0 )
                 print('start graph')
-                g_rho, g_pval = stats.spearmanr(np_graph_emb[0],np_entangled[0], axis=0)
+                g_rho, g_pval = stats.spearmanr(np_graph_emb,np_entangled, axis=0)
 
                 print('sizes ', n_rho.shape, g_rho.shape)
 
                 savetxt('node_rho.csv', n_rho, delimiter=',')
                 savetxt('node_p.csv', n_pval, delimiter=',')
                 savetxt('graph_rho.csv', g_rho, delimiter=',')
-                savetxt('graph_pval.csv', g_pval, delimiter=',')
+                savetxt('graph_pval.csv', g_pval, delimiter=',')'''
 
 
 
