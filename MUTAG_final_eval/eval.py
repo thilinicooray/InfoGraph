@@ -132,9 +132,9 @@ class GcnInfomax(nn.Module):
                 savetxt('node.csv', sim_node, delimiter=',')
                 savetxt('graph.csv', graph_node, delimiter=',')'''
 
-                np_entangled = entangled.cpu().numpy()
-                np_node_emb = node_mu.cpu().numpy()
-                np_graph_emb = grouped_mu.cpu().numpy()
+                np_entangled = torch.sigmoid(entangled).cpu().numpy()
+                np_node_emb = torch.sigmoid(node_mu).cpu().numpy()
+                np_graph_emb = torch.sigmoid(grouped_mu).cpu().numpy()
 
                 print('start corr ', np_entangled.shape, np_graph_emb.shape)
 
