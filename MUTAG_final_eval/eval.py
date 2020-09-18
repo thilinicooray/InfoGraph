@@ -138,9 +138,9 @@ class GcnInfomax(nn.Module):
 
                 print('start corr ', np_entangled.shape, np_graph_emb.shape)
 
-                n_rho, n_pval = stats.spearmanr(np_entangled, np_node_emb, axis=1 )
+                n_rho, n_pval = stats.spearmanr(np_entangled, np_node_emb, axis=0 )
                 print('start graph')
-                g_rho, g_pval = stats.spearmanr(np_entangled, np_graph_emb, axis=1)
+                g_rho, g_pval = stats.spearmanr(np_entangled, np_graph_emb, axis=0)
 
                 print('sizes ', n_rho.shape, g_rho.shape)
 
