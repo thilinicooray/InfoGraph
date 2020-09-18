@@ -132,9 +132,9 @@ class GcnInfomax(nn.Module):
                 savetxt('node.csv', sim_node, delimiter=',')
                 savetxt('graph.csv', graph_node, delimiter=',')'''
 
-                np_entangled = entangled.cpu().numpy()
-                np_node_emb = node_latent_embeddings.cpu().numpy()
-                np_graph_emb = accumulated_class_latent_embeddings.cpu().numpy()
+                np_entangled = entangled.t().cpu().numpy()
+                np_node_emb = node_latent_embeddings.t().cpu().numpy()
+                np_graph_emb = accumulated_class_latent_embeddings.t().cpu().numpy()
 
                 print('start corr')
 
