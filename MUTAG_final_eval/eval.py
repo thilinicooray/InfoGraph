@@ -147,7 +147,7 @@ class GcnInfomax(nn.Module):
 
                 k +=1
 
-                if k == 25:
+                if k == 26:
                     break
 
         return None
