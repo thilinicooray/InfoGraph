@@ -134,11 +134,6 @@ class GcnInfomax(nn.Module):
                 )
 
 
-                kl1 = self.compute_two_gaussian_loss(node_mu[0], node_logvar[0], node_mu[2], node_logvar[2])
-                kl2 = self.compute_two_gaussian_loss(node_mu[2], node_logvar[2], node_mu[15], node_logvar[15])
-                kl3 = self.compute_two_gaussian_loss(class_mu[0], class_logvar[0], class_mu[2], class_logvar[2])
-                kl4 = self.compute_two_gaussian_loss(class_mu[2], class_logvar[2], class_mu[15], class_logvar[15])
-
                 #print('div ', torch.dist(node_latent_embeddings[0], node_latent_embeddings[2],2), torch.dist(indiclass_latent_embeddings[0], indiclass_latent_embeddings[2],2))
 
 
