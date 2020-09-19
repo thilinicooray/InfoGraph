@@ -197,7 +197,7 @@ if __name__ == '__main__':
 
     model.load_state_dict(torch.load(f'mutag_best_model.pkl'))
 
-    print('model ', model.state_dict())
+    print('model ', model.encoder.convs[2].nn[0].weight.size())
 
     model.eval()
     _ = model.get_embeddings(dataloader)
