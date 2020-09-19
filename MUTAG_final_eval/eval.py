@@ -142,6 +142,8 @@ class GcnInfomax(nn.Module):
 
                 print('div ', torch.dist(node_latent_embeddings[2], node_latent_embeddings[15],2), torch.dist(indiclass_latent_embeddings[2], indiclass_latent_embeddings[15],2))
 
+                print('div ', torch.dist(node_latent_embeddings[3], node_latent_embeddings[6],2), torch.dist(indiclass_latent_embeddings[3], indiclass_latent_embeddings[6],2))
+
                 accumulated_class_latent_embeddings = group_wise_reparameterize(
                     training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
                 )
