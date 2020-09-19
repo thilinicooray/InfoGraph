@@ -123,8 +123,6 @@ class GcnInfomax(nn.Module):
                 node_latent_embeddings = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
                 indiclass_latent_embeddings = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
 
-                print('node size ', k, node_latent_embeddings.size(0))
-
                 savetxt('node_emb.csv', node_latent_embeddings.cpu().numpy(), delimiter=',')
                 savetxt('graph_emb.csv', indiclass_latent_embeddings.cpu().numpy(), delimiter=',')
 
@@ -156,11 +154,9 @@ class GcnInfomax(nn.Module):
                 #savetxt('graph.csv', cov, delimiter=',')
 
                 n_rho, n_pval = stats.spearmanr(torch.cat([node_latent_embeddings,indiclass_latent_embeddings],0) .cpu().numpy(), axis=1)
-                print('corr shape ', n_rho.shape)
                 savetxt('graph_rho.csv', n_rho, delimiter=',')
 
                 n_rho, n_pval = stats.spearmanr(torch.cat([class_mu,node_mu],0).cpu().numpy(), axis=1)
-                print('corr shape ', n_rho.shape)
                 savetxt('node_rho.csv', n_rho, delimiter=',')
 
                 '''np_entangled = torch.sigmoid(entangled).cpu().numpy()
