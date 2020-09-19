@@ -118,7 +118,7 @@ class GcnInfomax(nn.Module):
 
                 node_mu, node_logvar, class_mu, class_logvar, entangled = self.encoder(x, edge_index, batch)
 
-                print('class mu ', torch.softmax(class_mu, dim=-1)[:5,:5])
+                #print('class mu ', torch.softmax(class_mu, dim=-1)[:5,:5])
 
                 node_latent_embeddings = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
 
@@ -133,7 +133,7 @@ class GcnInfomax(nn.Module):
                 sim_node = torch.sigmoid(torch.matmul(class_mu.t(), node_mu)).cpu().numpy()
                 graph_node = torch.sigmoid(torch.matmul(class_mu.t(), class_mu)).cpu().numpy()
 
-                cov = np.corrcoef(class_mu.cpu().numpy(),rowvar=False)
+                cov = np.corrcoef(torch.softmax(class_mu, dim=-1).cpu().numpy(),rowvar=False)
 
                 print('size ',  cov.shape)
 
