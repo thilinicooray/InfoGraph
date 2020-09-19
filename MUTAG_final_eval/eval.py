@@ -123,6 +123,8 @@ class GcnInfomax(nn.Module):
                 node_latent_embeddings = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
                 indiclass_latent_embeddings = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
 
+                print('node size ', k, node_latent_embeddings.size(0))
+
                 savetxt('node_emb.csv', node_latent_embeddings.cpu().numpy(), delimiter=',')
                 savetxt('graph_emb.csv', indiclass_latent_embeddings.cpu().numpy(), delimiter=',')
 
@@ -137,12 +139,12 @@ class GcnInfomax(nn.Module):
                 kl3 = self.compute_two_gaussian_loss(class_mu[0], class_logvar[0], class_mu[2], class_logvar[2])
                 kl4 = self.compute_two_gaussian_loss(class_mu[2], class_logvar[2], class_mu[15], class_logvar[15])
 
-                print('div ', torch.dist(node_latent_embeddings[0], node_latent_embeddings[2],2), torch.dist(indiclass_latent_embeddings[0], indiclass_latent_embeddings[2],2))
+                #print('div ', torch.dist(node_latent_embeddings[0], node_latent_embeddings[2],2), torch.dist(indiclass_latent_embeddings[0], indiclass_latent_embeddings[2],2))
 
 
-                print('div ', torch.dist(node_latent_embeddings[2], node_latent_embeddings[15],2), torch.dist(indiclass_latent_embeddings[2], indiclass_latent_embeddings[15],2))
+                #print('div ', torch.dist(node_latent_embeddings[2], node_latent_embeddings[15],2), torch.dist(indiclass_latent_embeddings[2], indiclass_latent_embeddings[15],2))
 
-                print('div ', torch.dist(node_latent_embeddings[3], node_latent_embeddings[6],2), torch.dist(indiclass_latent_embeddings[3], indiclass_latent_embeddings[6],2))
+                #print('div ', torch.dist(node_latent_embeddings[3], node_latent_embeddings[6],2), torch.dist(indiclass_latent_embeddings[3], indiclass_latent_embeddings[6],2))
 
                 accumulated_class_latent_embeddings = group_wise_reparameterize(
                     training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
@@ -183,14 +185,14 @@ class GcnInfomax(nn.Module):
                 savetxt('graph_rho.csv', g_rho, delimiter=',')
                 savetxt('graph_pval.csv', g_pval, delimiter=',')'''
 
-
+                k+=1
 
                 '''k +=1
 
                 if k == 56:
                     break'''
 
-                break
+                #break
 
         return None
 
