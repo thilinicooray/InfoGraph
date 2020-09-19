@@ -136,7 +136,7 @@ class GcnInfomax(nn.Module):
                 print('size ',  cov.shape)
 
                 savetxt('node.csv', sim_node, delimiter=',')
-                savetxt('graph.csv', graph_node, delimiter=',')
+                savetxt('graph.csv', cov, delimiter=',')
 
                 '''np_entangled = torch.sigmoid(entangled).cpu().numpy()
                 np_node_emb = torch.sigmoid(node_mu).cpu().numpy()
