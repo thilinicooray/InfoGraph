@@ -140,7 +140,7 @@ class GcnInfomax(nn.Module):
                 #savetxt('node.csv', sim_node, delimiter=',')
                 #savetxt('graph.csv', cov, delimiter=',')
 
-                n_rho, n_pval = stats.spearmanr(entangled.cpu().numpy(), axis=1)
+                n_rho, n_pval = stats.spearmanr(torch.cat([entangled,class_mu],0) .cpu().numpy(), axis=1)
                 print('corr shape ', n_rho.shape)
                 savetxt('graph_rho.csv', n_rho, delimiter=',')
 
