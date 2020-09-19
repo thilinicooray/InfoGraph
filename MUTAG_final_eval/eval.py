@@ -131,6 +131,8 @@ class GcnInfomax(nn.Module):
                     class_mu.data, class_logvar.data, batch, True
                 )
 
+                print ('grouped mu, grouped var ', grouped_mu, grouped_logvar)
+
 
                 #print('div ', torch.dist(node_latent_embeddings[0], node_latent_embeddings[2],2), torch.dist(indiclass_latent_embeddings[0], indiclass_latent_embeddings[2],2))
 
