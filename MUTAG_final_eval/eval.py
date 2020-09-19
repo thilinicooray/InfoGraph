@@ -137,7 +137,7 @@ class GcnInfomax(nn.Module):
                 kl3 = self.compute_two_gaussian_loss(class_mu[0], class_logvar[0], class_mu[2], class_logvar[2])
                 kl4 = self.compute_two_gaussian_loss(class_mu[2], class_logvar[2], class_mu[15], class_logvar[15])
 
-                print('div ', kl1, kl2, kl3, kl4)
+                print('div ', torch.dist(node_latent_embeddings[0], node_latent_embeddings[2],2), torch.dist(indiclass_latent_embeddings[0], indiclass_latent_embeddings[2],2))
 
                 accumulated_class_latent_embeddings = group_wise_reparameterize(
                     training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
