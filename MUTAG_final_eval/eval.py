@@ -205,10 +205,10 @@ if __name__ == '__main__':
     g_mu = model.encoder.convs[4].nn[0].weight
     g_logv = model.encoder.convs[5].nn[0].weight
 
-    savetxt('n_mu.csv', n_mu.cpu().numpy(), delimiter=',')
-    savetxt('n_lv.csv', n_logv.cpu().numpy(), delimiter=',')
-    savetxt('g_mu.csv', g_mu.cpu().numpy(), delimiter=',')
-    savetxt('g_lv.csv', g_logv.cpu().numpy(), delimiter=',')
+    savetxt('n_mu.csv', n_mu.detach().cpu().numpy(), delimiter=',')
+    savetxt('n_lv.csv', n_logv.detach().cpu().numpy(), delimiter=',')
+    savetxt('g_mu.csv', g_mu.detach().cpu().numpy(), delimiter=',')
+    savetxt('g_lv.csv', g_logv.detach().cpu().numpy(), delimiter=',')
 
 
 
