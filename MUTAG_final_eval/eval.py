@@ -131,6 +131,12 @@ class GcnInfomax(nn.Module):
                     class_mu.data, class_logvar.data, batch, True
                 )
 
+
+                kl1 = self.compute_two_gaussian_loss(node_mu[0], node_logvar[0], node_mu[2], node_logvar[2])
+                kl2 = self.compute_two_gaussian_loss(class_mu[0], class_logvar[0], class_mu[2], class_logvar[2])
+
+                print('div ', kl1, kl2)
+
                 accumulated_class_latent_embeddings = group_wise_reparameterize(
                     training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
                 )
@@ -180,6 +186,22 @@ class GcnInfomax(nn.Module):
                 break
 
         return None
+
+    def compute_two_gaussian_loss(self, mu1, logvar1, mu2, logvar2):
+        """Computes the KL loss between the embedding attained from the answers
+        and the categories.
+        KL divergence between two gaussians:
+            log(sigma_2/sigma_1) + (sigma_2^2 + (mu_1 - mu_2)^2)/(2sigma_1^2) - 0.5
+        Args:
+            mu1: Means from first space.
+            logvar1: Log variances from first space.
+            mu2: Means from second space.
+            logvar2: Means from second space.
+        """
+        numerator = logvar1.exp() + torch.pow(mu1 - mu2, 2)
+        fraction = torch.div(numerator, (logvar2.exp() + 1e-8))
+        kl = 0.5 * torch.sum(logvar2 - logvar1 + fraction - 1)
+        return kl / (mu1.size(0) + 1e-8)
 
 if __name__ == '__main__':
 
