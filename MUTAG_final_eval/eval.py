@@ -133,9 +133,11 @@ class GcnInfomax(nn.Module):
 
 
                 kl1 = self.compute_two_gaussian_loss(node_mu[0], node_logvar[0], node_mu[2], node_logvar[2])
-                kl2 = self.compute_two_gaussian_loss(class_mu[0], class_logvar[0], class_mu[2], class_logvar[2])
+                kl2 = self.compute_two_gaussian_loss(node_mu[2], node_logvar[2], node_mu[15], node_logvar[15])
+                kl3 = self.compute_two_gaussian_loss(class_mu[0], class_logvar[0], class_mu[2], class_logvar[2])
+                kl4 = self.compute_two_gaussian_loss(class_mu[2], class_logvar[2], class_mu[15], class_logvar[15])
 
-                print('div ', kl1, kl2)
+                print('div ', kl1, kl2, kl3, kl4)
 
                 accumulated_class_latent_embeddings = group_wise_reparameterize(
                     training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
