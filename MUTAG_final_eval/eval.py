@@ -133,7 +133,7 @@ class GcnInfomax(nn.Module):
                 sim_node = torch.sigmoid(torch.matmul(class_mu.t(), node_mu)).cpu().numpy()
                 graph_node = torch.sigmoid(torch.matmul(class_mu.t(), class_mu)).cpu().numpy()
 
-                cov = np.corrcoef(torch.softmax(class_mu, dim=-1).cpu().numpy())
+                cov = np.corrcoef(class_mu.cpu().numpy())
 
                 print('size ',  cov.shape)
 
