@@ -123,6 +123,10 @@ class GcnInfomax(nn.Module):
                 node_latent_embeddings = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
                 indiclass_latent_embeddings = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
 
+                savetxt('node_emb.csv', node_latent_embeddings.cpu().numpy(), delimiter=',')
+                savetxt('graph_emb.csv', indiclass_latent_embeddings.cpu().numpy(), delimiter=',')
+
+
                 grouped_mu, grouped_logvar = accumulate_group_evidence(
                     class_mu.data, class_logvar.data, batch, True
                 )
