@@ -142,6 +142,10 @@ class GcnInfomax(nn.Module):
 
                 n_rho, n_pval = stats.spearmanr(class_mu.cpu().numpy(), axis=1)
                 print('corr shape ', n_rho.shape)
+                savetxt('graph_rho.csv', n_rho, delimiter=',')
+
+                n_rho, n_pval = stats.spearmanr(node_mu.cpu().numpy(), axis=1)
+                print('corr shape ', n_rho.shape)
                 savetxt('node_rho.csv', n_rho, delimiter=',')
 
                 '''np_entangled = torch.sigmoid(entangled).cpu().numpy()
