@@ -121,6 +121,7 @@ class GcnInfomax(nn.Module):
                 #print('class mu ', torch.softmax(class_mu, dim=-1)[:5,:5])
 
                 node_latent_embeddings = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
+                indiclass_latent_embeddings = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
 
                 grouped_mu, grouped_logvar = accumulate_group_evidence(
                     class_mu.data, class_logvar.data, batch, True
@@ -140,7 +141,7 @@ class GcnInfomax(nn.Module):
                 #savetxt('node.csv', sim_node, delimiter=',')
                 #savetxt('graph.csv', cov, delimiter=',')
 
-                n_rho, n_pval = stats.spearmanr(torch.cat([node_logvar,node_mu],0) .cpu().numpy(), axis=1)
+                n_rho, n_pval = stats.spearmanr(torch.cat([node_latent_embeddings,indiclass_latent_embeddings],0) .cpu().numpy(), axis=1)
                 print('corr shape ', n_rho.shape)
                 savetxt('graph_rho.csv', n_rho, delimiter=',')
 
