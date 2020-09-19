@@ -133,12 +133,16 @@ class GcnInfomax(nn.Module):
                 sim_node = torch.sigmoid(torch.matmul(class_mu.t(), node_mu)).cpu().numpy()
                 graph_node = torch.sigmoid(torch.matmul(class_mu.t(), class_mu)).cpu().numpy()
 
-                cov = np.corrcoef(class_mu.cpu().numpy())
+                #cov = np.corrcoef(class_mu.cpu().numpy())
 
-                print('size ',  cov.shape)
+                #print('size ',  cov.shape)
 
-                savetxt('node.csv', sim_node, delimiter=',')
-                savetxt('graph.csv', cov, delimiter=',')
+                #savetxt('node.csv', sim_node, delimiter=',')
+                #savetxt('graph.csv', cov, delimiter=',')
+
+                n_rho, n_pval = stats.spearmanr(class_mu.cpu().numpy())
+                print('corr shape ', n_rho.shape)
+                savetxt('node_rho.csv', n_rho, delimiter=',')
 
                 '''np_entangled = torch.sigmoid(entangled).cpu().numpy()
                 np_node_emb = torch.sigmoid(node_mu).cpu().numpy()
