@@ -118,6 +118,8 @@ class GcnInfomax(nn.Module):
 
                 node_mu, node_logvar, class_mu, class_logvar, entangled = self.encoder(x, edge_index, batch)
 
+                print('class mu ', class_mu[:5,:5])
+
                 node_latent_embeddings = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
 
                 grouped_mu, grouped_logvar = accumulate_group_evidence(
