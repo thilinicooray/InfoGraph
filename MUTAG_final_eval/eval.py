@@ -182,10 +182,10 @@ class GcnInfomax(nn.Module):
 
                 '''k +=1'''
 
-                if k == 56:
-                    break
+                '''if k == 56:
+                    break'''
 
-                #break
+                break
 
         return None
 
