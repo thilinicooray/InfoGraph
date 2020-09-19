@@ -22,6 +22,9 @@ from evaluate_embedding import evaluate_embedding
 from model import *
 from utils import imshow_grid, mse_loss, reparameterize, group_wise_reparameterize, accumulate_group_evidence
 
+from scipy import stats
+from numpy import savetxt
+
 from arguments import arg_parse
 
 class GcnInfomax(nn.Module):
@@ -103,8 +106,6 @@ class GcnInfomax(nn.Module):
 
     def get_embeddings(self, loader):
 
-        from scipy import stats
-        from numpy import savetxt
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         ret = []
@@ -197,7 +198,19 @@ if __name__ == '__main__':
 
     model.load_state_dict(torch.load(f'mutag_best_model.pkl'))
 
-    print('model ', model.encoder.convs[2].nn[0].weight.size())
+    #print('model ', model.encoder.convs[2].nn[0].weight.size())
 
-    model.eval()
-    _ = model.get_embeddings(dataloader)
+    n_mu = model.encoder.convs[2].nn[0].weight
+    n_logv = model.encoder.convs[3].nn[0].weight
+    g_mu = model.encoder.convs[4].nn[0].weight
+    g_logv = model.encoder.convs[5].nn[0].weight
+
+    savetxt('n_mu.csv', n_mu.cpu().numpy(), delimiter=',')
+    savetxt('n_lv.csv', n_logv.cpu().numpy(), delimiter=',')
+    savetxt('g_mu.csv', g_mu.cpu().numpy(), delimiter=',')
+    savetxt('g_lv.csv', g_logv.cpu().numpy(), delimiter=',')
+
+
+
+    '''model.eval()
+    _ = model.get_embeddings(dataloader)'''
