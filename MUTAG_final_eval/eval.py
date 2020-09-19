@@ -130,6 +130,11 @@ class GcnInfomax(nn.Module):
 
                 sim_node = torch.sigmoid(torch.matmul(class_mu.t(), node_mu)).cpu().numpy()
                 graph_node = torch.sigmoid(torch.matmul(class_mu.t(), class_mu)).cpu().numpy()
+
+                cov = np.corrcoef(class_mu.cpu().numpy(),rowvar=False)
+
+                print('size ',  cov.shape)
+
                 savetxt('node.csv', sim_node, delimiter=',')
                 savetxt('graph.csv', graph_node, delimiter=',')
 
@@ -200,7 +205,7 @@ if __name__ == '__main__':
 
     #print('model ', model.encoder.convs[2].nn[0].weight.size())
 
-    n_mu = model.encoder.convs[2].nn[0].weight
+    '''n_mu = model.encoder.convs[2].nn[0].weight
     n_logv = model.encoder.convs[3].nn[0].weight
     g_mu = model.encoder.convs[4].nn[0].weight
     g_logv = model.encoder.convs[5].nn[0].weight
@@ -208,9 +213,9 @@ if __name__ == '__main__':
     savetxt('n_mu.csv', n_mu.detach().cpu().numpy(), delimiter=',')
     savetxt('n_lv.csv', n_logv.detach().cpu().numpy(), delimiter=',')
     savetxt('g_mu.csv', g_mu.detach().cpu().numpy(), delimiter=',')
-    savetxt('g_lv.csv', g_logv.detach().cpu().numpy(), delimiter=',')
+    savetxt('g_lv.csv', g_logv.detach().cpu().numpy(), delimiter=',')'''
 
 
 
-    '''model.eval()
-    _ = model.get_embeddings(dataloader)'''
+    model.eval()
+    _ = model.get_embeddings(dataloader)
