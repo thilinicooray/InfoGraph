@@ -140,11 +140,11 @@ class GcnInfomax(nn.Module):
                 #savetxt('node.csv', sim_node, delimiter=',')
                 #savetxt('graph.csv', cov, delimiter=',')
 
-                n_rho, n_pval = stats.spearmanr(torch.cat([entangled,class_mu],0) .cpu().numpy(), axis=1)
+                n_rho, n_pval = stats.spearmanr(torch.cat([accumulated_class_latent_embeddings,node_latent_embeddings],0) .cpu().numpy(), axis=1)
                 print('corr shape ', n_rho.shape)
                 savetxt('graph_rho.csv', n_rho, delimiter=',')
 
-                n_rho, n_pval = stats.spearmanr(torch.cat([entangled,node_mu],0).cpu().numpy(), axis=1)
+                n_rho, n_pval = stats.spearmanr(torch.cat([class_mu,node_mu],0).cpu().numpy(), axis=1)
                 print('corr shape ', n_rho.shape)
                 savetxt('node_rho.csv', n_rho, delimiter=',')
 
