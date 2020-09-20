@@ -72,8 +72,50 @@ def accumulate_group_evidence_old(class_mu, class_logvar, batch, is_cuda):
     # convert group vars into logvars before returning
     return Variable(group_mu, requires_grad=True), Variable(torch.log(group_var), requires_grad=True)
 
-
 def accumulate_group_evidence(class_mu, class_logvar, batch, is_cuda):
+    """
+    :param class_mu: mu values for class latent embeddings of each sample in the mini-batch
+    :param class_logvar: logvar values for class latent embeddings for each sample in the mini-batch
+    :param labels_batch: class labels of each sample (the operation of accumulating class evidence can also
+        be performed using group labels instead of actual class labels)
+    :param is_cuda:
+    :return:
+    """
+
+    class_var = class_logvar.exp_()
+
+    class_var[class_var == float(0)] = 1e-6
+
+    var_opp = class_var.pow(-1)
+
+    grouped_var = global_add_pool(var_opp, batch)
+
+    grouped_var = grouped_var.pow(-1)
+
+    mu_new = class_mu * class_var.pow(-1)
+
+    grouped_mu = global_add_pool(mu_new, batch)
+
+
+    grouped_mu = grouped_mu * grouped_var
+
+    grouped_var[grouped_var == float(0)] = 1e-6
+
+
+    grouped_lvar = torch.log(grouped_var)
+
+
+    _, count = torch.unique(batch,  return_counts=True)
+
+    grouped_mu_expanded = torch.repeat_interleave(grouped_mu, count, dim=0)
+    grouped_lvar_expanded = torch.repeat_interleave(grouped_lvar, count, dim=0)
+
+
+    return grouped_mu_expanded, grouped_lvar_expanded
+
+
+
+def accumulate_group_evidence_mean(class_mu, class_logvar, batch, is_cuda):
 
     grouped_mu = global_mean_pool(class_mu, batch)
     grouped_lvar = global_mean_pool(class_logvar, batch)
