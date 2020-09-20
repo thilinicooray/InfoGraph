@@ -81,7 +81,7 @@ def accumulate_group_evidence(class_mu, class_logvar, batch, is_cuda):
     _, count = torch.unique(batch,  return_counts=True)
 
     grouped_mu_expanded = torch.repeat_interleave(grouped_mu, count, dim=0)
-    grouped_lvar_expanded = torch.grouped_lvar(grouped_lvar, count, dim=0)
+    grouped_lvar_expanded = torch.repeat_interleave(grouped_lvar, count, dim=0)
 
 
 
