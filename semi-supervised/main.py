@@ -17,7 +17,7 @@ from torch_geometric.utils import remove_self_loops
 class MyTransform(object):
     def __call__(self, data):
         # Specify target.
-        print('size ', data.y.size())
+        print('size ', data)
         data.y = data.y[:, target]
         return data
 
