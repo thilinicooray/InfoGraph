@@ -141,6 +141,8 @@ if __name__ == '__main__':
     dataset = QM9(path).shuffle()
     print('num_features : {}\n'.format(dataset.num_features))
 
+    print('dataset ', dataset)
+
     # Normalize targets to mean = 0 and std = 1.
     mean = dataset.data.y[:, target].mean().item()
     std = dataset.data.y[:, target].std().item()
