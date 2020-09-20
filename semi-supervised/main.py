@@ -180,10 +180,10 @@ if __name__ == '__main__':
 
     best_val_error = None
     for epoch in range(1, epochs):
-        lr = scheduler.optimizer.param_groups[0]['lr']
+        #lr = scheduler.optimizer.param_groups[0]['lr']
         loss = train(epoch, use_unsup_loss)
         val_error = test(val_loader)
-        scheduler.step(val_error)
+        #scheduler.step(val_error)
 
         if best_val_error is None or val_error <= best_val_error:
             print('Update')
@@ -192,7 +192,7 @@ if __name__ == '__main__':
 
 
         print('Epoch: {:03d}, LR: {:7f}, Loss: {:.7f}, Validation MAE: {:.7f}, '
-              'Test MAE: {:.7f},'.format(epoch, lr, loss, val_error, test_error))
+              'Test MAE: {:.7f},'.format(epoch, 0.001, loss, val_error, test_error))
 
     with open('supervised.log', 'a+') as f:
         f.write('{},{},{},{},{},{},{},{}\n'.format(target,args.train_num,use_unsup_loss,separate_encoder,args.lamda,args.weight_decay,val_error,test_error))
