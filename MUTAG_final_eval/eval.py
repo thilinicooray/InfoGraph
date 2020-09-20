@@ -253,11 +253,15 @@ if __name__ == '__main__':
     savetxt('g_lv.csv', g_logv.detach().cpu().numpy(), delimiter=',')'''
 
     t = torch.tensor([[1, 2, 3], [4, 5, 6], [7, 8, 9], [4, 2, 1], [5, 3, 6]], dtype=torch.float)
-    index = torch.tensor([0, 0,0,1,1, 2,3,3,3,4,5,5])
+    index = torch.tensor([0, 0,0,1,1, 2,3,3,3,4])
 
     output, count = torch.unique(index,  return_counts=True)
 
     print('unique ', output, count)
+
+    new = torch.repeat_interleave(t, count, dim=0)
+
+    print('repeated ', new)
 
 
 
