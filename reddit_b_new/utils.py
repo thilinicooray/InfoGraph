@@ -131,26 +131,26 @@ def group_wise_reparameterize_old(training, mu, logvar, labels_batch, cuda):
         return mu
 
 
-def group_wise_reparameterize(training, g_mu, g_logvar, labels_batch, cuda):
+def group_wise_reparameterize(training, mu, logvar, labels_batch, cuda):
 
     if training:
 
-        mu = global_mean_pool(g_mu, labels_batch)
-        logvar = global_mean_pool(g_logvar, labels_batch)
+        g_mu = global_mean_pool(mu, labels_batch)
+        g_logvar = global_mean_pool(logvar, labels_batch)
 
-        std = logvar.mul(0.5).exp_()
+        std = g_logvar.mul(0.5).exp_()
         eps = Variable(std.data.new(std.size()).normal_())
-        graph_wise_param = eps.mul(std).add_(mu)
+        graph_wise_sample = eps.mul(std).add_(g_mu)
 
         _, count = torch.unique(labels_batch,  return_counts=True)
 
-        grouped_mu_expanded = torch.repeat_interleave(graph_wise_param, count, dim=0)
+        grouped_mu_expanded = torch.repeat_interleave(graph_wise_sample, count, dim=0)
 
         return grouped_mu_expanded
 
 
     else:
-        return g_mu
+        return mu
 
 
 def weights_init(layer):
