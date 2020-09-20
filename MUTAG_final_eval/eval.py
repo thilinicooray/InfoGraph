@@ -252,12 +252,12 @@ if __name__ == '__main__':
     savetxt('g_mu.csv', g_mu.detach().cpu().numpy(), delimiter=',')
     savetxt('g_lv.csv', g_logv.detach().cpu().numpy(), delimiter=',')'''
 
-    x = torch.zeros(5, 3)
-    t = torch.tensor([[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype=torch.float)
-    index = torch.tensor([0, 1, 4, 2])
-    x.index_copy_(0, index, t)
+    t = torch.tensor([[1, 2, 3], [4, 5, 6], [7, 8, 9], [4, 2, 1], [5, 3, 6]], dtype=torch.float)
+    index = torch.tensor([0, 0,0,1,1, 2,3,3,3,4,5,5])
 
-    print('x copy ', x)
+    output, count = torch.unique(index,  return_counts=True)
+
+    print('unique ', output, count)
 
 
 
