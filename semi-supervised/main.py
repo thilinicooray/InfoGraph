@@ -17,7 +17,6 @@ from torch_geometric.utils import remove_self_loops
 class MyTransform(object):
     def __call__(self, data):
         # Specify target.
-        print('size ', data)
         data.y = data.y[:, target]
         return data
 
@@ -137,8 +136,7 @@ if __name__ == '__main__':
 
     path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'QM9')
     transform = T.Compose([MyTransform(), Complete(), T.Distance(norm=False)])
-    #dataset = QM9(path, transform=transform).shuffle()
-    dataset = QM9(path).shuffle()
+    dataset = QM9(path, transform=transform).shuffle()
     print('num_features : {}\n'.format(dataset.num_features))
 
     print('dataset ', dataset.data)
