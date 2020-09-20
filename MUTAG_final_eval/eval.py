@@ -254,7 +254,7 @@ if __name__ == '__main__':
 
     x = torch.zeros(5, 3)
     t = torch.tensor([[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype=torch.float)
-    index = torch.tensor([0, 4, 2])
+    index = torch.tensor([0, 1, 4, 2])
     x.index_copy_(0, index, t)
 
     print('x copy ', x)
