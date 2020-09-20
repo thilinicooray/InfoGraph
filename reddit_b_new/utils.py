@@ -77,8 +77,8 @@ def accumulate_group_evidence(class_mu, class_logvar, batch, is_cuda):
 
     print('val ', class_mu)
 
-    grouped_mu = global_mean_pool(class_mu, batch)
-    grouped_lvar = global_mean_pool(class_logvar, batch)
+    grouped_mu = global_add_pool(class_mu, batch)
+    grouped_lvar = global_add_pool(class_logvar, batch)
 
     _, count = torch.unique(batch,  return_counts=True)
 
