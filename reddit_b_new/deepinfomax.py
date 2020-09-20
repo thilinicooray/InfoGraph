@@ -94,7 +94,7 @@ class GcnInfomax(nn.Module):
             1 + 2 * grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp().pow(2), 1))
 
         #print('class kl unwei ', class_kl_divergence_loss)
-        class_kl_divergence_loss = 10000*class_kl_divergence_loss
+        class_kl_divergence_loss = 1000*class_kl_divergence_loss
         #print('class kl wei ', class_kl_divergence_loss)
 
 
