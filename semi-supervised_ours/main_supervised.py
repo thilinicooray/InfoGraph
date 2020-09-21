@@ -174,6 +174,6 @@ if __name__ == '__main__':
         print('Epoch: {:03d}, LR: {:7f} Validation MAE: {:.7f}, '
               'Test MAE: {:.7f},'.format(epoch, lr, val_error, test_error))
 
-        print('all losses ', losses)
+        #print('all losses ', losses)
 
 
