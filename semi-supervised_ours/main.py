@@ -84,6 +84,7 @@ def train(epoch, use_unsup_loss):
             print(sup_loss_all, unsup_loss_all)
         return loss_all / len(train_loader.dataset)
     else:
+        print('supervised only model training')
         for data in train_loader:
             data = data.to(device)
             optimizer.zero_grad()
@@ -125,7 +126,7 @@ if __name__ == '__main__':
     args = arg_parse()
 
     target = args.target
-    dim = 64
+    dim = 32
     epochs = 500
     batch_size = 20
     lamda = args.lamda
@@ -164,6 +165,7 @@ if __name__ == '__main__':
 
         print(len(train_dataset), len(val_dataset), len(test_dataset), len(unsup_train_dataset))
     else:
+        print('supervised setup')
         print(len(train_dataset), len(val_dataset), len(test_dataset))
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
