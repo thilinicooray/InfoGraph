@@ -157,7 +157,6 @@ class Net(torch.nn.Module):
                     m.bias.data.fill_(0.0)
 
     def supervised_loss(self, data):
-        print('data ', data.x, data.y, data.x.size(), data.y.size())
 
         node_mu, node_logvar, grouped_mu, grouped_logvar = self.encoder(data)
 
@@ -193,8 +192,11 @@ class Net(torch.nn.Module):
             training=True, mu=grouped_mu, logvar=grouped_logvar, labels_batch=data.batch, cuda=True
         )
 
+        _, count = torch.unique(data.batch,  return_counts=True)
 
-        reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, data.y)
+        y_expanded = torch.repeat_interleave(data.y, count, dim=0)
+
+        reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, y_expanded)
 
         reconstruction_error =  mse_loss(reconstructed_node, data.x)
         #reconstruction_error = 1e-5*self.recon_loss1(reconstructed_node, edge_index, batch)
