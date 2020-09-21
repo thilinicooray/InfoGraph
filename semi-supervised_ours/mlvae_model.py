@@ -62,7 +62,6 @@ class Encoder(torch.nn.Module):
         out = F.relu(self.lin0(data.x))
         h = out.unsqueeze(0)
 
-        print('h ', h.size(), out.size())
 
         feat_map = []
         for i in range(3):
@@ -72,16 +71,14 @@ class Encoder(torch.nn.Module):
             # print(out.shape) : [num_node x dim]
             feat_map.append(out)
 
-        print('out ', out.size())
-
 
         node_mu = F.relu(self.node_mu_conv(out, data.edge_index, data.edge_attr))
         node_lv = F.relu(self.node_lv_conv(out, data.edge_index, data.edge_attr))
         graph_mu_id = F.relu(self.graph_mu_conv(out, data.edge_index, data.edge_attr))
         graph_lv_id = F.relu(self.graph_lv_conv(out, data.edge_index, data.edge_attr))
 
-        grouped_mu = self.set2set(graph_mu_id, data.batch)
-        grouped_lv = self.set2set(graph_lv_id, data.batch)
+        grouped_mu = self.set2set_mu(graph_mu_id, data.batch)
+        grouped_lv = self.set2set_lv(graph_lv_id, data.batch)
 
         _, count = torch.unique(data.batch,  return_counts=True)
 

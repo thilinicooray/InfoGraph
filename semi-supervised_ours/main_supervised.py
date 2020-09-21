@@ -58,7 +58,7 @@ def train(epoch, use_unsup_loss):
         data = data.to(device)
         optimizer.zero_grad()
 
-        node_kl_divergence_loss, class_kl_divergence_loss, reconstruction_error, cls_loss = model(data)
+        node_kl_divergence_loss, class_kl_divergence_loss, reconstruction_error, cls_loss = model.supervised_loss(data)
         recon_loss_all += reconstruction_error
         kl_class_loss_all += class_kl_divergence_loss
         kl_node_loss_all += node_kl_divergence_loss
