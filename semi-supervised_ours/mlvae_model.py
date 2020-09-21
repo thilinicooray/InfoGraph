@@ -98,6 +98,8 @@ class Decoder(torch.nn.Module):
         ]))
 
     def forward(self, node_latent_space, class_latent_space, y):
+        print('dim ', node_latent_space.size(), class_latent_space.size(), y.size())
+
         x = torch.cat((node_latent_space, class_latent_space, y), dim=1)
 
         x = self.linear_model(x)
