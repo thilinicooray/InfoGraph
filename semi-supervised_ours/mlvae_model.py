@@ -56,8 +56,13 @@ class Encoder(torch.nn.Module):
 
 
     def forward(self, data):
+
+        print('data ', data.x.size(), data.edge_index.size(), data.edge_attr.size())
+
         out = F.relu(self.lin0(data.x))
         h = out.unsqueeze(0)
+
+        print('h ', h.size(), out.size())
 
         feat_map = []
         for i in range(3):
