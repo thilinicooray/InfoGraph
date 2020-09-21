@@ -37,16 +37,16 @@ class Encoder(torch.nn.Module):
 
         #disentangling layers
 
-        nn1 = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim * dim))
+        nn1 = Sequential(Linear(5, 128), ReLU(), Linear(128, dim * dim))
         self.node_mu_conv = NNConv(dim, dim, nn1, aggr='mean', root_weight=False)
 
-        nn2 = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim * dim))
+        nn2 = Sequential(Linear(5, 128), ReLU(), Linear(128, dim * dim))
         self.node_lv_conv = NNConv(dim, dim, nn2, aggr='mean', root_weight=False)
 
-        nn3 = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim * dim))
+        nn3 = Sequential(Linear(5, 128), ReLU(), Linear(128, dim * dim))
         self.graph_mu_conv = NNConv(dim, dim, nn3, aggr='mean', root_weight=False)
 
-        nn4 = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim * dim))
+        nn4 = Sequential(Linear(5, 128), ReLU(), Linear(128, dim * dim))
         self.graph_lv_conv = NNConv(dim, dim, nn4, aggr='mean', root_weight=False)
 
         #graph distribution parameter accumulation
