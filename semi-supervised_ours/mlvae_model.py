@@ -75,17 +75,13 @@ class Encoder(torch.nn.Module):
         graph_mu_id = F.relu(self.graph_mu_conv(out, data.edge_index, data.edge_attr))
         graph_lv_id = F.relu(self.graph_lv_conv(out, data.edge_index, data.edge_attr))
 
-        '''grouped_mu = self.set2set_mu(graph_mu_id, data.batch)
+        grouped_mu = self.set2set_mu(graph_mu_id, data.batch)
         grouped_lv = self.set2set_lv(graph_lv_id, data.batch)
 
         _, count = torch.unique(data.batch,  return_counts=True)
 
         grouped_mu_expanded = torch.repeat_interleave(grouped_mu, count, dim=0)
-        grouped_lvar_expanded = torch.repeat_interleave(grouped_lv, count, dim=0)'''
-
-        grouped_mu_expanded, grouped_lvar_expanded = accumulate_group_evidence(
-            graph_mu_id.data, graph_lv_id.data, data.batch, True
-        )
+        grouped_lvar_expanded = torch.repeat_interleave(grouped_lv, count, dim=0)
 
         return node_mu, node_lv, grouped_mu_expanded, grouped_lvar_expanded
 
@@ -146,9 +142,9 @@ class Net(torch.nn.Module):
         self.embedding_dim = dim
 
         self.encoder = Encoder(num_features, dim)
-        self.decoder = Decoder(dim, dim, num_features)
+        self.decoder = Decoder(dim, dim*2, num_features)
 
-        self.fc1 = torch.nn.Linear(dim, dim)
+        self.fc1 = torch.nn.Linear(2 * dim, dim)
         self.fc2 = torch.nn.Linear(dim, 1)
 
         self.init_emb()
@@ -276,7 +272,7 @@ class Net(torch.nn.Module):
         #reconstruction_error = 1e-5*self.recon_loss1(reconstructed_node, edge_index, batch)
 
 
-        total_loss = node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error
+        total_loss = (node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error) * data.num_graphs
 
         total_loss.backward()
 
