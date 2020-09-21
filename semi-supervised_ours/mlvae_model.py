@@ -200,7 +200,7 @@ class Net(torch.nn.Module):
 
         reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, y_expanded)
 
-        reconstruction_error =  mse_loss(reconstructed_node, data.x)# + self.recon_loss1(reconstructed_node, data.edge_index, data.batch)
+        reconstruction_error =  mse_loss(reconstructed_node, data.x) + self.recon_loss1(reconstructed_node, data.edge_index, data.batch)
         #reconstruction_error = 1e-5*self.recon_loss1(reconstructed_node, edge_index, batch)
 
         graph_emb = global_mean_pool(class_latent_embeddings, data.batch)
@@ -269,7 +269,7 @@ class Net(torch.nn.Module):
 
         reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, classification_expanded)
 
-        reconstruction_error =  mse_loss(reconstructed_node, data.x) #+ self.recon_loss1(reconstructed_node, data.edge_index, data.batch)
+        reconstruction_error =  mse_loss(reconstructed_node, data.x) + self.recon_loss1(reconstructed_node, data.edge_index, data.batch)
         #reconstruction_error = 1e-5*self.recon_loss1(reconstructed_node, edge_index, batch)
 
 
