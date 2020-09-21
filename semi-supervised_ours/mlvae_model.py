@@ -16,6 +16,7 @@ from torch_geometric.data import DataLoader
 from torch_geometric.utils import remove_self_loops
 
 from torch_geometric.nn import global_mean_pool, global_add_pool, global_max_pool
+from torch_geometric.utils import negative_sampling, remove_self_loops, add_self_loops, to_dense_adj, to_dense_batch
 
 from collections import OrderedDict
 
@@ -294,6 +295,19 @@ class Net(torch.nn.Module):
         classification = out.view(-1)
 
         return classification
+
+    def edge_recon(self, z, edge_index, sigmoid=True):
+        r"""Decodes the latent variables :obj:`z` into edge probabilities for
+        the given node-pairs :obj:`edge_index`.
+
+        Args:
+            z (Tensor): The latent space :math:`\mathbf{Z}`.
+            sigmoid (bool, optional): If set to :obj:`False`, does not apply
+                the logistic sigmoid function to the output.
+                (default: :obj:`True`)
+        """
+        value = (z[edge_index[0]] * z[edge_index[1]]).sum(dim=1)
+        return torch.sigmoid(value) if sigmoid else value
 
     def recon_loss1(self, z, edge_index, batch):
 
