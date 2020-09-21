@@ -94,7 +94,7 @@ class Net(torch.nn.Module):
         self.fc1 = torch.nn.Linear(2 * dim, dim)
         self.fc2 = torch.nn.Linear(dim, 1)
 
-        self.local_d = FF(dim, dim)
+        self.local_d = FF(dim, 2*dim)
         self.global_d = FF(2*dim, 2*dim)
 
         self.init_emb()
