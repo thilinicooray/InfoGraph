@@ -57,8 +57,6 @@ class Encoder(torch.nn.Module):
 
     def forward(self, data):
 
-        print('data ', data.x.size(), data.edge_index.size(), data.edge_attr.size())
-
         out = F.relu(self.lin0(data.x))
         h = out.unsqueeze(0)
 
@@ -159,7 +157,7 @@ class Net(torch.nn.Module):
                     m.bias.data.fill_(0.0)
 
     def supervised_loss(self, data):
-        print('data ', data.x, data.y)
+        print('data ', data.x, data.y, data.x.size(), data.y.size())
 
         node_mu, node_logvar, grouped_mu, grouped_logvar = self.encoder(data)
 
