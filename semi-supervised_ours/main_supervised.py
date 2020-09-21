@@ -142,9 +142,9 @@ if __name__ == '__main__':
     model = Net(dataset.num_features, dim, use_unsup_loss, separate_encoder).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=args.weight_decay)
 
-    val_error = test(val_loader)
-    test_error = test(test_loader)
-    print('Epoch: {:03d}, Validation MAE: {:.7f}, Test MAE: {:.7f},'.format(0, val_error, test_error))
+    #val_error = test(val_loader)
+    #test_error = test(test_loader)
+    #print('Epoch: {:03d}, Validation MAE: {:.7f}, Test MAE: {:.7f},'.format(0, val_error, test_error))
 
     losses = {'recon':[], 'node_kl':[], 'class_kl': [], 'cls_loss' : []}
 
