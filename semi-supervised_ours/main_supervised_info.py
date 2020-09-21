@@ -48,38 +48,26 @@ class Complete(object):
 
 def train(epoch, use_unsup_loss):
     model.train()
-    recon_loss_all = 0
-    kl_class_loss_all = 0
-    kl_node_loss_all = 0
+    loss_all = 0
+    contrast_loss_all = 0
     cls_loss_all = 0
 
-    un_recon_loss_all = 0
-    un_kl_class_loss_all = 0
-    un_kl_node_loss_all = 0
-
-    for data, data2 in zip(train_loader, unsup_train_loader):
-
+    for data in train_loader:
         data = data.to(device)
-        data2 = data2.to(device)
         optimizer.zero_grad()
 
-        node_kl_divergence_loss, class_kl_divergence_loss, reconstruction_error, cls_loss = model.supervised_loss(data)
-        recon_loss_all += reconstruction_error
-        kl_class_loss_all += class_kl_divergence_loss
-        kl_node_loss_all += node_kl_divergence_loss
-        cls_loss_all += cls_loss
+        cls_loss, contrast_loss = model.supervised_loss(data)
 
-        node_kl_divergence_loss, class_kl_divergence_loss, reconstruction_error, _ = model.unsupervised_loss(data2)
-        un_recon_loss_all += reconstruction_error
-        un_kl_class_loss_all += class_kl_divergence_loss
-        un_kl_node_loss_all += node_kl_divergence_loss
+        loss = cls_loss + contrast_loss
+
+        loss.backward()
+
+        cls_loss_all += cls_loss.item()
+        contrast_loss_all += contrast_loss.item()
 
         optimizer.step()
 
-
-    return recon_loss_all / len(train_loader.dataset), kl_class_loss_all / len(train_loader.dataset), kl_node_loss_all / len(train_loader.dataset), \
-           cls_loss_all / len(train_loader.dataset), un_recon_loss_all / len(unsup_train_loader.dataset), un_kl_class_loss_all / len(unsup_train_loader.dataset), \
-           un_kl_node_loss_all / len(unsup_train_loader.dataset)
+    return cls_loss_all / len(train_loader.dataset), contrast_loss_all / len(train_loader.dataset)
 
 
 def test(loader):
@@ -104,7 +92,7 @@ def seed_everything(seed=1234):
 
 if __name__ == '__main__':
     seed_everything()
-    from mlvae_model import Net
+    from model_infograph import Net
     from arguments import arg_parse
     args = arg_parse()
 
@@ -142,36 +130,34 @@ if __name__ == '__main__':
     val_loader = DataLoader(val_dataset, batch_size=batch_size)
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
-    unsup_train_dataset = dataset[20000:]
-    unsup_train_loader = DataLoader(unsup_train_dataset, batch_size=batch_size, shuffle=True)
+    if use_unsup_loss:
+        unsup_train_dataset = dataset[20000:]
+        unsup_train_loader = DataLoader(unsup_train_dataset, batch_size=batch_size, shuffle=True)
 
-    print(len(train_dataset), len(val_dataset), len(test_dataset), len(unsup_train_dataset))
-
-
+        print(len(train_dataset), len(val_dataset), len(test_dataset), len(unsup_train_dataset))
+    else:
+        print(len(train_dataset), len(val_dataset), len(test_dataset))
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = Net(dataset.num_features, dim, use_unsup_loss, separate_encoder).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=args.weight_decay)
+
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer, mode='min', factor=0.7, patience=5, min_lr=0.000001)
 
+    #val_error = test(val_loader)
+    #test_error = test(test_loader)
+    #print('Epoch: {:03d}, Validation MAE: {:.7f}, Test MAE: {:.7f},'.format(0, val_error, test_error))
 
-    sup_losses = {'recon':[], 'node_kl':[], 'class_kl': [], 'cls_loss' : []}
-    unsup_losses = {'recon':[], 'node_kl':[], 'class_kl': []}
+    losses = {'contrast':[], 'cls_loss' : []}
 
     best_val_error = None
     for epoch in range(1, epochs+1):
         lr = scheduler.optimizer.param_groups[0]['lr']
-        recon, class_kl, node_kl, cls, un_recon, un_class_kl, un_node_kl = train(epoch, use_unsup_loss)
+        cls_loss, contrast_loss = train(epoch, use_unsup_loss)
 
-
-        sup_losses['recon'].append(recon)
-        sup_losses['class_kl'].append(class_kl)
-        sup_losses['node_kl'].append(node_kl)
-        sup_losses['cls_loss'].append(cls)
-        unsup_losses['recon'].append(un_recon)
-        unsup_losses['class_kl'].append(un_class_kl)
-        unsup_losses['node_kl'].append(un_node_kl)
+        losses['contrast'].append(contrast_loss)
+        losses['cls_loss'].append(cls_loss)
 
 
         val_error = test(val_loader)
@@ -184,9 +170,8 @@ if __name__ == '__main__':
 
 
         print('Epoch: {:03d}, LR: {:7f} Validation MAE: {:.7f}, '
-              'Test MAE: {:.7f},'.format(epoch, 0.001, val_error, test_error))
+              'Test MAE: {:.7f},'.format(epoch, lr, val_error, test_error))
 
-        print('all sup losses ', sup_losses)
-        print('all unsup losses ', unsup_losses)
+        print('all losses ', losses)
 
 

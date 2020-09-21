@@ -48,14 +48,11 @@ class Complete(object):
 
 def train(epoch, use_unsup_loss):
     model.train()
-    recon_loss_all = 0
-    kl_class_loss_all = 0
-    kl_node_loss_all = 0
+    contrast_loss_all = 0
     cls_loss_all = 0
 
-    un_recon_loss_all = 0
-    un_kl_class_loss_all = 0
-    un_kl_node_loss_all = 0
+    un_contrast_loss_all = 0
+
 
     for data, data2 in zip(train_loader, unsup_train_loader):
 
@@ -63,23 +60,25 @@ def train(epoch, use_unsup_loss):
         data2 = data2.to(device)
         optimizer.zero_grad()
 
-        node_kl_divergence_loss, class_kl_divergence_loss, reconstruction_error, cls_loss = model.supervised_loss(data)
-        recon_loss_all += reconstruction_error
-        kl_class_loss_all += class_kl_divergence_loss
-        kl_node_loss_all += node_kl_divergence_loss
-        cls_loss_all += cls_loss
+        cls_loss, contrast_loss = model.supervised_loss(data)
 
-        node_kl_divergence_loss, class_kl_divergence_loss, reconstruction_error, _ = model.unsupervised_loss(data2)
-        un_recon_loss_all += reconstruction_error
-        un_kl_class_loss_all += class_kl_divergence_loss
-        un_kl_node_loss_all += node_kl_divergence_loss
+        loss = cls_loss + contrast_loss
+
+        loss.backward()
+
+        cls_loss_all += cls_loss.item()
+        contrast_loss_all += contrast_loss.item()
+
+        _, un_contrast_loss = model.unsupervised_loss(data2)
+        un_contrast_loss.backward()
+
+        un_contrast_loss_all += un_contrast_loss.item()
+
 
         optimizer.step()
 
 
-    return recon_loss_all / len(train_loader.dataset), kl_class_loss_all / len(train_loader.dataset), kl_node_loss_all / len(train_loader.dataset), \
-           cls_loss_all / len(train_loader.dataset), un_recon_loss_all / len(unsup_train_loader.dataset), un_kl_class_loss_all / len(unsup_train_loader.dataset), \
-           un_kl_node_loss_all / len(unsup_train_loader.dataset)
+    return cls_loss_all / len(train_loader.dataset), contrast_loss_all / len(train_loader.dataset), un_contrast_loss_all / len(unsup_train_loader.dataset)
 
 
 def test(loader):
@@ -104,7 +103,7 @@ def seed_everything(seed=1234):
 
 if __name__ == '__main__':
     seed_everything()
-    from mlvae_model import Net
+    from model_infograph import Net
     from arguments import arg_parse
     args = arg_parse()
 
@@ -156,22 +155,17 @@ if __name__ == '__main__':
         optimizer, mode='min', factor=0.7, patience=5, min_lr=0.000001)
 
 
-    sup_losses = {'recon':[], 'node_kl':[], 'class_kl': [], 'cls_loss' : []}
-    unsup_losses = {'recon':[], 'node_kl':[], 'class_kl': []}
+    sup_losses = {'contrast':[], 'cls_loss' : []}
+    unsup_losses = {'contrast':[]}
 
     best_val_error = None
     for epoch in range(1, epochs+1):
         lr = scheduler.optimizer.param_groups[0]['lr']
-        recon, class_kl, node_kl, cls, un_recon, un_class_kl, un_node_kl = train(epoch, use_unsup_loss)
+        cls_loss, contrast_loss, un_contrast_loss = train(epoch, use_unsup_loss)
 
-
-        sup_losses['recon'].append(recon)
-        sup_losses['class_kl'].append(class_kl)
-        sup_losses['node_kl'].append(node_kl)
-        sup_losses['cls_loss'].append(cls)
-        unsup_losses['recon'].append(un_recon)
-        unsup_losses['class_kl'].append(un_class_kl)
-        unsup_losses['node_kl'].append(un_node_kl)
+        sup_losses['contrast'].append(contrast_loss)
+        sup_losses['cls_loss'].append(cls_loss)
+        unsup_losses['contrast'].append(un_contrast_loss)
 
 
         val_error = test(val_loader)
