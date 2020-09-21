@@ -199,7 +199,7 @@ class Net(torch.nn.Module):
 
         reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, y_expanded)
 
-        reconstruction_error =  mse_loss(reconstructed_node, data.x)
+        reconstruction_error =  mse_loss(reconstructed_node, data.x) + self.recon_loss1(reconstructed_node, data.edge_index, data.batch)
         #reconstruction_error = 1e-5*self.recon_loss1(reconstructed_node, edge_index, batch)
 
         graph_emb = global_mean_pool(class_latent_embeddings, data.batch)
@@ -210,7 +210,7 @@ class Net(torch.nn.Module):
 
         cls_loss = F.mse_loss(classification, data.y)
 
-        total_loss = (node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error + cls_loss) * data.num_graphs
+        total_loss = node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error + cls_loss
 
         total_loss.backward()
 
@@ -268,11 +268,11 @@ class Net(torch.nn.Module):
 
         reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, classification_expanded)
 
-        reconstruction_error =  mse_loss(reconstructed_node, data.x)
+        reconstruction_error =  mse_loss(reconstructed_node, data.x) + self.recon_loss1(reconstructed_node, data.edge_index, data.batch)
         #reconstruction_error = 1e-5*self.recon_loss1(reconstructed_node, edge_index, batch)
 
 
-        total_loss = (node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error) * data.num_graphs
+        total_loss = node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error
 
         total_loss.backward()
 
@@ -294,3 +294,39 @@ class Net(torch.nn.Module):
         classification = out.view(-1)
 
         return classification
+
+    def recon_loss1(self, z, edge_index, batch):
+
+        EPS = 1e-15
+        MAX_LOGSTD = 10
+        r"""Given latent variables :obj:`z`, computes the binary cross
+        entropy loss for positive edges :obj:`pos_edge_index` and negative
+        sampled edges.
+  
+        Args:
+            z (Tensor): The latent space :math:`\mathbf{Z}`.
+            pos_edge_index (LongTensor): The positive edges to train against.
+        """
+
+        #org_adj = to_dense_adj(edge_index, batch)
+        pos_weight = float(z.size(0) * z.size(0) - edge_index.size(0)) / edge_index.size(0)
+        norm = z.size(0) * z.size(0) / float((z.size(0) * z.size(0) - edge_index.size(0)) * 2)
+
+
+
+        recon_adj = self.edge_recon(z, edge_index)
+
+
+        pos_loss = -torch.log(
+            recon_adj + EPS).mean()
+
+        # Do not include self-loops in negative samples
+        pos_edge_index, _ = remove_self_loops(edge_index)
+        pos_edge_index, _ = add_self_loops(pos_edge_index)
+
+        neg_edge_index = negative_sampling(pos_edge_index, z.size(0)) #random thingggg
+        neg_loss = -torch.log(1 -
+                              self.edge_recon(z, neg_edge_index) +
+                              EPS).mean()
+
+        return norm*(pos_loss*pos_weight + neg_loss)
