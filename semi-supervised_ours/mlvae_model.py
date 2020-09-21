@@ -75,13 +75,17 @@ class Encoder(torch.nn.Module):
         graph_mu_id = F.relu(self.graph_mu_conv(out, data.edge_index, data.edge_attr))
         graph_lv_id = F.relu(self.graph_lv_conv(out, data.edge_index, data.edge_attr))
 
-        grouped_mu = self.set2set_mu(graph_mu_id, data.batch)
+        '''grouped_mu = self.set2set_mu(graph_mu_id, data.batch)
         grouped_lv = self.set2set_lv(graph_lv_id, data.batch)
 
         _, count = torch.unique(data.batch,  return_counts=True)
 
         grouped_mu_expanded = torch.repeat_interleave(grouped_mu, count, dim=0)
-        grouped_lvar_expanded = torch.repeat_interleave(grouped_lv, count, dim=0)
+        grouped_lvar_expanded = torch.repeat_interleave(grouped_lv, count, dim=0)'''
+
+        grouped_mu_expanded, grouped_lvar_expanded = accumulate_group_evidence(
+            graph_mu_id.data, graph_lv_id.data, data.batch, True
+        )
 
         return node_mu, node_lv, grouped_mu_expanded, grouped_lvar_expanded
 
