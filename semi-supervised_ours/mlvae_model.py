@@ -67,6 +67,8 @@ class Encoder(torch.nn.Module):
             # print(out.shape) : [num_node x dim]
             feat_map.append(out)
 
+        print('out ', out.size())
+
 
         node_mu = F.relu(self.node_mu_conv(out, data.edge_index, data.edge_attr))
         node_lv = F.relu(self.node_lv_conv(out, data.edge_index, data.edge_attr))
