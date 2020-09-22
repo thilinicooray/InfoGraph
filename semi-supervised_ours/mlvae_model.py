@@ -137,10 +137,11 @@ class FF(nn.Module):
         return self.block(x) + self.linear_shortcut(x)
 
 class Net(torch.nn.Module):
-    def __init__(self, num_features, dim, use_unsup_loss=False, separate_encoder=False):
+    def __init__(self, num_features, dim, std, use_unsup_loss=False, separate_encoder=False):
         super(Net, self).__init__()
 
         self.embedding_dim = dim
+        self.std = std
 
         self.encoder = Encoder(num_features, dim)
         self.decoder = Decoder(dim, dim*2, num_features)
@@ -210,8 +211,9 @@ class Net(torch.nn.Module):
         classification = out.view(-1)
 
         cls_loss = F.mse_loss(classification, data.y)
+        #cls_loss = torch.mean((classification * self.std - data.y * self.std).abs())
 
-        total_loss = node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error + cls_loss
+        total_loss = node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error + 20*cls_loss
 
         total_loss.backward()
 
