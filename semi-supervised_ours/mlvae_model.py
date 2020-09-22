@@ -296,7 +296,7 @@ class Net(torch.nn.Module):
 
     def forward(self, data):
 
-        node_mu, node_logvar, grouped_mu, grouped_logvar = self.encoder(data)
+        node_mu, node_logvar, grouped_mu, grouped_logvar, _ = self.encoder(data)
 
 
         class_latent_embeddings = group_wise_reparameterize(
