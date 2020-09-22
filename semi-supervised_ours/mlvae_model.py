@@ -210,8 +210,8 @@ class Net(torch.nn.Module):
         out = self.fc2(out)
         classification = out.view(-1)
 
-        #cls_loss = F.mse_loss(classification, data.y)
-        cls_loss = torch.mean((classification * self.std - data.y * self.std).abs())
+        cls_loss = F.mse_loss(classification, data.y)
+        #cls_loss = torch.mean((classification * self.std - data.y * self.std).abs())
 
         print('losses ', cls_loss.item(), reconstruction_error.item(), node_kl_divergence_loss.item())
 
