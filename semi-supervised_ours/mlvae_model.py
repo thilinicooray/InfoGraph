@@ -72,7 +72,7 @@ class Encoder(torch.nn.Module):
             feat_map.append(out)
 
 
-        node_graph = self.set2set_nodes(out)
+        node_graph = self.set2set_nodes(out, data.batch)
         node_mu = F.relu(self.node_mu_conv(out, data.edge_index, data.edge_attr))
         node_lv = F.relu(self.node_lv_conv(out, data.edge_index, data.edge_attr))
         graph_mu_id = F.relu(self.graph_mu_conv(out, data.edge_index, data.edge_attr))
@@ -217,8 +217,8 @@ class Net(torch.nn.Module):
 
         cls_loss = F.mse_loss(classification, data.y)
 
-        out_node = F.relu(self.fc1(node_graph))
-        out_node = self.fc2(out_node)
+        out_node = F.relu(self.fc1_sup(node_graph))
+        out_node = self.fc2_sup(out_node)
         classification_node = out_node.view(-1)
 
         cls_loss_node = F.mse_loss(classification_node, data.y)
