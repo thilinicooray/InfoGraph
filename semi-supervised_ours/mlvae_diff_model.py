@@ -100,7 +100,7 @@ class Decoder(torch.nn.Module):
         super(Decoder, self).__init__()
 
         self.linear_model = torch.nn.Sequential(OrderedDict([
-            ('linear_1', torch.nn.Linear(in_features=node_dim + class_dim + 1, out_features=node_dim, bias=True)),
+            ('linear_1', torch.nn.Linear(in_features=node_dim + class_dim + class_dim + 1, out_features=node_dim, bias=True)),
             ('relu_1', ReLU()),
 
             ('linear_2', torch.nn.Linear(in_features=node_dim, out_features=feat_size, bias=True)),
@@ -197,7 +197,7 @@ class Net(torch.nn.Module):
 
 
         #reduce kl div between entire graph summary and current target
-        kl_div_diff = 10*self.compute_two_gaussian_loss(grouped_mu, grouped_logvar, target_mu, target_logvar)
+        #kl_div_diff = 10*self.compute_two_gaussian_loss(grouped_mu, grouped_logvar, target_mu, target_logvar)
 
 
         # reconstruct samples
@@ -210,18 +210,20 @@ class Net(torch.nn.Module):
             training=True, mu=grouped_mu, logvar=grouped_logvar, labels_batch=data.batch, cuda=True
         )
 
+        target_latent_embeddings = group_wise_reparameterize(
+            training=True, mu=target_mu, logvar=target_logvar, labels_batch=data.batch, cuda=True
+        )
+
         _, count = torch.unique(data.batch,  return_counts=True)
 
         y_expanded = torch.repeat_interleave(data.y, count, dim=0)
 
-        reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, y_expanded)
+        reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, target_latent_embeddings, y_expanded)
 
         reconstruction_error =  mse_loss(reconstructed_node, data.x) # + self.recon_loss1(reconstructed_node, data.edge_index, data.batch)
         #reconstruction_error = 1e-5*self.recon_loss1(reconstructed_node, edge_index, batch)
 
-        target_latent_embeddings = group_wise_reparameterize(
-            training=True, mu=target_mu, logvar=target_logvar, labels_batch=data.batch, cuda=True
-        )
+
 
         graph_emb = global_mean_pool(target_latent_embeddings, data.batch)
 
@@ -231,7 +233,7 @@ class Net(torch.nn.Module):
 
         cls_loss = F.mse_loss(classification, data.y)
 
-        total_loss = node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error + cls_loss + target_kl_divergence_loss + kl_div_diff
+        total_loss = node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error + cls_loss + target_kl_divergence_loss #+ kl_div_diff
 
         total_loss.backward()
 
@@ -273,7 +275,7 @@ class Net(torch.nn.Module):
 
 
         #reduce kl div between entire graph summary and current target
-        kl_div_diff = 10*self.compute_two_gaussian_loss(grouped_mu, grouped_logvar, target_mu, target_logvar)
+        #kl_div_diff = 10*self.compute_two_gaussian_loss(grouped_mu, grouped_logvar, target_mu, target_logvar)
 
 
         # reconstruct samples
@@ -300,13 +302,13 @@ class Net(torch.nn.Module):
         classification_expanded = torch.repeat_interleave(classification, count, dim=0)
 
 
-        reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, classification_expanded)
+        reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, target_latent_embeddings, classification_expanded)
 
         reconstruction_error =  mse_loss(reconstructed_node, data.x) #+ self.recon_loss1(reconstructed_node, data.edge_index, data.batch)
         #reconstruction_error = 1e-5*self.recon_loss1(reconstructed_node, edge_index, batch)
 
 
-        total_loss = node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error+ target_kl_divergence_loss + kl_div_diff
+        total_loss = node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error+ target_kl_divergence_loss #+ kl_div_diff
 
         total_loss.backward()
 
