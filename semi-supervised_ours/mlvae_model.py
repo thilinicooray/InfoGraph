@@ -152,7 +152,7 @@ class Net(torch.nn.Module):
         self.fc1 = torch.nn.Linear(2 * dim, dim)
         self.fc2 = torch.nn.Linear(dim, 1)
 
-        self.fc1_sup = torch.nn.Linear(2 * dim, dim)
+        self.fc1_sup = torch.nn.Linear(dim, dim)
         self.fc2_sup = torch.nn.Linear(dim, 1)
 
         self.init_emb()
