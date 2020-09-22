@@ -109,7 +109,7 @@ if __name__ == '__main__':
     args = arg_parse()
 
     target = args.target
-    dim = 32
+    dim = 64
     epochs = 500
     batch_size = 20
     lamda = args.lamda
