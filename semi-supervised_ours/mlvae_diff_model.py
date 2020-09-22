@@ -193,11 +193,11 @@ class Net(torch.nn.Module):
         target_kl_divergence_loss = -0.5 / n_nodes * torch.mean(torch.sum(
             1 + 2 * target_logvar - target_mu.pow(2) - target_logvar.exp().pow(2), 1))
 
-        target_kl_divergence_loss = target_kl_divergence_loss
+        target_kl_divergence_loss = 10*target_kl_divergence_loss
 
 
         #reduce kl div between entire graph summary and current target
-        kl_div_diff = self.compute_two_gaussian_loss(grouped_mu, grouped_logvar, target_mu, target_logvar)
+        kl_div_diff = 10*self.compute_two_gaussian_loss(grouped_mu, grouped_logvar, target_mu, target_logvar)
 
 
         # reconstruct samples
@@ -232,9 +232,6 @@ class Net(torch.nn.Module):
         cls_loss = F.mse_loss(classification, data.y)
 
         total_loss = node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error + cls_loss + target_kl_divergence_loss + kl_div_diff
-
-        print('new loss ', node_kl_divergence_loss.item(), class_kl_divergence_loss.item(), reconstruction_error.item(), cls_loss.item(),
-              target_kl_divergence_loss.item(), kl_div_diff.item())
 
         total_loss.backward()
 
@@ -272,11 +269,11 @@ class Net(torch.nn.Module):
         target_kl_divergence_loss = -0.5 / n_nodes * torch.mean(torch.sum(
             1 + 2 * target_logvar - target_mu.pow(2) - target_logvar.exp().pow(2), 1))
 
-        target_kl_divergence_loss = target_kl_divergence_loss
+        target_kl_divergence_loss = 10*target_kl_divergence_loss
 
 
         #reduce kl div between entire graph summary and current target
-        kl_div_diff = self.compute_two_gaussian_loss(grouped_mu, grouped_logvar, target_mu, target_logvar)
+        kl_div_diff = 10*self.compute_two_gaussian_loss(grouped_mu, grouped_logvar, target_mu, target_logvar)
 
 
         # reconstruct samples
