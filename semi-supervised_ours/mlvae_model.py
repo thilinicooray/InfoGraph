@@ -72,8 +72,8 @@ class Encoder(torch.nn.Module):
             feat_map.append(out)
 
 
-        #node_graph = self.set2set_nodes(out, data.batch)
-        node_graph = global_add_pool(out, data.batch)
+        node_graph = self.set2set_nodes(out, data.batch)
+        #node_graph = global_add_pool(out, data.batch)
         node_mu = F.relu(self.node_mu_conv(out, data.edge_index, data.edge_attr))
         node_lv = F.relu(self.node_lv_conv(out, data.edge_index, data.edge_attr))
         graph_mu_id = F.relu(self.graph_mu_conv(out, data.edge_index, data.edge_attr))
@@ -212,22 +212,22 @@ class Net(torch.nn.Module):
 
         graph_emb = global_mean_pool(class_latent_embeddings, data.batch)
 
-        out = F.relu(self.fc1(graph_emb))
+        out = F.relu(self.fc1(graph_emb + node_graph))
         out = self.fc2(out)
         classification = out.view(-1)
 
         cls_loss = F.mse_loss(classification, data.y)
 
-        out_node = F.relu(self.fc1_sup(node_graph))
+        '''out_node = F.relu(self.fc1_sup(node_graph))
         out_node = self.fc2_sup(out_node)
         classification_node = out_node.view(-1)
 
-        cls_loss_node = F.mse_loss(classification_node, data.y)
+        cls_loss_node = F.mse_loss(classification_node, data.y)'''
 
 
         #cls_loss = torch.mean((classification * self.std - data.y * self.std).abs())
 
-        total_loss = node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error + 100*cls_loss + cls_loss_node
+        total_loss = node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error + 100*cls_loss #+ cls_loss_node
 
         total_loss.backward()
 
@@ -297,7 +297,7 @@ class Net(torch.nn.Module):
 
     def forward(self, data):
 
-        node_mu, node_logvar, grouped_mu, grouped_logvar, _ = self.encoder(data)
+        node_mu, node_logvar, grouped_mu, grouped_logvar, node_graph = self.encoder(data)
 
 
         class_latent_embeddings = group_wise_reparameterize(
@@ -306,7 +306,7 @@ class Net(torch.nn.Module):
 
         graph_emb = global_mean_pool(class_latent_embeddings, data.batch)
 
-        out = F.relu(self.fc1(graph_emb))
+        out = F.relu(self.fc1(graph_emb + node_graph))
         out = self.fc2(out)
         classification = out.view(-1)
 
