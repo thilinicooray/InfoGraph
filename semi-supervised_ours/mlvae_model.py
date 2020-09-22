@@ -54,6 +54,7 @@ class Encoder(torch.nn.Module):
 
         self.set2set_mu = Set2Set(dim, processing_steps=3)
         self.set2set_lv = Set2Set(dim, processing_steps=3)
+        self.set2set_nodes = Set2Set(dim, processing_steps=3)
 
 
     def forward(self, data):
@@ -71,6 +72,7 @@ class Encoder(torch.nn.Module):
             feat_map.append(out)
 
 
+        node_graph = self.set2set_nodes(out)
         node_mu = F.relu(self.node_mu_conv(out, data.edge_index, data.edge_attr))
         node_lv = F.relu(self.node_lv_conv(out, data.edge_index, data.edge_attr))
         graph_mu_id = F.relu(self.graph_mu_conv(out, data.edge_index, data.edge_attr))
@@ -84,7 +86,7 @@ class Encoder(torch.nn.Module):
         grouped_mu_expanded = torch.repeat_interleave(grouped_mu, count, dim=0)
         grouped_lvar_expanded = torch.repeat_interleave(grouped_lv, count, dim=0)
 
-        return node_mu, node_lv, grouped_mu_expanded, grouped_lvar_expanded
+        return node_mu, node_lv, grouped_mu_expanded, grouped_lvar_expanded, node_graph
 
 class Decoder(torch.nn.Module):
     def __init__(self, node_dim, class_dim, feat_size):
@@ -149,6 +151,9 @@ class Net(torch.nn.Module):
         self.fc1 = torch.nn.Linear(2 * dim, dim)
         self.fc2 = torch.nn.Linear(dim, 1)
 
+        self.fc1_sup = torch.nn.Linear(2 * dim, dim)
+        self.fc2_sup = torch.nn.Linear(dim, 1)
+
         self.init_emb()
 
     def init_emb(self):
@@ -161,7 +166,7 @@ class Net(torch.nn.Module):
 
     def supervised_loss(self, data):
 
-        node_mu, node_logvar, grouped_mu, grouped_logvar = self.encoder(data)
+        node_mu, node_logvar, grouped_mu, grouped_logvar, node_graph = self.encoder(data)
 
         n_nodes = data.x.size(0)
 
@@ -211,9 +216,17 @@ class Net(torch.nn.Module):
         classification = out.view(-1)
 
         cls_loss = F.mse_loss(classification, data.y)
+
+        out_node = F.relu(self.fc1(node_graph))
+        out_node = self.fc2(out_node)
+        classification_node = out_node.view(-1)
+
+        cls_loss_node = F.mse_loss(classification_node, data.y)
+
+
         #cls_loss = torch.mean((classification * self.std - data.y * self.std).abs())
 
-        total_loss = node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error + 100*cls_loss
+        total_loss = node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error + 100*cls_loss + cls_loss_node
 
         total_loss.backward()
 
@@ -225,7 +238,7 @@ class Net(torch.nn.Module):
 
     def unsupervised_loss(self, data):
 
-        node_mu, node_logvar, grouped_mu, grouped_logvar = self.encoder(data)
+        node_mu, node_logvar, grouped_mu, grouped_logvar, _ = self.encoder(data)
 
         n_nodes = data.x.size(0)
 
