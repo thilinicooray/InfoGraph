@@ -94,7 +94,7 @@ class Decoder(torch.nn.Module):
         super(Decoder, self).__init__()
 
         self.linear_model = torch.nn.Sequential(OrderedDict([
-            ('linear_1', torch.nn.Linear(in_features=node_dim + class_dim + 1, out_features=node_dim, bias=True)),
+            ('linear_1', torch.nn.Linear(in_features=node_dim + class_dim, out_features=node_dim, bias=True)),
             ('relu_1', ReLU()),
 
             ('linear_2', torch.nn.Linear(in_features=node_dim, out_features=feat_size, bias=True)),
@@ -103,7 +103,8 @@ class Decoder(torch.nn.Module):
 
     def forward(self, node_latent_space, class_latent_space, y):
 
-        x = torch.cat((node_latent_space, class_latent_space, y.unsqueeze(1)), dim=1)
+        #x = torch.cat((node_latent_space, class_latent_space, y.unsqueeze(1)), dim=1)
+        x = torch.cat((node_latent_space, class_latent_space), dim=1)
 
         x = self.linear_model(x)
 
