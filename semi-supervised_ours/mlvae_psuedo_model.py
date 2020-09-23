@@ -37,6 +37,9 @@ class Sup_Encoder(torch.nn.Module):
         # self.lin1 = torch.nn.Linear(2 * dim, dim)
         # self.lin2 = torch.nn.Linear(dim, 1)
 
+        self.fc1 = torch.nn.Linear(2 * dim, dim)
+        self.fc2 = torch.nn.Linear(dim, 1)
+
     def forward(self, data):
         out = F.relu(self.lin0(data.x))
         h = out.unsqueeze(0)
@@ -50,7 +53,13 @@ class Sup_Encoder(torch.nn.Module):
             feat_map.append(out)
 
         out = self.set2set(out, data.batch)
-        return out
+
+        out = F.relu(self.fc1(out))
+        out = self.fc2(out)
+        classification = out.view(-1)
+
+
+        return classification
 
 class Encoder(torch.nn.Module):
     def __init__(self, num_features, dim):
