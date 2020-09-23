@@ -177,7 +177,7 @@ if __name__ == '__main__':
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=args.weight_decay)
     optimizer_teacher = torch.optim.Adam(model_teacher.parameters(), lr=0.001, weight_decay=args.weight_decay)
     scheduler1 = torch.optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer, mode='min', factor=0.7, patience=5, min_lr=0.000001)
+        optimizer, mode='min', factor=0.9, patience=5, min_lr=0.000001)
 
     #scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
 
@@ -201,7 +201,7 @@ if __name__ == '__main__':
 
 
         val_error = test(val_loader)
-        #scheduler1.step(val_error)
+        scheduler1.step(val_error)
         #scheduler.step()
 
         if best_val_error is None or val_error <= best_val_error:
