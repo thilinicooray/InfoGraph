@@ -137,7 +137,7 @@ class Decoder(torch.nn.Module):
 
     def forward(self, node_latent_space, class_latent_space):
 
-        x = torch.cat((node_latent_space, node_latent_space, class_latent_space), dim=1)
+        x = torch.cat((node_latent_space, class_latent_space), dim=1)
 
         x = self.linear_model(x)
 
@@ -169,7 +169,7 @@ class Net(torch.nn.Module):
         self.std = std
 
         self.encoder = Encoder(num_features, dim)
-        self.decoder = Decoder(dim*2, dim*2, num_features)
+        self.decoder = Decoder(dim, dim*2, num_features)
 
         self.fc1 = torch.nn.Linear(2 * dim, dim)
         self.fc2 = torch.nn.Linear(dim, 1)
