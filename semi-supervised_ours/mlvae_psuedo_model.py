@@ -93,9 +93,9 @@ class Encoder(torch.nn.Module):
         self.set2set_lv = Set2Set(dim, processing_steps=3)
 
 
-    def forward(self, data):
+    def forward(self, data, psuedo):
 
-        out = F.relu(self.lin0(data.x))
+        out = F.relu(self.lin0(torch.cat([data.x, psuedo], -1)))
         h = out.unsqueeze(0)
 
 
@@ -194,7 +194,7 @@ class Net(torch.nn.Module):
 
 
 
-        node_mu, node_logvar, grouped_mu, grouped_logvar = self.encoder(torch.cat([data, psuedo_expanded], -1))
+        node_mu, node_logvar, grouped_mu, grouped_logvar = self.encoder(data, psuedo_expanded)
 
         n_nodes = data.x.size(0)
 
@@ -273,7 +273,7 @@ class Net(torch.nn.Module):
         _, count = torch.unique(data.batch,  return_counts=True)
         psuedo_expanded = torch.repeat_interleave(psuedo_label, count, dim=0)
 
-        node_mu, node_logvar, grouped_mu, grouped_logvar = self.encoder(torch.cat([data, psuedo_expanded], -1))
+        node_mu, node_logvar, grouped_mu, grouped_logvar = self.encoder(data, psuedo_expanded)
 
         n_nodes = data.x.size(0)
 
@@ -334,7 +334,7 @@ class Net(torch.nn.Module):
         _, count = torch.unique(data.batch,  return_counts=True)
         psuedo_expanded = torch.repeat_interleave(psuedo_label, count, dim=0)
 
-        node_mu, node_logvar, grouped_mu, grouped_logvar = self.encoder(torch.cat([data, psuedo_expanded], -1))
+        node_mu, node_logvar, grouped_mu, grouped_logvar = self.encoder(data, psuedo_expanded)
 
 
         class_latent_embeddings = group_wise_reparameterize(
