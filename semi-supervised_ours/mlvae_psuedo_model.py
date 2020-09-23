@@ -326,7 +326,7 @@ class Net(torch.nn.Module):
         #reconstruction_error = 1e-5*self.recon_loss1(reconstructed_node, edge_index, batch)
 
 
-        total_loss = 0.1*(node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error) #+ cls_loss
+        total_loss = (node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error) #+ cls_loss
 
         total_loss.backward()
 
