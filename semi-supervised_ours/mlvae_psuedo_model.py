@@ -131,16 +131,17 @@ class Decoder(torch.nn.Module):
         super(Decoder, self).__init__()
 
         self.linear_model = torch.nn.Sequential(OrderedDict([
-            ('linear_1', torch.nn.Linear(in_features=node_dim + class_dim, out_features=node_dim, bias=True)),
+            ('linear_1', torch.nn.Linear(in_features=node_dim + class_dim + 1, out_features=node_dim, bias=True)),
             ('relu_1', ReLU()),
 
             ('linear_2', torch.nn.Linear(in_features=node_dim, out_features=feat_size, bias=True)),
             ('relu_final', ReLU()),
         ]))
 
-    def forward(self, node_latent_space, class_latent_space):
+    def forward(self, node_latent_space, class_latent_space, y):
 
-        x = torch.cat((node_latent_space, class_latent_space), dim=1)
+        #x = torch.cat((node_latent_space, class_latent_space), dim=1)
+        x = torch.cat((node_latent_space, class_latent_space, y.unsqueeze(1)), dim=1)
 
         x = self.linear_model(x)
 
@@ -239,9 +240,9 @@ class Net(torch.nn.Module):
         out = self.fc2(out)
         classification = out.view(-1)
 
-        #y_expanded = torch.repeat_interleave(data.y, count, dim=0)
+        y_expanded = torch.repeat_interleave(classification, count, dim=0)
 
-        reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
+        reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, y_expanded)
 
         reconstruction_error =  mse_loss(reconstructed_node, data.x) # + self.recon_loss1(reconstructed_node, data.edge_index, data.batch)
         #reconstruction_error = 1e-5*self.recon_loss1(reconstructed_node, edge_index, batch)
@@ -310,23 +311,23 @@ class Net(torch.nn.Module):
             training=True, mu=grouped_mu, logvar=grouped_logvar, labels_batch=data.batch, cuda=True
         )
 
-        '''graph_emb = global_mean_pool(class_latent_embeddings, data.batch)
+        graph_emb = global_mean_pool(class_latent_embeddings, data.batch)
         out = F.relu(self.fc1(graph_emb))
         out = self.fc2(out)
         classification = out.view(-1)
 
-        cls_loss = F.mse_loss(classification, psuedo_label)'''
+        #cls_loss = F.mse_loss(classification, psuedo_label)
 
-        #classification_expanded = torch.repeat_interleave(classification, count, dim=0)'''
+        classification_expanded = torch.repeat_interleave(classification, count, dim=0)
 
 
-        reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
+        reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, classification_expanded)
 
         reconstruction_error =  mse_loss(reconstructed_node, data.x) #+ self.recon_loss1(reconstructed_node, data.edge_index, data.batch)
         #reconstruction_error = 1e-5*self.recon_loss1(reconstructed_node, edge_index, batch)
 
 
-        total_loss = 0.001*(node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error) #+ cls_loss
+        total_loss = (node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error) #+ cls_loss
 
         total_loss.backward()
 
