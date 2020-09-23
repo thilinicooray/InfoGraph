@@ -70,6 +70,8 @@ def train(epoch, use_unsup_loss):
 
         sup_loss = F.mse_loss(node_graph_pred, data.y)
 
+        print('teacher loss ', sup_loss.item())
+
         sup_loss.backward()
 
         optimizer_teacher.step()
@@ -132,7 +134,7 @@ if __name__ == '__main__':
 
     target = args.target
     dim = 64
-    epochs = 200
+    epochs = 1000
     batch_size = 20
     lamda = args.lamda
     use_unsup_loss = args.use_unsup_loss
@@ -213,7 +215,7 @@ if __name__ == '__main__':
         print('Epoch: {:03d}, LR: {:7f} Validation MAE: {:.7f}, '
               'Test MAE: {:.7f},'.format(epoch, lr, val_error, test_error))
 
-        #print('all sup losses ', sup_losses)
-        #print('all unsup losses ', unsup_losses)
+        print('all sup losses ', sup_losses)
+        print('all unsup losses ', unsup_losses)
 
 
