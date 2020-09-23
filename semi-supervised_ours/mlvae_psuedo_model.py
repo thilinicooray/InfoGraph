@@ -95,7 +95,7 @@ class Encoder(torch.nn.Module):
 
     def forward(self, data, psuedo):
 
-        out = F.relu(self.lin0(torch.cat([data.x, psuedo], -1)))
+        out = F.relu(self.lin0(torch.cat([data.x, psuedo.unsqueeze(1)], -1)))
         h = out.unsqueeze(0)
 
 
