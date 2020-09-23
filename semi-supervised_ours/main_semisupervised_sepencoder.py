@@ -104,7 +104,7 @@ def seed_everything(seed=1234):
 
 if __name__ == '__main__':
     seed_everything()
-    from mlvae_model import Net
+    from mlvae_sepencoder_model import Net
     from arguments import arg_parse
     args = arg_parse()
 
