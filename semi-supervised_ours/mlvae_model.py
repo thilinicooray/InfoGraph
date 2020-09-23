@@ -39,10 +39,10 @@ class Encoder(torch.nn.Module):
         #disentangling layers
 
         nn1 = Sequential(Linear(5, 128), ReLU(), Linear(128, dim * dim))
-        self.node_mu_conv = NNConv(dim, dim*2, nn1, aggr='mean', root_weight=False)
+        self.node_mu_conv = NNConv(dim, dim, nn1, aggr='mean', root_weight=False)
 
         nn2 = Sequential(Linear(5, 128), ReLU(), Linear(128, dim * dim))
-        self.node_lv_conv = NNConv(dim, dim*2, nn2, aggr='mean', root_weight=False)
+        self.node_lv_conv = NNConv(dim, dim, nn2, aggr='mean', root_weight=False)
 
         nn3 = Sequential(Linear(5, 128), ReLU(), Linear(128, dim * dim))
         self.graph_mu_conv = NNConv(dim, dim, nn3, aggr='mean', root_weight=False)
@@ -104,7 +104,7 @@ class Decoder(torch.nn.Module):
     def forward(self, node_latent_space, class_latent_space, y):
 
         #x = torch.cat((node_latent_space, class_latent_space, y.unsqueeze(1)), dim=1)
-        x = torch.cat((node_latent_space, class_latent_space), dim=1)
+        x = torch.cat((node_latent_space, node_latent_space, class_latent_space), dim=1)
 
         x = self.linear_model(x)
 
