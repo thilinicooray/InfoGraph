@@ -26,7 +26,7 @@ from utils import *
 
 class Sup_Encoder(torch.nn.Module):
     def __init__(self, num_features, dim):
-        super(Encoder, self).__init__()
+        super(Sup_Encoder, self).__init__()
         self.lin0 = torch.nn.Linear(num_features, dim)
 
         nn = Sequential(Linear(5, 128), ReLU(), Linear(128, dim * dim))
