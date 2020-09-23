@@ -179,6 +179,9 @@ if __name__ == '__main__':
     scheduler1 = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer, mode='min', factor=0.9, patience=5, min_lr=0.000001)
 
+    scheduler2 = torch.optim.lr_scheduler.ReduceLROnPlateau(
+        optimizer_teacher, mode='min', factor=0.9, patience=5, min_lr=0.000001)
+
     #scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
 
 
@@ -202,6 +205,7 @@ if __name__ == '__main__':
 
         val_error = test(val_loader)
         scheduler1.step(val_error)
+        scheduler2.step(val_error)
         #scheduler.step()
 
         if best_val_error is None or val_error <= best_val_error:
