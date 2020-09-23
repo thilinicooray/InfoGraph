@@ -261,7 +261,7 @@ class Net(torch.nn.Module):
 
         #cls_loss = torch.mean((classification * self.std - data.y * self.std).abs())
 
-        total_loss = 100*(node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error + 100*cls_loss) #+ cls_loss_node
+        total_loss = 1000*(node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error + 100*cls_loss) #+ cls_loss_node
 
         total_loss.backward()
 
@@ -326,7 +326,7 @@ class Net(torch.nn.Module):
         #reconstruction_error = 1e-5*self.recon_loss1(reconstructed_node, edge_index, batch)
 
 
-        total_loss = 100*(node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error) #+ cls_loss
+        total_loss = 1000*(node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error) #+ cls_loss
 
         total_loss.backward()
 
