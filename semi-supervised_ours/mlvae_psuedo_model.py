@@ -240,7 +240,7 @@ class Net(torch.nn.Module):
 
         reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
 
-        reconstruction_error =  0.001* mse_loss(reconstructed_node, data.x) # + self.recon_loss1(reconstructed_node, data.edge_index, data.batch)
+        reconstruction_error =  mse_loss(reconstructed_node, data.x) # + self.recon_loss1(reconstructed_node, data.edge_index, data.batch)
         #reconstruction_error = 1e-5*self.recon_loss1(reconstructed_node, edge_index, batch)
 
 
@@ -307,23 +307,23 @@ class Net(torch.nn.Module):
             training=True, mu=grouped_mu, logvar=grouped_logvar, labels_batch=data.batch, cuda=True
         )
 
-        graph_emb = global_mean_pool(class_latent_embeddings, data.batch)
+        '''graph_emb = global_mean_pool(class_latent_embeddings, data.batch)
         out = F.relu(self.fc1(graph_emb))
         out = self.fc2(out)
         classification = out.view(-1)
 
-        cls_loss = F.mse_loss(classification, psuedo_label)
+        cls_loss = F.mse_loss(classification, psuedo_label)'''
 
         #classification_expanded = torch.repeat_interleave(classification, count, dim=0)'''
 
 
-        reconstructed_node = 0.001*self.decoder(node_latent_embeddings, class_latent_embeddings)
+        reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
 
         reconstruction_error =  mse_loss(reconstructed_node, data.x) #+ self.recon_loss1(reconstructed_node, data.edge_index, data.batch)
         #reconstruction_error = 1e-5*self.recon_loss1(reconstructed_node, edge_index, batch)
 
 
-        total_loss = node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error + cls_loss
+        total_loss = node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error #+ cls_loss
 
         total_loss.backward()
 
