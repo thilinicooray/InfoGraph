@@ -205,7 +205,7 @@ if __name__ == '__main__':
 
         val_error = test(val_loader)
         scheduler1.step(val_error)
-        scheduler2.step(val_error)
+        #scheduler2.step(val_error)
         #scheduler.step()
 
         if best_val_error is None or val_error <= best_val_error:
