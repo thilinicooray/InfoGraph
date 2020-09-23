@@ -176,7 +176,7 @@ if __name__ == '__main__':
     model_teacher = Sup_Encoder(dataset.num_features, dim).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=args.weight_decay)
     optimizer_teacher = torch.optim.Adam(model_teacher.parameters(), lr=0.001, weight_decay=args.weight_decay)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+    scheduler1 = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer, mode='min', factor=0.7, patience=5, min_lr=0.000001)
 
     #scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
@@ -187,7 +187,7 @@ if __name__ == '__main__':
 
     best_val_error = None
     for epoch in range(1, epochs+1):
-        lr = scheduler.optimizer.param_groups[0]['lr']
+        lr = scheduler1.optimizer.param_groups[0]['lr']
         recon, class_kl, node_kl, cls, un_recon, un_class_kl, un_node_kl = train(epoch, use_unsup_loss)
 
 
@@ -201,7 +201,7 @@ if __name__ == '__main__':
 
 
         val_error = test(val_loader)
-        scheduler.step(val_error)
+        scheduler1.step(val_error)
         #scheduler.step()
 
         if best_val_error is None or val_error <= best_val_error:
