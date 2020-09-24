@@ -220,8 +220,8 @@ if __name__ == '__main__':
               'Test MAE: {:.7f},'.format(epoch, lr, val_error, test_error))
 
 
-        print('all sup losses ', sup_losses)
-        print('all unsup losses ', unsup_losses)
+        #print('all sup losses ', sup_losses)
+        #print('all unsup losses ', unsup_losses)
 
 
 
