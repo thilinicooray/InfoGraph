@@ -77,21 +77,21 @@ class Encoder(torch.nn.Module):
         #disentangling layers
 
         nn1 = Sequential(Linear(5, 128), ReLU(), Linear(128, dim * (dim)))
-        self.node_mu_conv = NNConv(dim, dim, nn1, aggr='mean', root_weight=False)
+        self.node_mu_conv = NNConv(dim, dim*2, nn1, aggr='mean', root_weight=False)
 
         nn2 = Sequential(Linear(5, 128), ReLU(), Linear(128, dim * (dim)))
-        self.node_lv_conv = NNConv(dim, dim, nn2, aggr='mean', root_weight=False)
+        self.node_lv_conv = NNConv(dim, dim*2, nn2, aggr='mean', root_weight=False)
 
-        nn3 = Sequential(Linear(5, 128), ReLU(), Linear(128, dim * int(dim/2)))
-        self.graph_mu_conv = NNConv(dim, int(dim/2), nn3, aggr='mean', root_weight=False)
+        nn3 = Sequential(Linear(5, 128), ReLU(), Linear(128, dim * dim))
+        self.graph_mu_conv = NNConv(dim, dim, nn3, aggr='mean', root_weight=False)
 
-        nn4 = Sequential(Linear(5, 128), ReLU(), Linear(128, dim * int(dim/2)))
-        self.graph_lv_conv = NNConv(dim, int(dim/2), nn4, aggr='mean', root_weight=False)
+        nn4 = Sequential(Linear(5, 128), ReLU(), Linear(128, dim * dim))
+        self.graph_lv_conv = NNConv(dim, dim, nn4, aggr='mean', root_weight=False)
 
         #graph distribution parameter accumulation
 
-        self.set2set_mu = Set2Set(int(dim/2), processing_steps=3)
-        self.set2set_lv = Set2Set(int(dim/2), processing_steps=3)
+        self.set2set_mu = Set2Set(dim, processing_steps=3)
+        self.set2set_lv = Set2Set(dim, processing_steps=3)
 
 
     def forward(self, data, psuedo):
@@ -173,9 +173,9 @@ class Net(torch.nn.Module):
         self.std = std
 
         self.encoder = Encoder(num_features, dim)
-        self.decoder = Decoder(dim, dim, num_features)
+        self.decoder = Decoder(dim*2, dim*2, num_features)
 
-        self.fc1 = torch.nn.Linear(dim, dim)
+        self.fc1 = torch.nn.Linear(2 * dim, dim)
         self.fc2 = torch.nn.Linear(dim, 1)
 
         self.fc1_sup = torch.nn.Linear(dim, dim)
