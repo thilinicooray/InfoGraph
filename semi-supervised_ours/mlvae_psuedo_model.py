@@ -64,8 +64,8 @@ class Sup_Encoder(torch.nn.Module):
 class Encoder(torch.nn.Module):
     def __init__(self, num_features, dim):
         super(Encoder, self).__init__()
-        self.lin0 = torch.nn.Linear(num_features + 1, dim)
-        #self.lin0_1 = torch.nn.Linear(1, dim)
+        self.lin0 = torch.nn.Linear(num_features , dim)
+        self.lin0_1 = torch.nn.Linear(1, dim)
 
         nn = Sequential(Linear(5, 128), ReLU(), Linear(128, dim * dim))
         self.conv = NNConv(dim, dim, nn, aggr='mean', root_weight=False)
@@ -76,17 +76,17 @@ class Encoder(torch.nn.Module):
 
         #disentangling layers
 
-        nn1 = Sequential(Linear(5, 128), ReLU(), Linear(128, dim * (dim*2)))
-        self.node_mu_conv = NNConv(dim, dim*2, nn1, aggr='mean', root_weight=False)
+        nn1 = Sequential(Linear(5, 128), ReLU(), Linear(128, dim * (dim)))
+        self.node_mu_conv = NNConv(dim, dim, nn1, aggr='mean', root_weight=False)
 
-        nn2 = Sequential(Linear(5, 128), ReLU(), Linear(128, dim * (dim*2)))
-        self.node_lv_conv = NNConv(dim, dim*2, nn2, aggr='mean', root_weight=False)
+        nn2 = Sequential(Linear(5, 128), ReLU(), Linear(128, dim * (dim)))
+        self.node_lv_conv = NNConv(dim, dim, nn2, aggr='mean', root_weight=False)
 
-        nn3 = Sequential(Linear(5, 128), ReLU(), Linear(128, dim * dim))
-        self.graph_mu_conv = NNConv(dim, dim, nn3, aggr='mean', root_weight=False)
+        nn3 = Sequential(Linear(5, 128), ReLU(), Linear(128, dim * int(dim/2)))
+        self.graph_mu_conv = NNConv(dim, int(dim/2), nn3, aggr='mean', root_weight=False)
 
-        nn4 = Sequential(Linear(5, 128), ReLU(), Linear(128, dim * dim))
-        self.graph_lv_conv = NNConv(dim, dim, nn4, aggr='mean', root_weight=False)
+        nn4 = Sequential(Linear(5, 128), ReLU(), Linear(128, dim * int(dim/2)))
+        self.graph_lv_conv = NNConv(dim, int(dim/2), nn4, aggr='mean', root_weight=False)
 
         #graph distribution parameter accumulation
 
@@ -96,9 +96,9 @@ class Encoder(torch.nn.Module):
 
     def forward(self, data, psuedo):
 
-        out = F.relu(self.lin0(torch.cat([data.x, psuedo.unsqueeze(1)], -1)))
+        #out = F.relu(self.lin0(torch.cat([data.x, psuedo.unsqueeze(1)], -1)))
 
-        #out = F.relu(self.lin0(data.x)) + F.relu(self.lin0_1(psuedo.unsqueeze(1)))
+        out = F.relu(self.lin0(data.x)) + F.relu(self.lin0_1(psuedo.unsqueeze(1)))
         h = out.unsqueeze(0)
 
 
@@ -173,7 +173,7 @@ class Net(torch.nn.Module):
         self.std = std
 
         self.encoder = Encoder(num_features, dim)
-        self.decoder = Decoder(dim*2, dim*2, num_features)
+        self.decoder = Decoder(dim, dim, num_features)
 
         self.fc1 = torch.nn.Linear(2 * dim, dim)
         self.fc2 = torch.nn.Linear(dim, 1)
@@ -327,7 +327,7 @@ class Net(torch.nn.Module):
         #reconstruction_error = 1e-5*self.recon_loss1(reconstructed_node, edge_index, batch)
 
 
-        total_loss = 0.0001*(node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error) #+ cls_loss
+        total_loss = 0.001*(node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error) #+ cls_loss
 
         total_loss.backward()
 
