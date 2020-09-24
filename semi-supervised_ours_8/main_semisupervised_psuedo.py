@@ -70,8 +70,6 @@ def train(epoch, use_unsup_loss):
 
         sup_loss = F.mse_loss(node_graph_pred, data.y)
 
-        #print(' sup loss', sup_loss.item())
-
         sup_loss.backward()
 
         optimizer_teacher.step()
@@ -179,7 +177,7 @@ if __name__ == '__main__':
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=args.weight_decay)
     optimizer_teacher = torch.optim.Adam(model_teacher.parameters(), lr=0.001, weight_decay=args.weight_decay)
     scheduler1 = torch.optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer, mode='min', factor=0.7, patience=5, min_lr=0.000001)
+        optimizer, mode='min', factor=0.9, patience=5, min_lr=0.000001)
 
     scheduler2 = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer_teacher, mode='min', factor=0.9, patience=5, min_lr=0.000001)
@@ -218,10 +216,6 @@ if __name__ == '__main__':
 
         print('Epoch: {:03d}, LR: {:7f} Validation MAE: {:.7f}, '
               'Test MAE: {:.7f},'.format(epoch, lr, val_error, test_error))
-
-
-        #print('all sup losses ', sup_losses)
-        #print('all unsup losses ', unsup_losses)
 
 
 

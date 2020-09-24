@@ -61,36 +61,15 @@ def train(epoch, use_unsup_loss):
 
         data = data.to(device)
         data2 = data2.to(device)
-
-        model_teacher.train()
-
-        optimizer_teacher.zero_grad()
-
-        node_graph_pred = model_teacher(data)
-
-        sup_loss = F.mse_loss(node_graph_pred, data.y)
-
-        #print(' sup loss', sup_loss.item())
-
-        sup_loss.backward()
-
-        optimizer_teacher.step()
-
         optimizer.zero_grad()
 
-        model_teacher.eval()
-
-        with torch.no_grad():
-            psuedo_label_sup = model_teacher(data)
-            psuedo_label_unsup = model_teacher(data2)
-
-        node_kl_divergence_loss, class_kl_divergence_loss, reconstruction_error, cls_loss = model.supervised_loss(data, psuedo_label_sup)
+        node_kl_divergence_loss, class_kl_divergence_loss, reconstruction_error, cls_loss = model.supervised_loss(data)
         recon_loss_all += reconstruction_error
         kl_class_loss_all += class_kl_divergence_loss
         kl_node_loss_all += node_kl_divergence_loss
         cls_loss_all += cls_loss
 
-        node_kl_divergence_loss, class_kl_divergence_loss, reconstruction_error, _ = model.unsupervised_loss(data2, psuedo_label_unsup)
+        node_kl_divergence_loss, class_kl_divergence_loss, reconstruction_error, _ = model.unsupervised_loss(data2)
         un_recon_loss_all += reconstruction_error
         un_kl_class_loss_all += class_kl_divergence_loss
         un_kl_node_loss_all += node_kl_divergence_loss
@@ -105,14 +84,11 @@ def train(epoch, use_unsup_loss):
 
 def test(loader):
     model.eval()
-    model_teacher.eval()
     error = 0
 
     for data in loader:
         data = data.to(device)
-        psuedo_label = model_teacher(data)
-
-        error += (model(data, psuedo_label) * std - data.y * std).abs().sum().item()  # MAE
+        error += (model(data) * std - data.y * std).abs().sum().item()  # MAE
     return error / len(loader.dataset)
 
 
@@ -128,13 +104,13 @@ def seed_everything(seed=1234):
 
 if __name__ == '__main__':
     seed_everything()
-    from mlvae_psuedo_model import Net, Sup_Encoder
+    from mlvae_sepencoder_model import Net
     from arguments import arg_parse
     args = arg_parse()
 
     target = args.target
     dim = 64
-    epochs = 500
+    epochs = 200
     batch_size = 20
     lamda = args.lamda
     use_unsup_loss = args.use_unsup_loss
@@ -175,14 +151,9 @@ if __name__ == '__main__':
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = Net(dataset.num_features, dim, std, use_unsup_loss, separate_encoder).to(device)
-    model_teacher = Sup_Encoder(dataset.num_features, dim).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=args.weight_decay)
-    optimizer_teacher = torch.optim.Adam(model_teacher.parameters(), lr=0.001, weight_decay=args.weight_decay)
-    scheduler1 = torch.optim.lr_scheduler.ReduceLROnPlateau(
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer, mode='min', factor=0.7, patience=5, min_lr=0.000001)
-
-    scheduler2 = torch.optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer_teacher, mode='min', factor=0.9, patience=5, min_lr=0.000001)
 
     #scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
 
@@ -192,7 +163,7 @@ if __name__ == '__main__':
 
     best_val_error = None
     for epoch in range(1, epochs+1):
-        lr = scheduler1.optimizer.param_groups[0]['lr']
+        lr = scheduler.optimizer.param_groups[0]['lr']
         recon, class_kl, node_kl, cls, un_recon, un_class_kl, un_node_kl = train(epoch, use_unsup_loss)
 
 
@@ -206,8 +177,7 @@ if __name__ == '__main__':
 
 
         val_error = test(val_loader)
-        scheduler1.step(val_error)
-        #scheduler2.step(val_error)
+        scheduler.step(val_error)
         #scheduler.step()
 
         if best_val_error is None or val_error <= best_val_error:
@@ -219,9 +189,7 @@ if __name__ == '__main__':
         print('Epoch: {:03d}, LR: {:7f} Validation MAE: {:.7f}, '
               'Test MAE: {:.7f},'.format(epoch, lr, val_error, test_error))
 
-
         #print('all sup losses ', sup_losses)
         #print('all unsup losses ', unsup_losses)
-
 
 
