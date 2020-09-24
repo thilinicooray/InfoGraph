@@ -174,8 +174,8 @@ if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = Net(dataset.num_features, dim, std, use_unsup_loss, separate_encoder).to(device)
     model_teacher = Sup_Encoder(dataset.num_features, dim).to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=args.weight_decay)
-    optimizer_teacher = torch.optim.Adam(model_teacher.parameters(), lr=0.01, weight_decay=args.weight_decay)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001, weight_decay=args.weight_decay)
+    optimizer_teacher = torch.optim.Adam(model_teacher.parameters(), lr=0.0001, weight_decay=args.weight_decay)
     scheduler1 = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer, mode='min', factor=0.9, patience=5, min_lr=0.000001)
 
