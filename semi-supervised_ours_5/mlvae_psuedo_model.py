@@ -244,7 +244,7 @@ class Net(torch.nn.Module):
 
         reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
 
-        reconstruction_error =  mse_loss(reconstructed_node, data.x)  + self.recon_loss1(reconstructed_node, data.edge_index, data.batch)
+        reconstruction_error =  mse_loss(reconstructed_node, data.x) # + self.recon_loss1(reconstructed_node, data.edge_index, data.batch)
         #reconstruction_error = 1e-5*self.recon_loss1(reconstructed_node, edge_index, batch)
 
 
@@ -323,11 +323,11 @@ class Net(torch.nn.Module):
 
         reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
 
-        reconstruction_error = mse_loss(reconstructed_node, data.x) + self.recon_loss1(reconstructed_node, data.edge_index, data.batch)
+        reconstruction_error =  mse_loss(reconstructed_node, data.x) #+ self.recon_loss1(reconstructed_node, data.edge_index, data.batch)
         #reconstruction_error = 1e-5*self.recon_loss1(reconstructed_node, edge_index, batch)
 
 
-        total_loss =  0.001*(node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error) #+ cls_loss
+        total_loss = 0.001*(node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error) #+ cls_loss
 
         total_loss.backward()
 

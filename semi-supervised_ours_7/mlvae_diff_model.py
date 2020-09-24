@@ -24,48 +24,10 @@ from infomax import *
 
 from utils import *
 
-class Sup_Encoder(torch.nn.Module):
-    def __init__(self, num_features, dim):
-        super(Sup_Encoder, self).__init__()
-        self.lin0 = torch.nn.Linear(num_features, dim)
-
-        nn = Sequential(Linear(5, 128), ReLU(), Linear(128, dim * dim))
-        self.conv = NNConv(dim, dim, nn, aggr='mean', root_weight=False)
-        self.gru = GRU(dim, dim)
-
-        self.set2set = Set2Set(dim, processing_steps=3)
-        # self.lin1 = torch.nn.Linear(2 * dim, dim)
-        # self.lin2 = torch.nn.Linear(dim, 1)
-
-        self.fc1 = torch.nn.Linear(2 * dim, dim)
-        self.fc2 = torch.nn.Linear(dim, 1)
-
-    def forward(self, data):
-        out = F.relu(self.lin0(data.x))
-        h = out.unsqueeze(0)
-
-        feat_map = []
-        for i in range(3):
-            m = F.relu(self.conv(out, data.edge_index, data.edge_attr))
-            out, h = self.gru(m.unsqueeze(0), h)
-            out = out.squeeze(0)
-            # print(out.shape) : [num_node x dim]
-            feat_map.append(out)
-
-        out = self.set2set(out, data.batch)
-
-        out = F.relu(self.fc1(out))
-        out = self.fc2(out)
-        classification = out.view(-1)
-
-
-        return classification
-
 class Encoder(torch.nn.Module):
     def __init__(self, num_features, dim):
         super(Encoder, self).__init__()
-        self.lin0 = torch.nn.Linear(num_features +1 , dim)
-        self.lin0_1 = torch.nn.Linear(1, dim)
+        self.lin0 = torch.nn.Linear(num_features, dim)
 
         nn = Sequential(Linear(5, 128), ReLU(), Linear(128, dim * dim))
         self.conv = NNConv(dim, dim, nn, aggr='mean', root_weight=False)
@@ -76,11 +38,11 @@ class Encoder(torch.nn.Module):
 
         #disentangling layers
 
-        nn1 = Sequential(Linear(5, 128), ReLU(), Linear(128, dim * (dim*2)))
-        self.node_mu_conv = NNConv(dim, dim*2, nn1, aggr='mean', root_weight=False)
+        nn1 = Sequential(Linear(5, 128), ReLU(), Linear(128, dim * dim))
+        self.node_mu_conv = NNConv(dim, dim, nn1, aggr='mean', root_weight=False)
 
-        nn2 = Sequential(Linear(5, 128), ReLU(), Linear(128, dim * (dim*2)))
-        self.node_lv_conv = NNConv(dim, dim*2, nn2, aggr='mean', root_weight=False)
+        nn2 = Sequential(Linear(5, 128), ReLU(), Linear(128, dim * dim))
+        self.node_lv_conv = NNConv(dim, dim, nn2, aggr='mean', root_weight=False)
 
         nn3 = Sequential(Linear(5, 128), ReLU(), Linear(128, dim * dim))
         self.graph_mu_conv = NNConv(dim, dim, nn3, aggr='mean', root_weight=False)
@@ -93,12 +55,13 @@ class Encoder(torch.nn.Module):
         self.set2set_mu = Set2Set(dim, processing_steps=3)
         self.set2set_lv = Set2Set(dim, processing_steps=3)
 
+        self.set2set_mu_currenttarget = Set2Set(dim, processing_steps=3)
+        self.set2set_lv_currenttarget = Set2Set(dim, processing_steps=3)
 
-    def forward(self, data, psuedo):
 
-        out = F.relu(self.lin0(torch.cat([data.x, psuedo.unsqueeze(1)], -1)))
+    def forward(self, data):
 
-        #out = F.relu(self.lin0(data.x)) + F.relu(self.lin0_1(psuedo.unsqueeze(1)))
+        out = F.relu(self.lin0(data.x))
         h = out.unsqueeze(0)
 
 
@@ -119,35 +82,52 @@ class Encoder(torch.nn.Module):
         grouped_mu = self.set2set_mu(graph_mu_id, data.batch)
         grouped_lv = self.set2set_lv(graph_lv_id, data.batch)
 
+        target_mu = self.set2set_mu_currenttarget(graph_mu_id, data.batch)
+        target_lv = self.set2set_lv_currenttarget(graph_lv_id, data.batch)
+
         _, count = torch.unique(data.batch,  return_counts=True)
 
         grouped_mu_expanded = torch.repeat_interleave(grouped_mu, count, dim=0)
         grouped_lvar_expanded = torch.repeat_interleave(grouped_lv, count, dim=0)
 
-        return node_mu, node_lv, grouped_mu_expanded, grouped_lvar_expanded
+        grouped_mu_expanded_target = torch.repeat_interleave(target_mu, count, dim=0)
+        grouped_lvar_expanded_target = torch.repeat_interleave(target_lv, count, dim=0)
+
+        return node_mu, node_lv, grouped_mu_expanded, grouped_lvar_expanded, grouped_mu_expanded_target, grouped_lvar_expanded_target
 
 class Decoder(torch.nn.Module):
     def __init__(self, node_dim, class_dim, feat_size):
         super(Decoder, self).__init__()
 
         self.linear_model = torch.nn.Sequential(OrderedDict([
-            ('linear_1', torch.nn.Linear(in_features=node_dim + class_dim, out_features=node_dim, bias=True)),
+            ('linear_1', torch.nn.Linear(in_features=node_dim + class_dim + class_dim + 1, out_features=node_dim, bias=True)),
             ('relu_1', ReLU()),
 
             ('linear_2', torch.nn.Linear(in_features=node_dim, out_features=feat_size, bias=True)),
             ('relu_final', ReLU()),
         ]))
 
-    def forward(self, node_latent_space, class_latent_space):
+    def forward(self, node_latent_space, class_latent_space, target_latent, y):
 
-        x = torch.cat((node_latent_space, class_latent_space), dim=1)
-        #x = torch.cat((node_latent_space, class_latent_space, y.unsqueeze(1)), dim=1)
+        x = torch.cat((node_latent_space, class_latent_space, target_latent, y.unsqueeze(1)), dim=1)
 
         x = self.linear_model(x)
 
         return x
 
 
+
+        # class PriorDiscriminator(nn.Module):
+        # def __init__(self, input_dim):
+        # super().__init__()
+        # self.l0 = nn.Linear(input_dim, input_dim)
+        # self.l1 = nn.Linear(input_dim, input_dim)
+        # self.l2 = nn.Linear(input_dim, 1)
+
+        # def forward(self, x):
+        # h = F.relu(self.l0(x))
+        # h = F.relu(self.l1(h))
+        # return torch.sigmoid(self.l2(h))
 
 class FF(nn.Module):
     def __init__(self, input_dim, dim):
@@ -166,20 +146,16 @@ class FF(nn.Module):
         return self.block(x) + self.linear_shortcut(x)
 
 class Net(torch.nn.Module):
-    def __init__(self, num_features, dim, std, use_unsup_loss=False, separate_encoder=False):
+    def __init__(self, num_features, dim, use_unsup_loss=False, separate_encoder=False):
         super(Net, self).__init__()
 
         self.embedding_dim = dim
-        self.std = std
 
         self.encoder = Encoder(num_features, dim)
-        self.decoder = Decoder(dim*2, dim*2, num_features)
+        self.decoder = Decoder(dim, dim*2, num_features)
 
         self.fc1 = torch.nn.Linear(2 * dim, dim)
         self.fc2 = torch.nn.Linear(dim, 1)
-
-        self.fc1_sup = torch.nn.Linear(dim, dim)
-        self.fc2_sup = torch.nn.Linear(dim, 1)
 
         self.init_emb()
 
@@ -191,14 +167,9 @@ class Net(torch.nn.Module):
                 if m.bias is not None:
                     m.bias.data.fill_(0.0)
 
-    def supervised_loss(self, data, psuedo_label):
+    def supervised_loss(self, data):
 
-        _, count = torch.unique(data.batch,  return_counts=True)
-        psuedo_expanded = torch.repeat_interleave(psuedo_label, count, dim=0)
-
-
-
-        node_mu, node_logvar, grouped_mu, grouped_logvar = self.encoder(data, psuedo_expanded)
+        node_mu, node_logvar, grouped_mu, grouped_logvar, target_mu, target_logvar = self.encoder(data)
 
         n_nodes = data.x.size(0)
 
@@ -217,9 +188,16 @@ class Net(torch.nn.Module):
         class_kl_divergence_loss = -0.5 / n_nodes * torch.mean(torch.sum(
             1 + 2 * grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp().pow(2), 1))
 
-        #print('class kl unwei ', class_kl_divergence_loss)
         class_kl_divergence_loss = 10*class_kl_divergence_loss
-        #print('class kl wei ', class_kl_divergence_loss)
+
+        target_kl_divergence_loss = -0.5 / n_nodes * torch.mean(torch.sum(
+            1 + 2 * target_logvar - target_mu.pow(2) - target_logvar.exp().pow(2), 1))
+
+        target_kl_divergence_loss = 10*target_kl_divergence_loss
+
+
+        #reduce kl div between entire graph summary and current target
+        #kl_div_diff = 10*self.compute_two_gaussian_loss(grouped_mu, grouped_logvar, target_mu, target_logvar)
 
 
         # reconstruct samples
@@ -232,37 +210,30 @@ class Net(torch.nn.Module):
             training=True, mu=grouped_mu, logvar=grouped_logvar, labels_batch=data.batch, cuda=True
         )
 
+        target_latent_embeddings = group_wise_reparameterize(
+            training=True, mu=target_mu, logvar=target_logvar, labels_batch=data.batch, cuda=True
+        )
+
+        _, count = torch.unique(data.batch,  return_counts=True)
+
+        y_expanded = torch.repeat_interleave(data.y, count, dim=0)
+
+        reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, target_latent_embeddings, y_expanded)
+
+        reconstruction_error =  mse_loss(reconstructed_node, data.x) # + self.recon_loss1(reconstructed_node, data.edge_index, data.batch)
+        #reconstruction_error = 1e-5*self.recon_loss1(reconstructed_node, edge_index, batch)
 
 
-        graph_emb = global_mean_pool(class_latent_embeddings, data.batch)
+
+        graph_emb = global_mean_pool(target_latent_embeddings, data.batch)
 
         out = F.relu(self.fc1(graph_emb))
         out = self.fc2(out)
         classification = out.view(-1)
 
-        #y_expanded = torch.repeat_interleave(classification, count, dim=0)
-
-        reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
-
-        reconstruction_error =  mse_loss(reconstructed_node, data.x)  + self.recon_loss1(reconstructed_node, data.edge_index, data.batch)
-        #reconstruction_error = 1e-5*self.recon_loss1(reconstructed_node, edge_index, batch)
-
-
-
-
-
         cls_loss = F.mse_loss(classification, data.y)
 
-        '''out_node = F.relu(self.fc1_sup(node_graph))
-        out_node = self.fc2_sup(out_node)
-        classification_node = out_node.view(-1)
-
-        cls_loss_node = F.mse_loss(classification_node, data.y)'''
-
-
-        #cls_loss = torch.mean((classification * self.std - data.y * self.std).abs())
-
-        total_loss = (node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error + 100*cls_loss) #+ cls_loss_node
+        total_loss = node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error + cls_loss + target_kl_divergence_loss #+ kl_div_diff
 
         total_loss.backward()
 
@@ -272,12 +243,9 @@ class Net(torch.nn.Module):
 
 
 
-    def unsupervised_loss(self, data, psuedo_label):
+    def unsupervised_loss(self, data):
 
-        _, count = torch.unique(data.batch,  return_counts=True)
-        psuedo_expanded = torch.repeat_interleave(psuedo_label, count, dim=0)
-
-        node_mu, node_logvar, grouped_mu, grouped_logvar = self.encoder(data, psuedo_expanded)
+        node_mu, node_logvar, grouped_mu, grouped_logvar, target_mu, target_logvar = self.encoder(data)
 
         n_nodes = data.x.size(0)
 
@@ -300,6 +268,15 @@ class Net(torch.nn.Module):
         class_kl_divergence_loss = 10*class_kl_divergence_loss
         #print('class kl wei ', class_kl_divergence_loss)
 
+        target_kl_divergence_loss = -0.5 / n_nodes * torch.mean(torch.sum(
+            1 + 2 * target_logvar - target_mu.pow(2) - target_logvar.exp().pow(2), 1))
+
+        target_kl_divergence_loss = 10*target_kl_divergence_loss
+
+
+        #reduce kl div between entire graph summary and current target
+        #kl_div_diff = 10*self.compute_two_gaussian_loss(grouped_mu, grouped_logvar, target_mu, target_logvar)
+
 
         # reconstruct samples
         """
@@ -311,41 +288,58 @@ class Net(torch.nn.Module):
             training=True, mu=grouped_mu, logvar=grouped_logvar, labels_batch=data.batch, cuda=True
         )
 
-        '''graph_emb = global_mean_pool(class_latent_embeddings, data.batch)
+        target_latent_embeddings = group_wise_reparameterize(
+            training=True, mu=target_mu, logvar=target_logvar, labels_batch=data.batch, cuda=True
+        )
+
+        graph_emb = global_mean_pool(target_latent_embeddings, data.batch)
         out = F.relu(self.fc1(graph_emb))
         out = self.fc2(out)
-        classification = out.view(-1)'''
+        classification = out.view(-1)
 
-        #cls_loss = F.mse_loss(classification, psuedo_label)
+        _, count = torch.unique(data.batch,  return_counts=True)
 
-        #classification_expanded = torch.repeat_interleave(classification, count, dim=0)
+        classification_expanded = torch.repeat_interleave(classification, count, dim=0)
 
 
-        reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
+        reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, target_latent_embeddings, classification_expanded)
 
-        reconstruction_error = mse_loss(reconstructed_node, data.x) + self.recon_loss1(reconstructed_node, data.edge_index, data.batch)
+        reconstruction_error =  mse_loss(reconstructed_node, data.x) #+ self.recon_loss1(reconstructed_node, data.edge_index, data.batch)
         #reconstruction_error = 1e-5*self.recon_loss1(reconstructed_node, edge_index, batch)
 
 
-        total_loss =  0.001*(node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error) #+ cls_loss
+        total_loss = node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error+ target_kl_divergence_loss #+ kl_div_diff
 
         total_loss.backward()
 
         return node_kl_divergence_loss.item(), class_kl_divergence_loss.item(), reconstruction_error.item(), None
 
-    def forward(self, data, psuedo_label):
+    def compute_two_gaussian_loss(self, mu1, logvar1, mu2, logvar2):
+        """Computes the KL loss between the embedding attained from the answers
+        and the categories.
+        KL divergence between two gaussians:
+            log(sigma_2/sigma_1) + (sigma_2^2 + (mu_1 - mu_2)^2)/(2sigma_1^2) - 0.5
+        Args:
+            mu1: Means from first space.
+            logvar1: Log variances from first space.
+            mu2: Means from second space.
+            logvar2: Means from second space.
+        """
+        numerator = logvar1.exp() + torch.pow(mu1 - mu2, 2)
+        fraction = torch.div(numerator, (logvar2.exp() + 1e-8))
+        kl = 0.5 * torch.sum(logvar2 - logvar1 + fraction - 1)
+        return kl / (mu1.size(0) + 1e-8)
 
-        _, count = torch.unique(data.batch,  return_counts=True)
-        psuedo_expanded = torch.repeat_interleave(psuedo_label, count, dim=0)
+    def forward(self, data):
 
-        node_mu, node_logvar, grouped_mu, grouped_logvar = self.encoder(data, psuedo_expanded)
+        node_mu, node_logvar, grouped_mu, grouped_logvar, target_mu, target_logvar = self.encoder(data)
 
 
-        class_latent_embeddings = group_wise_reparameterize(
-            training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=data.batch, cuda=True
+        target_latent_embeddings = group_wise_reparameterize(
+            training=True, mu=target_mu, logvar=target_logvar, labels_batch=data.batch, cuda=True
         )
 
-        graph_emb = global_mean_pool(class_latent_embeddings, data.batch)
+        graph_emb = global_mean_pool(target_latent_embeddings, data.batch)
 
         out = F.relu(self.fc1(graph_emb))
         out = self.fc2(out)
