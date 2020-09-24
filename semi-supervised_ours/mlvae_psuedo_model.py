@@ -175,7 +175,7 @@ class Net(torch.nn.Module):
         self.encoder = Encoder(num_features, dim)
         self.decoder = Decoder(dim, dim, num_features)
 
-        self.fc1 = torch.nn.Linear(2 * dim, dim)
+        self.fc1 = torch.nn.Linear(dim, dim)
         self.fc2 = torch.nn.Linear(dim, 1)
 
         self.fc1_sup = torch.nn.Linear(dim, dim)
