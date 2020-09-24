@@ -76,10 +76,10 @@ class Encoder(torch.nn.Module):
 
         #disentangling layers
 
-        nn1 = Sequential(Linear(5, 128), ReLU(), Linear(128, dim * (dim)))
+        nn1 = Sequential(Linear(5, 128), ReLU(), Linear(128, dim * (dim*2)))
         self.node_mu_conv = NNConv(dim, dim*2, nn1, aggr='mean', root_weight=False)
 
-        nn2 = Sequential(Linear(5, 128), ReLU(), Linear(128, dim * (dim)))
+        nn2 = Sequential(Linear(5, 128), ReLU(), Linear(128, dim * (dim*2)))
         self.node_lv_conv = NNConv(dim, dim*2, nn2, aggr='mean', root_weight=False)
 
         nn3 = Sequential(Linear(5, 128), ReLU(), Linear(128, dim * dim))
