@@ -90,8 +90,8 @@ class Encoder(torch.nn.Module):
 
         #graph distribution parameter accumulation
 
-        self.set2set_mu = Set2Set(dim, processing_steps=3)
-        self.set2set_lv = Set2Set(dim, processing_steps=3)
+        self.set2set_mu = Set2Set(int(dim/2), processing_steps=3)
+        self.set2set_lv = Set2Set(int(dim/2), processing_steps=3)
 
 
     def forward(self, data, psuedo):
