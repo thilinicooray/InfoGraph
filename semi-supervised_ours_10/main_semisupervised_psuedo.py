@@ -70,7 +70,7 @@ def train(epoch, use_unsup_loss):
 
         sup_loss = F.mse_loss(node_graph_pred, data.y)
 
-        print(' sup loss', sup_loss.item())
+        #print(' sup loss', sup_loss.item())
 
         sup_loss.backward()
 
@@ -176,8 +176,8 @@ if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = Net(dataset.num_features, dim, std, use_unsup_loss, separate_encoder).to(device)
     model_teacher = Sup_Encoder(dataset.num_features, dim).to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.005, weight_decay=args.weight_decay)
-    optimizer_teacher = torch.optim.Adam(model_teacher.parameters(), lr=0.005, weight_decay=args.weight_decay)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=args.weight_decay)
+    optimizer_teacher = torch.optim.Adam(model_teacher.parameters(), lr=0.001, weight_decay=args.weight_decay)
     scheduler1 = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer, mode='min', factor=0.9, patience=5, min_lr=0.000001)
 
@@ -220,8 +220,8 @@ if __name__ == '__main__':
               'Test MAE: {:.7f},'.format(epoch, lr, val_error, test_error))
 
 
-        print('all sup losses ', sup_losses)
-        print('all unsup losses ', unsup_losses)
+        #print('all sup losses ', sup_losses)
+        #print('all unsup losses ', unsup_losses)
 
 
 
