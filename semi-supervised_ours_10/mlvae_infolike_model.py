@@ -54,12 +54,12 @@ class Sup_Encoder(torch.nn.Module):
 
         out = self.set2set(out, data.batch)
 
-        out = F.relu(self.fc1(out))
+        '''out = F.relu(self.fc1(out))
         out = self.fc2(out)
-        classification = out.view(-1)
+        classification = out.view(-1)'''
 
 
-        return classification
+        return out
 
 class Encoder(torch.nn.Module):
     def __init__(self, num_features, dim):
