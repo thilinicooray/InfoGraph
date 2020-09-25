@@ -193,7 +193,7 @@ class Net(torch.nn.Module):
 
     def supervised_loss(self, data, psuedo_label):
 
-        print('data values ', data[0], psuedo_label)
+        print('data values ', data, psuedo_label)
 
         _, count = torch.unique(data.batch,  return_counts=True)
         psuedo_expanded = torch.repeat_interleave(psuedo_label, count, dim=0)
