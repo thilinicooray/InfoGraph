@@ -172,7 +172,7 @@ if __name__ == '__main__':
     model = Net(dataset.num_features, dim, use_unsup_loss, separate_encoder).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=args.weight_decay)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer, mode='min', factor=0.7, patience=5, min_lr=0.000001)
+        optimizer, mode='min', factor=0.9, patience=5, min_lr=0.000001)
 
     val_error = test(val_loader)
     test_error = test(test_loader)
@@ -183,7 +183,7 @@ if __name__ == '__main__':
         #lr = scheduler.optimizer.param_groups[0]['lr']
         loss = train(epoch, use_unsup_loss)
         val_error = test(val_loader)
-        #scheduler.step(val_error)
+        scheduler.step(val_error)
 
         if best_val_error is None or val_error <= best_val_error:
             print('Update')
