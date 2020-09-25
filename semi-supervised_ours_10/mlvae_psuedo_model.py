@@ -98,7 +98,7 @@ class Encoder(torch.nn.Module):
 
         #out = F.relu(self.lin0(torch.cat([data.x, psuedo.unsqueeze(1)], -1)))
 
-        print('look ', F.relu(self.lin0(data.x)), F.relu(self.lin0_1(psuedo.unsqueeze(1))))
+        #print('look ', F.relu(self.lin0(data.x)), F.relu(self.lin0_1(psuedo.unsqueeze(1))))
 
         out = F.relu(self.lin0(data.x)) + F.relu(self.lin0_1(psuedo.unsqueeze(1)))
         h = out.unsqueeze(0)
