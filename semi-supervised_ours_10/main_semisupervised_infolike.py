@@ -68,7 +68,7 @@ def train(epoch, use_unsup_loss):
 
         sup_loss = F.mse_loss(model(data), data.y)
         unsup_loss = model.unsupervised_loss(data2)
-        unsup_sup_loss = model.unsup_sup_loss(data2)
+        unsup_sup_loss = model.supervised_unsupervised_loss(data2)
         loss = sup_loss + unsup_loss + unsup_sup_loss * lamda
 
         loss.backward()
