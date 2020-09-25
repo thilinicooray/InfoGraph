@@ -181,6 +181,9 @@ class Net(torch.nn.Module):
         self.fc1_sup = torch.nn.Linear(dim, dim)
         self.fc2_sup = torch.nn.Linear(dim, 1)
 
+        self.ff1 = FF(2*dim, dim)
+        self.ff2 = FF(2*dim, dim)
+
         self.init_emb()
 
     def init_emb(self):
@@ -209,10 +212,14 @@ class Net(torch.nn.Module):
         graph_emb_unsup = global_mean_pool(class_latent_embeddings, data.batch)
         graph_emb_sup = self.sup_encoder(data)
 
+        g_enc = self.ff1(graph_emb_sup)
+        g_enc1 = self.ff2(graph_emb_unsup)
+
+
 
 
         measure = 'JSD'
-        loss = global_global_loss_(graph_emb_sup, graph_emb_unsup, data.edge_index, data.batch, measure)
+        loss = global_global_loss_(g_enc, g_enc1, data.edge_index, data.batch, measure)
 
 
         return loss
