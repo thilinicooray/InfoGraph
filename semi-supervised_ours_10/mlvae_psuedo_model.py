@@ -7,7 +7,7 @@ import numpy as np
 
 import torch
 import torch.nn.functional as F
-from torch.nn import Sequential, Linear, ReLU, GRU
+from torch.nn import Sequential, Linear, ReLU, GRU, Tanh
 
 import torch_geometric.transforms as T
 from torch_geometric.datasets import QM9
@@ -139,7 +139,7 @@ class Decoder(torch.nn.Module):
             ('relu_1', ReLU()),
 
             ('linear_2', torch.nn.Linear(in_features=node_dim, out_features=feat_size, bias=True)),
-            ('relu_final', ReLU()),
+            ('relu_final', Tanh()),
         ]))
 
     def forward(self, node_latent_space, class_latent_space):
