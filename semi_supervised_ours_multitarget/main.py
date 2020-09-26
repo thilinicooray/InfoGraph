@@ -106,9 +106,11 @@ def test(loader):
     for data in loader:
         data = data.to(device)
 
-        print('size ', data.y.size(), stds_all.size())
+        stds_all = stds_all.squeeze()
+        stds_allbatch = stds_all.expand_as(data.y)
 
-        error += torch.sum((model(data) * stds_all - data.y * stds_all).abs(),0)  # MAE
+
+        error += torch.sum((model(data) * stds_allbatch - data.y * stds_allbatch).abs(),0)  # MAE
 
         print('error', error.size())
     return error / len(loader.dataset), torch.mean(error / len(loader.dataset))
