@@ -205,7 +205,7 @@ class Net(torch.nn.Module):
         out = self.fc2(out)
         classification = out
 
-        classification_expanded = torch.repeat_interleave(torch.mean(classification,-1), count, dim=0)
+        classification_expanded = torch.repeat_interleave(torch.mean(classification,-1,keepdim=True), count, dim=0)
 
 
         reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, classification_expanded)
