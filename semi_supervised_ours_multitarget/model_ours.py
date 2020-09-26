@@ -72,7 +72,7 @@ class Encoder(torch.nn.Module):
             feat_map.append(out)
 
 
-        node_graph = F.relu(self.set2set_nodes(out, data.batch))
+        #node_graph = F.relu(self.set2set_nodes(out, data.batch))
         node_mu = F.relu(self.node_mu_conv(out, data.edge_index, data.edge_attr))
         node_lv = F.relu(self.node_lv_conv(out, data.edge_index, data.edge_attr))
         graph_mu_id = F.relu(self.graph_mu_conv(out, data.edge_index, data.edge_attr))
@@ -86,24 +86,24 @@ class Encoder(torch.nn.Module):
         grouped_mu_expanded = torch.repeat_interleave(grouped_mu, count, dim=0)
         grouped_lvar_expanded = torch.repeat_interleave(grouped_lv, count, dim=0)
 
-        return node_mu, node_lv, grouped_mu_expanded, grouped_lvar_expanded, node_graph
+        return node_mu, node_lv, grouped_mu_expanded, grouped_lvar_expanded
 
 class Decoder(torch.nn.Module):
     def __init__(self, node_dim, class_dim, feat_size):
         super(Decoder, self).__init__()
 
         self.linear_model = torch.nn.Sequential(OrderedDict([
-            ('linear_1', torch.nn.Linear(in_features=node_dim + class_dim+1, out_features=node_dim, bias=True)),
+            ('linear_1', torch.nn.Linear(in_features=node_dim + class_dim, out_features=node_dim, bias=True)),
             ('relu_1', ReLU()),
 
             ('linear_2', torch.nn.Linear(in_features=node_dim, out_features=feat_size, bias=True)),
             ('relu_final', ReLU()),
         ]))
 
-    def forward(self, node_latent_space, class_latent_space, y):
+    def forward(self, node_latent_space, class_latent_space):
 
-        x = torch.cat((node_latent_space, class_latent_space, y), dim=1)
-        #x = torch.cat((node_latent_space, class_latent_space), dim=1)
+        #x = torch.cat((node_latent_space, class_latent_space, y), dim=1)
+        x = torch.cat((node_latent_space, class_latent_space), dim=1)
 
         x = self.linear_model(x)
 
@@ -151,6 +151,9 @@ class Net(torch.nn.Module):
         self.fc1 = torch.nn.Linear(2 * dim, dim)
         self.fc2 = torch.nn.Linear(dim, target)
 
+        self.fc1_node = torch.nn.Linear(2 * dim, dim)
+        self.fc2_node = torch.nn.Linear(dim, target)
+
         self.init_emb()
 
     def init_emb(self):
@@ -163,7 +166,7 @@ class Net(torch.nn.Module):
 
     def our_loss(self, data):
 
-        node_mu, node_logvar, grouped_mu, grouped_logvar, node_graph = self.encoder(data)
+        node_mu, node_logvar, grouped_mu, grouped_logvar = self.encoder(data)
 
         n_nodes = data.x.size(0)
 
@@ -205,10 +208,15 @@ class Net(torch.nn.Module):
         out = self.fc2(out)
         classification = out
 
-        classification_expanded = torch.repeat_interleave(torch.mean(classification,-1,keepdim=True), count, dim=0)
+        out_n = F.relu(self.fc1_node(global_mean_pool(node_latent_embeddings, data.batch)))
+        out_n = self.fc2_node(out_n)
+        classification_n = out_n
+
+        measure = 'JSD'
+        contra_loss = global_global_loss_(classification, classification_n, data.edge_index, data.batch, measure)
 
 
-        reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, classification_expanded)
+        reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
 
         reconstruction_error =  mse_loss(reconstructed_node, data.x) # + self.recon_loss1(reconstructed_node, data.edge_index, data.batch)
         #reconstruction_error = 1e-5*self.recon_loss1(reconstructed_node, edge_index, batch)
@@ -223,7 +231,7 @@ class Net(torch.nn.Module):
 
         #cls_loss = torch.mean((classification * self.std - data.y * self.std).abs())
 
-        total_loss = node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error
+        total_loss = node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error + contra_loss
 
 
         return classification, total_loss
@@ -232,7 +240,7 @@ class Net(torch.nn.Module):
 
     def forward(self, data):
 
-        node_mu, node_logvar, grouped_mu, grouped_logvar, node_graph = self.encoder(data)
+        node_mu, node_logvar, grouped_mu, grouped_logvar = self.encoder(data)
 
 
         class_latent_embeddings = group_wise_reparameterize(
