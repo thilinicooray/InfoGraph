@@ -106,6 +106,8 @@ def test(loader):
     for data in loader:
         data = data.to(device)
 
+        print('size ', data.y.size(), stds_all.size())
+
         error += torch.sum((model(data) * stds_all - data.y * stds_all).abs(),0)  # MAE
 
         print('error', error.size())
@@ -157,8 +159,6 @@ if __name__ == '__main__':
         stds.append(torch.tensor([std]))
 
     stds_all = torch.stack(stds,0).to(device)
-
-    print('data y', stds_all.size(), dataset.data.y)
 
     # print(type(dataset[0]))
     # print(type(dataset.data.x)) #tensor
