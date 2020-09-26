@@ -93,7 +93,7 @@ class Decoder(torch.nn.Module):
         super(Decoder, self).__init__()
 
         self.linear_model = torch.nn.Sequential(OrderedDict([
-            ('linear_1', torch.nn.Linear(in_features=node_dim + class_dim+12, out_features=node_dim, bias=True)),
+            ('linear_1', torch.nn.Linear(in_features=node_dim + class_dim+1, out_features=node_dim, bias=True)),
             ('relu_1', ReLU()),
 
             ('linear_2', torch.nn.Linear(in_features=node_dim, out_features=feat_size, bias=True)),
@@ -205,7 +205,7 @@ class Net(torch.nn.Module):
         out = self.fc2(out)
         classification = out
 
-        classification_expanded = torch.repeat_interleave(classification, count, dim=0)
+        classification_expanded = torch.repeat_interleave(torch.mean(classification,-1), count, dim=0)
 
 
         reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, classification_expanded)
