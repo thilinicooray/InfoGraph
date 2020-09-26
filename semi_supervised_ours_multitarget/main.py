@@ -99,14 +99,14 @@ def train(epoch, use_unsup_loss):
         return loss_all / len(train_loader.dataset)
 
 
-def test(loader):
+def test(loader, std_all):
     model.eval()
     error = torch.zeros(target).to(device)
 
     for data in loader:
         data = data.to(device)
 
-        stds_all = stds_all.squeeze()
+        stds_all = std_all.squeeze()
         stds_allbatch = stds_all.expand_as(data.y)
 
 
@@ -199,12 +199,12 @@ if __name__ == '__main__':
     for epoch in range(1, epochs):
         #lr = scheduler.optimizer.param_groups[0]['lr']
         loss = train(epoch, use_unsup_loss)
-        val_error_by_target, val_error = test(val_loader)
+        val_error_by_target, val_error = test(val_loader, stds_all)
         #scheduler.step(val_error)
 
         if best_val_error is None or val_error <= best_val_error:
             print('Update')
-            test_error_by_target, test_error = test(test_loader)
+            test_error_by_target, test_error = test(test_loader, stds_all)
             best_val_error = val_error
 
 
