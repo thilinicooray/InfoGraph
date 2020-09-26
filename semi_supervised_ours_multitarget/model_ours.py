@@ -72,7 +72,7 @@ class Encoder(torch.nn.Module):
             feat_map.append(out)
 
 
-        #node_graph = global_add_pool(out, data.batch)
+        node_graph = global_add_pool(out, data.batch)
         node_mu = F.relu(self.node_mu_conv(out, data.edge_index, data.edge_attr))
         node_lv = F.relu(self.node_lv_conv(out, data.edge_index, data.edge_attr))
         graph_mu_id = F.relu(self.graph_mu_conv(out, data.edge_index, data.edge_attr))
@@ -86,7 +86,7 @@ class Encoder(torch.nn.Module):
         grouped_mu_expanded = torch.repeat_interleave(grouped_mu, count, dim=0)
         grouped_lvar_expanded = torch.repeat_interleave(grouped_lv, count, dim=0)
 
-        return node_mu, node_lv, grouped_mu_expanded, grouped_lvar_expanded
+        return node_mu, node_lv, grouped_mu_expanded, grouped_lvar_expanded, node_graph
 
 class Decoder(torch.nn.Module):
     def __init__(self, node_dim, class_dim, feat_size):
@@ -163,7 +163,7 @@ class Net(torch.nn.Module):
 
     def our_loss(self, data):
 
-        node_mu, node_logvar, grouped_mu, grouped_logvar = self.encoder(data)
+        node_mu, node_logvar, grouped_mu, grouped_logvar, node_graph = self.encoder(data)
 
         n_nodes = data.x.size(0)
 
@@ -201,7 +201,7 @@ class Net(torch.nn.Module):
 
         graph_emb = global_mean_pool(class_latent_embeddings, data.batch)
 
-        out = F.relu(self.fc1(graph_emb))
+        out = F.relu(self.fc1(node_graph))
         out = self.fc2(out)
         classification = out
 
@@ -230,7 +230,7 @@ class Net(torch.nn.Module):
 
     def forward(self, data):
 
-        node_mu, node_logvar, grouped_mu, grouped_logvar = self.encoder(data)
+        node_mu, node_logvar, grouped_mu, grouped_logvar, node_graph = self.encoder(data)
 
 
         class_latent_embeddings = group_wise_reparameterize(
@@ -239,7 +239,7 @@ class Net(torch.nn.Module):
 
         graph_emb = global_mean_pool(class_latent_embeddings, data.batch)
 
-        out = F.relu(self.fc1(graph_emb))
+        out = F.relu(self.fc1(node_graph))
         out = self.fc2(out)
         classification = out
 
