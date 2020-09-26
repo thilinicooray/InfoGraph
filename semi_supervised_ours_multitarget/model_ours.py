@@ -54,7 +54,7 @@ class Encoder(torch.nn.Module):
 
         self.set2set_mu = Set2Set(dim, processing_steps=3)
         self.set2set_lv = Set2Set(dim, processing_steps=3)
-        self.set2set_nodes = Set2Set(dim, processing_steps=3)
+        self.set2set_nodes = Set2Set(dim*2, processing_steps=3)
 
 
     def forward(self, data):
@@ -148,7 +148,7 @@ class Net(torch.nn.Module):
         self.encoder = Encoder(num_features, dim)
         self.decoder = Decoder(dim*2, dim*2, num_features)
 
-        self.fc1 = torch.nn.Linear(2 * dim, dim)
+        self.fc1 = torch.nn.Linear(4 * dim, dim)
         self.fc2 = torch.nn.Linear(dim, target)
 
         self.init_emb()
