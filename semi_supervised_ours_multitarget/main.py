@@ -110,16 +110,17 @@ def test(loader, std_all):
     model.eval()
     error = torch.zeros(target).to(device)
 
-    for data in loader:
-        data = data.to(device)
+    with torch.no_grad():
 
-        stds_all = std_all.squeeze()
-        stds_allbatch = stds_all.expand_as(data.y)
+        for data in loader:
+            data = data.to(device)
 
+            stds_all = std_all.squeeze()
+            stds_allbatch = stds_all.expand_as(data.y)
 
-        error += torch.sum((model(data) * stds_allbatch - data.y * stds_allbatch).abs(),0)  # MAE
+            error += torch.sum((model(data) * stds_allbatch - data.y * stds_allbatch).abs(),0)  # MAE
 
-    return error.item() / len(loader.dataset), torch.mean(error / len(loader.dataset)).item()
+    return error / len(loader.dataset), torch.mean(error / len(loader.dataset))
 
 
 def seed_everything(seed=1234):
