@@ -113,7 +113,7 @@ class Net(torch.nn.Module):
         out, M = self.encoder(data)
         out = F.relu(self.fc1(out))
         out = self.fc2(out)
-        pred = out.view(-1)
+        pred = out
         return pred
 
     def unsup_loss(self, data):

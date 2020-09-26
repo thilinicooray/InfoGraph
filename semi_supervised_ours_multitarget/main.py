@@ -89,7 +89,11 @@ def train(epoch, use_unsup_loss):
             data = data.to(device)
             optimizer.zero_grad()
 
-            sup_loss = F.mse_loss(model(data), data.y)
+            pred = model(data)
+
+            print('pred ', pred.size())
+
+            sup_loss = F.mse_loss(pred, data.y)
             loss = sup_loss
 
             loss.backward()
