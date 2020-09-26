@@ -72,7 +72,7 @@ class Encoder(torch.nn.Module):
             feat_map.append(out)
 
 
-        node_graph = global_add_pool(out, data.batch)
+        node_graph = F.relu(self.set2set_nodes(out, data.batch))
         node_mu = F.relu(self.node_mu_conv(out, data.edge_index, data.edge_attr))
         node_lv = F.relu(self.node_lv_conv(out, data.edge_index, data.edge_attr))
         graph_mu_id = F.relu(self.graph_mu_conv(out, data.edge_index, data.edge_attr))
