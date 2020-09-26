@@ -24,6 +24,37 @@ from infomax import *
 
 from utils import *
 
+class Sup_Encoder(torch.nn.Module):
+    def __init__(self, num_features, dim):
+        super(Sup_Encoder, self).__init__()
+        self.lin0 = torch.nn.Linear(num_features, dim)
+
+        nn = Sequential(Linear(5, 128), ReLU(), Linear(128, dim * dim))
+        self.conv = NNConv(dim, dim, nn, aggr='mean', root_weight=False)
+        self.gru = GRU(dim, dim)
+
+        self.set2set = Set2Set(dim, processing_steps=3)
+        # self.lin1 = torch.nn.Linear(2 * dim, dim)
+        # self.lin2 = torch.nn.Linear(dim, 1)
+
+
+    def forward(self, data):
+        out = F.relu(self.lin0(data.x))
+        h = out.unsqueeze(0)
+
+        feat_map = []
+        for i in range(3):
+            m = F.relu(self.conv(out, data.edge_index, data.edge_attr))
+            out, h = self.gru(m.unsqueeze(0), h)
+            out = out.squeeze(0)
+            # print(out.shape) : [num_node x dim]
+            feat_map.append(out)
+
+        out = self.set2set(out, data.batch)
+
+
+        return out
+
 class Encoder(torch.nn.Module):
     def __init__(self, num_features, dim):
         super(Encoder, self).__init__()
@@ -146,6 +177,12 @@ class Net(torch.nn.Module):
         self.embedding_dim = dim
 
         self.encoder = Encoder(num_features, dim)
+        self.sup_encoder = Sup_Encoder(num_features, dim)
+
+        self.ff1 = FF(2*dim, dim)
+        self.ff2 = FF(2*dim, dim)
+
+
         self.decoder = Decoder(dim*2, dim*2, num_features)
 
         self.fc1 = torch.nn.Linear(2 * dim, dim)
@@ -199,11 +236,11 @@ class Net(torch.nn.Module):
 
         _, count = torch.unique(data.batch,  return_counts=True)
 
-        graph_emb = global_mean_pool(class_latent_embeddings, data.batch)
+        '''graph_emb = global_mean_pool(class_latent_embeddings, data.batch)
 
         out = F.relu(self.fc1(node_graph))
         out = self.fc2(out)
-        classification = out
+        classification = out'''
 
 
         reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
@@ -224,22 +261,29 @@ class Net(torch.nn.Module):
         total_loss = node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error
 
 
-        return classification, total_loss
+        #return classification, total_loss
+
+        return total_loss
+
+    def unsup_sup_loss(self, data):
+        sup_graph_emb = self.sup_encoder(data)
+        node_mu, node_logvar, grouped_mu, grouped_logvar, node_graph = self.encoder(data)
+
+        g_enc = self.ff1(sup_graph_emb)
+        g_enc1 = self.ff2(node_graph)
+
+        measure = 'JSD'
+        loss = global_global_loss_(g_enc, g_enc1, data.edge_index, data.batch, measure)
+
+        return loss
 
 
 
     def forward(self, data):
 
-        node_mu, node_logvar, grouped_mu, grouped_logvar, node_graph = self.encoder(data)
+        graph_emb = self.sup_encoder(data)
 
-
-        class_latent_embeddings = group_wise_reparameterize(
-            training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=data.batch, cuda=True
-        )
-
-        graph_emb = global_mean_pool(class_latent_embeddings, data.batch)
-
-        out = F.relu(self.fc1(node_graph))
+        out = F.relu(self.fc1(graph_emb))
         out = self.fc2(out)
         classification = out
 
