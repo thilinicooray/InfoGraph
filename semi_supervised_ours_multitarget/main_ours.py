@@ -96,6 +96,8 @@ def train(epoch, use_unsup_loss):
                        + F.mse_loss(pred[:,6], data.y[:,6]) + F.mse_loss(pred[:,7], data.y[:,7]) + F.mse_loss(pred[:,8], data.y[:,8]) \
                        + F.mse_loss(pred[:,9], data.y[:,9]) + F.mse_loss(pred[:,10], data.y[:,10]) + F.mse_loss(pred[:,11], data.y[:,11])
 
+            print('losses ', (sup_loss/12).item(), our_loss.item())
+
 
             loss = sup_loss/ 12 + our_loss
 
