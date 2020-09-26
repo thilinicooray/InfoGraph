@@ -109,7 +109,7 @@ if __name__ == '__main__':
 
     target = args.target
     dim = 64
-    epochs = 500
+    epochs = 50000
     batch_size = 20
     lamda = args.lamda
     use_unsup_loss = args.use_unsup_loss
