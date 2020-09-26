@@ -201,7 +201,7 @@ class Net(torch.nn.Module):
 
         graph_emb = global_mean_pool(class_latent_embeddings, data.batch)
 
-        out = F.relu(self.fc1(node_graph))
+        out = F.relu(self.fc1(node_graph+graph_emb))
         out = self.fc2(out)
         classification = out
 
@@ -239,7 +239,7 @@ class Net(torch.nn.Module):
 
         graph_emb = global_mean_pool(class_latent_embeddings, data.batch)
 
-        out = F.relu(self.fc1(node_graph))
+        out = F.relu(self.fc1(node_graph+graph_emb))
         out = self.fc2(out)
         classification = out
 
