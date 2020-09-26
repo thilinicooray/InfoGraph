@@ -27,6 +27,7 @@ class Encoder(torch.nn.Module):
         self.gru = GRU(dim, dim)
 
         self.set2set = Set2Set(dim, processing_steps=3)
+        self.set2set1 = Set2Set(dim, processing_steps=3)
         # self.lin1 = torch.nn.Linear(2 * dim, dim)
         # self.lin2 = torch.nn.Linear(dim, 1)
 
@@ -42,8 +43,9 @@ class Encoder(torch.nn.Module):
             # print(out.shape) : [num_node x dim]
             feat_map.append(out)
 
-        out = self.set2set(out, data.batch)
-        return out, feat_map[-1]
+        out1 = self.set2set(out, data.batch)
+        out2 = self.set2set1(out, data.batch)
+        return out1, feat_map[-1], out2
 
 
 
@@ -108,14 +110,14 @@ class Net(torch.nn.Module):
 
 
     def forward(self, data):
-        out, M = self.encoder(data)
+        out, M , _= self.encoder(data)
         out = F.relu(self.fc1(out))
         out = self.fc2(out)
         pred = out
         return pred
 
     def info_loss(self, data):
-        y, M = self.unsup_encoder(data)
+        y, M,_ = self.unsup_encoder(data)
         g_enc = self.global_d(y)
         l_enc = self.local_d(M)
 
@@ -127,8 +129,8 @@ class Net(torch.nn.Module):
 
 
     def unsup_sup_loss(self, data):
-        y, M =   self.encoder(data)
-        y_, M_ = self.unsup_encoder(data)
+        y, M, _ =   self.encoder(data)
+        yq, M_, y_ = self.unsup_encoder(data)
 
         g_enc = self.ff1(y)
         g_enc1 = self.ff2(y_)
