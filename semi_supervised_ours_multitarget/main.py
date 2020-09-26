@@ -144,7 +144,7 @@ if __name__ == '__main__':
     target = args.target
     dim = 32
     epochs = 200
-    batch_size = 10
+    batch_size = 20
     lamda = args.lamda
     use_unsup_loss = args.use_unsup_loss
     separate_encoder = args.separate_encoder
