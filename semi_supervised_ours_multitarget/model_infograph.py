@@ -76,7 +76,7 @@ class FF(nn.Module):
         return self.block(x) + self.linear_shortcut(x)
 
 class Net(torch.nn.Module):
-    def __init__(self, num_features, dim, use_unsup_loss=False, separate_encoder=False):
+    def __init__(self, num_features, dim, target, use_unsup_loss=False, separate_encoder=False):
         super(Net, self).__init__()
 
         self.embedding_dim = dim
@@ -92,10 +92,11 @@ class Net(torch.nn.Module):
             self.ff2 = FF(2*dim, dim)
 
         self.fc1 = torch.nn.Linear(2 * dim, dim)
-        self.fc2 = torch.nn.Linear(dim, 1)
+        self.fc2 = torch.nn.Linear(dim, target)
 
-        self.local_d = FF(dim, 2*dim)
-        self.global_d = FF(2*dim, 2*dim)
+        if use_unsup_loss:
+            self.local_d = FF(dim, dim)
+            self.global_d = FF(2*dim, dim)
 
         self.init_emb()
 
@@ -110,56 +111,25 @@ class Net(torch.nn.Module):
 
     def forward(self, data):
         out, M = self.encoder(data)
-        g_enc = self.global_d(out)
-        out = F.relu(self.fc1(g_enc))
+        out = F.relu(self.fc1(out))
         out = self.fc2(out)
-        pred = out.view(-1)
+        pred = out
         return pred
 
-    def supervised_loss(self, data):
-
-        out, M = self.encoder(data)
-
-        g_enc = self.global_d(out)
-        l_enc = self.local_d(M)
-
-
-        out = F.relu(self.fc1(g_enc))
-        out = self.fc2(out)
-        pred = out.view(-1)
-
-        cls_loss = F.mse_loss(pred, data.y)
-
-        measure = 'JSD'
-        contras_loss = local_global_loss_(l_enc, g_enc, data.edge_index, data.batch, measure)
-
-        return cls_loss, contras_loss
-
-    def unsupervised_loss(self, data):
-
-        out, M = self.encoder(data)
-
-        g_enc = self.global_d(out)
-        l_enc = self.local_d(M)
-
-
-        measure = 'JSD'
-        contras_loss = local_global_loss_(l_enc, g_enc, data.edge_index, data.batch, measure)
-
-        return None, contras_loss
-
-    def unsup_loss(self, data):
-        if self.separate_encoder:
-            y, M = self.unsup_encoder(data)
-        else:
-            y, M = self.encoder(data)
+    def info_loss(self, data):
+        y, M = self.encoder(data)
         g_enc = self.global_d(y)
         l_enc = self.local_d(M)
 
         measure = 'JSD'
         if self.local:
             loss = local_global_loss_(l_enc, g_enc, data.edge_index, data.batch, measure)
-        return loss
+
+        out = F.relu(self.fc1(y))
+        out = self.fc2(out)
+        pred = out
+
+        return pred, loss
 
 
     def unsup_sup_loss(self, data):
