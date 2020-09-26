@@ -140,11 +140,10 @@ class FF(nn.Module):
         return self.block(x) + self.linear_shortcut(x)
 
 class Net(torch.nn.Module):
-    def __init__(self, num_features, dim, std, target, use_unsup_loss=False, separate_encoder=False):
+    def __init__(self, num_features, dim, target, use_unsup_loss=False, separate_encoder=False):
         super(Net, self).__init__()
 
         self.embedding_dim = dim
-        self.std = std
 
         self.encoder = Encoder(num_features, dim)
         self.decoder = Decoder(dim*2, dim*2, num_features)
