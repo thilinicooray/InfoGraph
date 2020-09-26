@@ -119,7 +119,7 @@ def test(loader, std_all):
 
         error += torch.sum((model(data) * stds_allbatch - data.y * stds_allbatch).abs(),0)  # MAE
 
-    return error / len(loader.dataset), torch.mean(error / len(loader.dataset))
+    return error.item() / len(loader.dataset), torch.mean(error / len(loader.dataset)).item()
 
 
 def seed_everything(seed=1234):
