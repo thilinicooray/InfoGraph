@@ -114,7 +114,6 @@ def test(loader, std_all):
 
         error += torch.sum((model(data) * stds_allbatch - data.y * stds_allbatch).abs(),0)  # MAE
 
-        print('error', error.size())
     return error / len(loader.dataset), torch.mean(error / len(loader.dataset))
 
 
