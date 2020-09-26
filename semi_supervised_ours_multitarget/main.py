@@ -191,9 +191,9 @@ if __name__ == '__main__':
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer, mode='min', factor=0.7, patience=5, min_lr=0.000001)
 
-    val_error = test(val_loader)
-    test_error = test(test_loader)
-    print('Epoch: {:03d}, Validation MAE: {:.7f}, Test MAE: {:.7f},'.format(0, val_error, test_error))
+    #val_error = test(val_loader)
+    #test_error = test(test_loader)
+    #print('Epoch: {:03d}, Validation MAE: {:.7f}, Test MAE: {:.7f},'.format(0, val_error, test_error))
 
     best_val_error = None
     for epoch in range(1, epochs):
