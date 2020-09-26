@@ -154,11 +154,11 @@ if __name__ == '__main__':
         std = dataset.data.y[:, t].std().item()
         dataset.data.y[:, t] = (dataset.data.y[:, t] - mean) / std
 
-        stds.append(std)
+        stds.append(torch.tensor([std]))
 
     stds_all = torch.stack(stds,0).to(device)
 
-    print('data y', dataset.data.y)
+    print('data y', stds_all.size(), dataset.data.y)
 
     # print(type(dataset[0]))
     # print(type(dataset.data.x)) #tensor
