@@ -142,7 +142,7 @@ if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     target = args.target
-    dim = 32
+    dim = 64
     epochs = 200
     batch_size = 20
     lamda = args.lamda
