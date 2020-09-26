@@ -221,8 +221,6 @@ class Net(torch.nn.Module):
 
         #cls_loss = torch.mean((classification * self.std - data.y * self.std).abs())
 
-        print('inside loss ', node_kl_divergence_loss.item(), class_kl_divergence_loss.item(), reconstruction_error.item())
-
         total_loss = node_kl_divergence_loss + class_kl_divergence_loss + reconstruction_error
 
 

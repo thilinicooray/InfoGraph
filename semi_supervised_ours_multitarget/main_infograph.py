@@ -97,7 +97,7 @@ def train(epoch, use_unsup_loss):
                        + F.mse_loss(pred[:,9], data.y[:,9]) + F.mse_loss(pred[:,10], data.y[:,10]) + F.mse_loss(pred[:,11], data.y[:,11])
 
 
-            loss = sup_loss/ 12 + contras_loss
+            loss = 20*sup_loss/ 12 + contras_loss
 
             loss.backward()
             loss_all += loss.item() * data.num_graphs
