@@ -54,6 +54,8 @@ class GcnInfomax(nn.Module):
 
   def forward(self, x, edge_index, batch, num_graphs):
 
+    torch.autograd.set_detect_anomaly(True)
+
     # batch_size = data.num_graphs
     if x is None:
         x = torch.ones(batch.shape[0]).to(device)
