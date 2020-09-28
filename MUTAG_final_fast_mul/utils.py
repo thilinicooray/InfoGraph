@@ -110,7 +110,7 @@ def accumulate_group_evidence(class_mu, class_logvar, batch, is_cuda):
     grouped_lvar_expanded = torch.repeat_interleave(grouped_lvar, count, dim=0)
 
 
-    return Variable(grouped_mu_expanded, requires_grad=True), Variable(torch.log(grouped_lvar_expanded), requires_grad=True)
+    return grouped_mu_expanded, grouped_lvar_expanded
 
 
 
@@ -125,7 +125,7 @@ def accumulate_group_evidence_mean(class_mu, class_logvar, batch, is_cuda):
     grouped_lvar_expanded = torch.repeat_interleave(grouped_lvar, count, dim=0)
 
 
-    return Variable(grouped_mu_expanded, requires_grad=True), Variable(torch.log(grouped_lvar_expanded), requires_grad=True)
+    return grouped_mu_expanded, grouped_lvar_expanded
 
 
 
