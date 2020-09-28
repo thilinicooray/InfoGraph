@@ -96,7 +96,7 @@ def accumulate_group_evidence(class_mu, class_logvar, batch, is_cuda):
     grouped_mu = global_add_pool(mu_new, batch)
 
 
-    grouped_mu = grouped_mu * grouped_var
+    grouped_mu_weighted = grouped_mu * grouped_var
 
     grouped_var[grouped_var == float(0)] = 1e-6
 
@@ -106,7 +106,7 @@ def accumulate_group_evidence(class_mu, class_logvar, batch, is_cuda):
 
     _, count = torch.unique(batch,  return_counts=True)
 
-    grouped_mu_expanded = torch.repeat_interleave(grouped_mu, count, dim=0)
+    grouped_mu_expanded = torch.repeat_interleave(grouped_mu_weighted, count, dim=0)
     grouped_lvar_expanded = torch.repeat_interleave(grouped_lvar, count, dim=0)
 
 
