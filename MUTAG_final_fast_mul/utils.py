@@ -87,9 +87,9 @@ def accumulate_group_evidence(class_mu, class_logvar, batch, is_cuda):
 
     var_opp = class_var.pow(-1)
 
-    grouped_var = global_add_pool(var_opp, batch)
+    grouped_var1 = global_add_pool(var_opp, batch)
 
-    grouped_var = grouped_var.pow(-1)
+    grouped_var = grouped_var1.pow(-1)
 
     mu_new = class_mu * class_var.pow(-1)
 
