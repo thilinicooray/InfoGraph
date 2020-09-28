@@ -1,3 +1,11 @@
+import torch
+import torch.nn as nn
+import matplotlib.pyplot as plt
+from torch.autograd import Variable
+from mpl_toolkits.axes_grid1 import ImageGrid
+
+from torch_geometric.nn import global_mean_pool, global_add_pool, global_max_pool
+
 def accumulate_group_evidence_old(class_mu, class_logvar, batch, is_cuda):
     """
     :param class_mu: mu values for class latent embeddings of each sample in the mini-batch
