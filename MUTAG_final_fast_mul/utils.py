@@ -96,7 +96,7 @@ def accumulate_group_evidence(class_mu, class_logvar, batch, is_cuda):
     grouped_mu = global_add_pool(mu_new, batch)
 
 
-    grouped_mu_weighted = grouped_mu * grouped_var
+    grouped_mu_weighted = grouped_mu.clone() * grouped_var.clone()
 
     grouped_var[grouped_var == float(0)] = 1e-6
 
