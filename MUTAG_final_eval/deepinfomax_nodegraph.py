@@ -158,7 +158,7 @@ if __name__ == '__main__':
 
     #seed = 42
     #seeds = [123,132,213,231,312,321]
-    epochs_list = [100]
+    epochs_list = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
     node_ratio = [0.5]
     for seed in seeds:
         for epochs in epochs_list:
@@ -225,7 +225,7 @@ if __name__ == '__main__':
                     kl_class_loss_all = 0
                     kl_node_loss_all = 0
                     mi_loss_all = 0
-                    model.train()
+                    #model.train()
                     for data in dataloader:
                         data = data.to(device)
                         optimizer.zero_grad()
@@ -244,22 +244,20 @@ if __name__ == '__main__':
                     print('all losses ', losses)
 
 
-                    model.eval()
-                    global_emb, local_emb, y  = model.get_embeddings(dataloader)
-                    res = evaluate_embedding(global_emb, y)
-                    accuracies['logreg'].append(res[0])
-                    accuracies['svc'].append(res[1])
-                    accuracies['linearsvc'].append(res[2])
-                    accuracies['randomforest'].append(res[3])
-                    print('graph ', accuracies)
+                model.eval()
+                emb, local_emb, y = model.get_embeddings(dataloader)
+                res = evaluate_embedding(emb, y)
+                accuracies['logreg'].append(res[0])
+                accuracies['svc'].append(res[1])
+                accuracies['linearsvc'].append(res[2])
+                accuracies['randomforest'].append(res[3])
+                print(accuracies)
 
-                    res1 = evaluate_embedding(local_emb, y)
-                    accuracies_node['logreg'].append(res1[0])
-                    accuracies_node['svc'].append(res1[1])
-                    accuracies_node['linearsvc'].append(res1[2])
-                    accuracies_node['randomforest'].append(res1[3])
-                    print('node ', accuracies_node)
-
-                    #torch.save(model.state_dict(), f'mutag_best_model_128.pkl')
+                res1 = evaluate_embedding(local_emb, y)
+                accuracies_node['logreg'].append(res1[0])
+                accuracies_node['svc'].append(res1[1])
+                accuracies_node['linearsvc'].append(res1[2])
+                accuracies_node['randomforest'].append(res1[3])
+                print('node ', accuracies_node)
 
 
