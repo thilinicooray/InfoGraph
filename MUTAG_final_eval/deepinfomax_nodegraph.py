@@ -145,7 +145,7 @@ class GcnInfomax(nn.Module):
 
 
         ret = np.concatenate(ret, 0)
-        ret_node = np.concatenate(ret_node, 0)
+        #ret_node = np.concatenate(ret_node, 0)
         y = np.concatenate(y, 0)
         return ret, ret_node, y
 
