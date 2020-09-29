@@ -186,7 +186,7 @@ def evaluate_embedding(embeddings, labels, search=False):
     # print(logreg_accuracies)
     #print('LogReg', np.mean(logreg_accuracies))
 
-    svc_accuracies = [svc_classify_single(x,y, search) for _ in range(1)]
+    svc_accuracies = [svc_classify(x,y, search) for _ in range(1)]
     # print(svc_accuracies)
     print('svc', np.mean(svc_accuracies))
 
