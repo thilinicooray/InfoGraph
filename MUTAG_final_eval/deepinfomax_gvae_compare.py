@@ -131,7 +131,7 @@ if __name__ == '__main__':
 
 
     seed = 32
-    epochs = 100
+    epochs = 20
 
     print('seed ', seed, 'epochs ', epochs)
 
@@ -197,13 +197,13 @@ if __name__ == '__main__':
                                                                                 kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
 
 
-        model.eval()
-        emb, y = model.get_embeddings(dataloader)
-        res = evaluate_embedding(emb, y)
-        accuracies['logreg'].append(res[0])
-        accuracies['svc'].append(res[1])
-        accuracies['linearsvc'].append(res[2])
-        accuracies['randomforest'].append(res[3])
-        print(accuracies)
+    model.eval()
+    emb, y = model.get_embeddings(dataloader)
+    res = evaluate_embedding(emb, y)
+    accuracies['logreg'].append(res[0])
+    accuracies['svc'].append(res[1])
+    accuracies['linearsvc'].append(res[2])
+    accuracies['randomforest'].append(res[3])
+    print(accuracies)
 
 
