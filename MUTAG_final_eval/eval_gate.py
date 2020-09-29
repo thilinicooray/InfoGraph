@@ -173,7 +173,7 @@ if __name__ == '__main__':
 
     args = arg_parse()
 
-    seed = 42
+    seed = 32
 
     random.seed(seed)
     np.random.seed(seed)
