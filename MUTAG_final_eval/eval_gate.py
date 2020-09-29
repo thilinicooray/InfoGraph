@@ -204,7 +204,7 @@ if __name__ == '__main__':
     model = GcnInfomax(args.hidden_dim, args.num_gc_layers, node_dim, class_dim).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
-    model.load_state_dict(torch.load(f'mutag_best_model.pkl'))
+    model.load_state_dict(torch.load(f'mutag_best_model_128.pkl'))
 
     model.eval()
 
@@ -228,5 +228,5 @@ if __name__ == '__main__':
 
         lambdas.append(lamda)
 
-    savetxt('gate_acc.csv', acc, delimiter=',')
-    savetxt('gate_val.csv', lambdas, delimiter=',')
+    savetxt('gate_acc_128.csv', acc, delimiter=',')
+    savetxt('gate_val_128.csv', lambdas, delimiter=',')
