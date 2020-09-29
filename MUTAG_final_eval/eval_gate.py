@@ -229,4 +229,4 @@ if __name__ == '__main__':
         lambdas.append(lamda)
 
     savetxt('gate_acc.csv', acc, delimiter=',')
-    savetxt('gate_val.csv', acc, delimiter=',')
+    savetxt('gate_val.csv', lambdas, delimiter=',')
