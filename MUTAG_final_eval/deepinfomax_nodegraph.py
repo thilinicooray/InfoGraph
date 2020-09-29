@@ -126,7 +126,7 @@ class GcnInfomax(nn.Module):
                 ret.append(class_emb.cpu().numpy())
 
 
-                '''grouped_node_mu, grouped_node_logvar = accumulate_group_evidence(
+                grouped_node_mu, grouped_node_logvar = accumulate_group_evidence(
                     node_mu.data, node_logvar.data, batch, True
                 )
 
@@ -137,7 +137,7 @@ class GcnInfomax(nn.Module):
                 node_emb = global_mean_pool(accumulated_node_latent_embeddings, batch)
 
 
-                ret_node.append(node_emb.cpu().numpy())'''
+                ret_node.append(node_emb.cpu().numpy())
 
                 y.append(data.y.cpu().numpy())
 
@@ -145,7 +145,7 @@ class GcnInfomax(nn.Module):
 
 
         ret = np.concatenate(ret, 0)
-        #ret_node = np.concatenate(ret_node, 0)
+        ret_node = np.concatenate(ret_node, 0)
         y = np.concatenate(y, 0)
         return ret, ret_node, y
 
@@ -225,7 +225,7 @@ if __name__ == '__main__':
                     kl_class_loss_all = 0
                     kl_node_loss_all = 0
                     mi_loss_all = 0
-                    #model.train()
+                    model.train()
                     for data in dataloader:
                         data = data.to(device)
                         optimizer.zero_grad()
@@ -253,12 +253,12 @@ if __name__ == '__main__':
                     accuracies['randomforest'].append(res[3])
                     print('graph ', accuracies)
 
-                    '''res1 = evaluate_embedding(local_emb, y)
+                    res1 = evaluate_embedding(local_emb, y)
                     accuracies_node['logreg'].append(res1[0])
                     accuracies_node['svc'].append(res1[1])
                     accuracies_node['linearsvc'].append(res1[2])
                     accuracies_node['randomforest'].append(res1[3])
-                    print('node ', accuracies_node)'''
+                    print('node ', accuracies_node)
 
                     #torch.save(model.state_dict(), f'mutag_best_model_128.pkl')
 
