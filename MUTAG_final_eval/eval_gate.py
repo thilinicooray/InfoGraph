@@ -140,7 +140,8 @@ class GcnInfomax(nn.Module):
                 )
 
                 node_emb = global_mean_pool(accumulated_node_latent_embeddings, batch)
-                ret.append(class_emb.cpu().numpy())
+
+
                 ret_node.append(node_emb.cpu().numpy())
 
 
