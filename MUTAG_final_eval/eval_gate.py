@@ -117,7 +117,7 @@ class GcnInfomax(nn.Module):
                 data.to(device)
                 x, edge_index, batch = data.x, data.edge_index, data.batch
 
-                node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index, batch)
+                node_mu, node_logvar, class_mu, class_logvar, _ = self.encoder(x, edge_index, batch)
 
                 grouped_mu, grouped_logvar = accumulate_group_evidence(
                     class_mu.data, class_logvar.data, batch, True
