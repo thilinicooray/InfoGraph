@@ -111,8 +111,7 @@ class GcnInfomax(nn.Module):
             for data in loader:
                 data.to(device)
                 x, edge_index, batch = data.x, data.edge_index, data.batch
-                if x is None:
-                    x = torch.ones((batch.shape[0],1)).to(device)
+
                 node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index, batch)
 
                 grouped_mu, grouped_logvar = accumulate_group_evidence(
@@ -252,14 +251,14 @@ if __name__ == '__main__':
                     accuracies['svc'].append(res[1])
                     accuracies['linearsvc'].append(res[2])
                     accuracies['randomforest'].append(res[3])
-                    print(accuracies)
+                    print('graph ', accuracies)
 
-                    res = evaluate_embedding(local_emb, y)
-                    accuracies_node['logreg'].append(res[0])
-                    accuracies_node['svc'].append(res[1])
-                    accuracies_node['linearsvc'].append(res[2])
-                    accuracies_node['randomforest'].append(res[3])
-                    print(accuracies_node)
+                    res1 = evaluate_embedding(local_emb, y)
+                    accuracies_node['logreg'].append(res1[0])
+                    accuracies_node['svc'].append(res1[1])
+                    accuracies_node['linearsvc'].append(res1[2])
+                    accuracies_node['randomforest'].append(res1[3])
+                    print('node ', accuracies_node)
 
                     #torch.save(model.state_dict(), f'mutag_best_model_128.pkl')
 
