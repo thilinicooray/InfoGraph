@@ -143,7 +143,7 @@ if __name__ == '__main__':
 
     target = args.target
     dim = 32
-    epochs = 500000
+    epochs = 500
     batch_size = 20
     lamda = args.lamda
     use_unsup_loss = args.use_unsup_loss
@@ -207,7 +207,7 @@ if __name__ == '__main__':
         #lr = scheduler.optimizer.param_groups[0]['lr']
         loss = train(epoch, use_unsup_loss)
         val_error_by_target, val_error = test(val_loader, stds_all)
-        #scheduler.step(val_error)
+        scheduler.step(val_error)
 
         if best_val_error is None or val_error <= best_val_error:
             print('Update')
