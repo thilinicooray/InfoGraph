@@ -227,17 +227,9 @@ if __name__ == '__main__':
 
                 model.eval()
 
-                from sklearn.preprocessing import StandardScaler
-
                 emb, y = model.get_embeddings(dataloader)
 
-                scaler = StandardScaler()
-                scaler.fit(emb)
-                train_emb = scaler.transform(emb)
-
-
-
-                res = evaluate_embedding(train_emb, y)
+                res = evaluate_embedding(emb, y)
                 accuracies['logreg'].append(res[0])
                 accuracies['svc'].append(res[1])
                 accuracies['linearsvc'].append(res[2])
