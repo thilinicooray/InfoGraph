@@ -68,7 +68,7 @@ class GcnInfomax(nn.Module):
         - 0.5 * torch.sum(1 + node_logvar - node_mu.pow(2) - node_logvar.exp())
     )
     #node_kl_divergence_loss = 0.0000001 * node_kl_divergence_loss *num_graphs
-    node_kl_divergence_loss = 0.0001 * node_kl_divergence_loss
+    node_kl_divergence_loss = node_kl_divergence_loss
     node_kl_divergence_loss.backward(retain_graph=True)
 
     # kl-divergence error for class latent space
@@ -76,7 +76,7 @@ class GcnInfomax(nn.Module):
         - 0.5 * torch.sum(1 + grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp())
     )
     #class_kl_divergence_loss = 0.0000001 * class_kl_divergence_loss * num_graphs
-    class_kl_divergence_loss = 0.0001 * class_kl_divergence_loss
+    class_kl_divergence_loss = class_kl_divergence_loss
     class_kl_divergence_loss.backward(retain_graph=True)
 
     # reconstruct samples
@@ -98,7 +98,7 @@ class GcnInfomax(nn.Module):
     #check input feat first
     #print('recon ', x[0],reconstructed_node[0])
     #reconstruction_error =  0.1*mse_loss(reconstructed_node, x) * num_graphs
-    reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
+    reconstruction_error =  mse_loss(reconstructed_node, x)
     reconstruction_error.backward()
 
     
