@@ -424,7 +424,7 @@ if __name__ == '__main__':
                     accuracies['randomforest'].append(res[3])
                     print(accuracies)
 
-                    torch.save(model.state_dict(), f'imdbm_best_model_512.pkl')
+                    torch.save(model.state_dict(), f'imdbm_best_model_512_new.pkl')
 
                     model.train()
 
