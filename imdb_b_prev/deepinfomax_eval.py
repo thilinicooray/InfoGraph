@@ -297,7 +297,7 @@ if __name__ == '__main__':
 
     #seed = 42
     #seeds = [123,132,213,231,312,321]
-    epochs_list = [40]
+    epochs_list = [30, 40]
     node_ratio = [0.25]
     for seed in seeds:
         for rat in node_ratio:
@@ -416,7 +416,9 @@ if __name__ == '__main__':
                     accuracies['randomforest'].append(res[3])
                     print(accuracies)
 
-                    torch.save(model.state_dict(), f'imdbb_best_model_512.pkl')
+                    if epoch == 40:
+
+                        torch.save(model.state_dict(), f'imdbb_best_model_512.pkl')
 
                     model.train()
 
