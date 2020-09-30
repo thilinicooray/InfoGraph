@@ -232,8 +232,8 @@ if __name__ == '__main__':
                 emb, y = model.get_embeddings(dataloader)
 
                 scaler = StandardScaler()
-                scaler.fit(train_emb)
-                train_emb = scaler.transform(train_emb)
+                scaler.fit(emb)
+                train_emb = scaler.transform(emb)
 
 
 
