@@ -297,8 +297,8 @@ if __name__ == '__main__':
 
     #seed = 42
     #seeds = [123,132,213,231,312,321]
-    epochs_list = [30, 40]
-    node_ratio = [0.25]
+    epochs_list = [40]
+    node_ratio = [0.75]
     for seed in seeds:
         for rat in node_ratio:
 
