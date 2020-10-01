@@ -443,7 +443,7 @@ if __name__ == '__main__':
 
                 print('val and test micro F1', val_f1, test_f1)'''
 
-
+        torch.save(model.state_dict(), f'ppi_best_mode_32.pkl')
         model.eval()
 
         #if epoch == epochs:
@@ -452,8 +452,8 @@ if __name__ == '__main__':
         best_f1 = 0
         best_round = 0
 
-        gate_val = 0.005
-        runs = 200
+        gate_val = 0.05
+        runs = 20
 
         lambdas = []
         overall_acc = []
