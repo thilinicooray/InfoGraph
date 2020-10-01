@@ -204,7 +204,7 @@ class GcnInfomax(nn.Module):
 
         return norm*(pos_loss*pos_weight + neg_loss)
 
-    def get_embeddings(self, loader):
+    def get_embeddings(self, loader, lamda):
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         ret = []
@@ -218,14 +218,16 @@ class GcnInfomax(nn.Module):
 
                 node_mu, node_logvar, class_mu, class_logvar, entangledrep = self.encoder(x.double(), edge_index, batch)
 
-                '''grouped_mu, grouped_logvar = accumulate_group_evidence(
+                grouped_mu, grouped_logvar = accumulate_group_evidence(
                     class_mu.data, class_logvar.data, batch, True
                 )
                 class_latent_embeddings = group_wise_reparameterize(
                     training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
-                )'''
+                )
 
-                node_latent_embeddings = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
+                node_latent_embeddings_only = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
+
+                node_latent_embeddings = lamda *  node_latent_embeddings_only + (1 - lamda)*class_latent_embeddings
 
                 #ret.append(torch.cat([node_latent_embeddings,class_latent_embeddings],-1).cpu().numpy())
                 ret.append(node_latent_embeddings.cpu().numpy())
@@ -459,9 +461,9 @@ if __name__ == '__main__':
         for coef in range(runs+1):
             lamda = int(coef) * gate_val
 
-            train_emb, train_y = model.get_embeddings(train_dataloader)
-            val_emb, val_y = model.get_embeddings(val_dataloader)
-            test_emb, test_y = model.get_embeddings(test_dataloader)
+            train_emb, train_y = model.get_embeddings(train_dataloader, lamda)
+            val_emb, val_y = model.get_embeddings(val_dataloader, lamda)
+            test_emb, test_y = model.get_embeddings(test_dataloader, lamda)
 
             from sklearn.preprocessing import StandardScaler
             scaler = StandardScaler()
