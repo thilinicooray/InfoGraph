@@ -121,10 +121,14 @@ class GcnInfomax(nn.Module):
                 #print('class mu ', torch.softmax(class_mu, dim=-1)[:5,:5])
 
                 node_latent_embeddings = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
+
+                print('node latent ', node_latent_embeddings[:,:6])
+
+
                 indiclass_latent_embeddings = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
 
-                savetxt('mutag_node_emb_{}.csv'.format(k), node_latent_embeddings.cpu().numpy(), delimiter=',')
-                savetxt('mutag_graph_emb_{}.csv'.format(k), indiclass_latent_embeddings.cpu().numpy(), delimiter=',')
+                #savetxt('mutag_node_emb_{}.csv'.format(k), node_latent_embeddings.cpu().numpy(), delimiter=',')
+                #savetxt('mutag_graph_emb_{}.csv'.format(k), indiclass_latent_embeddings.cpu().numpy(), delimiter=',')
 
 
                 grouped_mu, grouped_logvar = accumulate_group_evidence(
@@ -154,10 +158,10 @@ class GcnInfomax(nn.Module):
                 #savetxt('graph.csv', cov, delimiter=',')
 
                 n_rho, n_pval = stats.spearmanr(torch.cat([node_latent_embeddings,indiclass_latent_embeddings],0) .cpu().numpy(), axis=1)
-                savetxt('mutag_graph_rho_{}.csv'.format(k), n_rho, delimiter=',')
+                #savetxt('mutag_graph_rho_{}.csv'.format(k), n_rho, delimiter=',')
 
                 n_rho, n_pval = stats.spearmanr(torch.cat([class_mu,node_mu],0).cpu().numpy(), axis=1)
-                savetxt('mutag_node_rho_{}.csv'.format(k), n_rho, delimiter=',')
+                #savetxt('mutag_node_rho_{}.csv'.format(k), n_rho, delimiter=',')
 
                 '''np_entangled = torch.sigmoid(entangled).cpu().numpy()
                 np_node_emb = torch.sigmoid(node_mu).cpu().numpy()
@@ -180,7 +184,7 @@ class GcnInfomax(nn.Module):
 
                 '''k +=1'''
 
-                if k == 20:
+                if k == 1:
                     break
 
                 #break
