@@ -508,8 +508,8 @@ if __name__ == '__main__':
 
             lambdas.append(lamda)
 
-        savetxt('gate_acc_cora1.csv', overall_acc, delimiter=',')
-        savetxt('gate_val_cora1.csv', lambdas, delimiter=',')
+        savetxt('gate_acc_ppi2.csv', overall_acc, delimiter=',')
+        savetxt('gate_val_ppi2.csv', lambdas, delimiter=',')
 
 
 
