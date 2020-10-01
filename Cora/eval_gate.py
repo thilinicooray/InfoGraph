@@ -531,8 +531,8 @@ if __name__ == '__main__':
 
 
 
-        gate_val = 0.025
-        runs = 40
+        gate_val = 0.005
+        runs = 200
 
         lambdas = []
         overall_acc = []
