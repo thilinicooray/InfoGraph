@@ -208,8 +208,8 @@ if __name__ == '__main__':
 
     model.eval()
 
-    gate_val = 0.05
-    runs = 20
+    gate_val = 0.025
+    runs = 40
 
     lambdas = []
     acc = []
@@ -228,5 +228,5 @@ if __name__ == '__main__':
 
         lambdas.append(lamda)
 
-    savetxt('gate_acc_128_1.csv', acc, delimiter=',')
-    savetxt('gate_val_128_1.csv', lambdas, delimiter=',')
+    savetxt('gate_acc_128_2.csv', acc, delimiter=',')
+    savetxt('gate_val_128_2.csv', lambdas, delimiter=',')
