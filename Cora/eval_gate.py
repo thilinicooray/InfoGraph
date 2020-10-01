@@ -529,8 +529,7 @@ if __name__ == '__main__':
 
         accs_test = []
 
-        best_valacc = 0
-        best_test_score = 0
+
 
         gate_val = 0.025
         runs = 40
@@ -548,6 +547,9 @@ if __name__ == '__main__':
             val_emb, val_lbls= torch.from_numpy(val_emb).cuda(), torch.from_numpy(val_y_labels).cuda()
 
             test_emb, test_lbls= torch.from_numpy(test_emb).cuda(), torch.from_numpy(test_y_labels).cuda()
+
+            best_valacc = 0
+            best_test_score = 0
 
 
             for _ in range(50):
@@ -620,14 +622,14 @@ if __name__ == '__main__':
                 accs_val.append(acc_val * 100)
 
 
-                if acc_val * 100 > best_valacc:
+                if acc_val > best_valacc:
 
                     best_val_round = epoch - 1
                     best_test_score = acc_test
 
 
             #input = lamda *  local_emb + (1 - lamda)*global_emb
-
+            print('lambda and test acc ', lamda, best_test_score)
 
             overall_acc.append(best_test_score)
 
