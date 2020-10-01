@@ -236,6 +236,6 @@ if __name__ == '__main__':
                 accuracies['randomforest'].append(res[3])
                 print(accuracies)
 
-                torch.save(model.state_dict(), f'mutag_best_model_128_new.pkl')
+                torch.save(model.state_dict(), f'mutag_best_model_128_new1.pkl')
 
 
