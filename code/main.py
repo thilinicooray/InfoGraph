@@ -26,6 +26,9 @@ class GL_Disen(nn.Module):
         self.encoder = Encoder(dataset_num_features, hidden_dim, num_gc_layers, node_dim, class_dim)
         self.decoder = Decoder(hidden_dim, hidden_dim, dataset_num_features)
 
+        self.local_d = FF(self.embedding_dim)#not used
+        self.global_d = FF(self.embedding_dim)#not used
+
 
         self.init_emb()
 
