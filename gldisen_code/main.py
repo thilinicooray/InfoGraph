@@ -24,9 +24,9 @@ from utils import imshow_grid, mse_loss, reparameterize, group_wise_reparameteri
 
 from arguments import arg_parse
 
-class GcnInfomax(nn.Module):
+class GLDisen(nn.Module):
     def __init__(self, hidden_dim, num_gc_layers, node_dim, class_dim, alpha=0.5, beta=1., gamma=.1):
-        super(GcnInfomax, self).__init__()
+        super(GLDisen, self).__init__()
 
         self.alpha = alpha
         self.beta = beta
@@ -158,7 +158,7 @@ if __name__ == '__main__':
 
                 print('init seed, seed ', torch.initial_seed(), seed)
 
-                accuracies = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
+                accuracies = {'svc':[]}
                 losses = {'recon':[], 'node_kl':[], 'class_kl': []}
 
                 log_interval = 1
@@ -180,7 +180,7 @@ if __name__ == '__main__':
                 dataloader = DataLoader(dataset, batch_size=batch_size)
 
                 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-                model = GcnInfomax(args.hidden_dim, args.num_gc_layers, node_dim, class_dim).to(device)
+                model = GLDisen(args.hidden_dim, args.num_gc_layers, node_dim, class_dim).to(device)
                 optimizer = torch.optim.Adam(model.parameters(), lr=lr)
                 #scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
 
