@@ -18,7 +18,6 @@ from torch import optim
 from cortex_DIM.nn_modules.mi_networks import MIFCNet, MI1x1ConvNet
 from gin import *
 from evaluate_embedding import evaluate_embedding
-from model import *
 from utils import imshow_grid, mse_loss, reparameterize, group_wise_reparameterize, accumulate_group_evidence
 
 from arguments import arg_parse
