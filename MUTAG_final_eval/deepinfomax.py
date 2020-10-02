@@ -222,7 +222,7 @@ if __name__ == '__main__':
 
                     print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(dataloader),
                                                                                                        kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
-                    print('all losses ', losses)
+                    #print('all losses ', losses)
 
 
                 model.eval()
@@ -236,6 +236,6 @@ if __name__ == '__main__':
                 accuracies['randomforest'].append(res[3])
                 print(accuracies)
 
-                torch.save(model.state_dict(), f'mutag_best_model_128_new1.pkl')
+                #torch.save(model.state_dict(), f'mutag_best_model_128_new1.pkl')
 
 
