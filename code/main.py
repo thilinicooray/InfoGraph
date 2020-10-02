@@ -50,14 +50,14 @@ class GL_Disen(nn.Module):
         node_kl_divergence_loss = torch.mean(
             - 0.5 * torch.sum(1 + node_logvar - node_mu.pow(2) - node_logvar.exp())
         )
-        node_kl_divergence_loss = 0.000001 * node_kl_divergence_loss
+        node_kl_divergence_loss = 0.0000001 * node_kl_divergence_loss
         node_kl_divergence_loss.backward(retain_graph=True)
 
         # kl-divergence error for global latent space
         class_kl_divergence_loss = torch.mean(
             - 0.5 * torch.sum(1 + grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp())
         )
-        class_kl_divergence_loss = 0.000001 * class_kl_divergence_loss
+        class_kl_divergence_loss = 0.0000001 * class_kl_divergence_loss
         class_kl_divergence_loss.backward(retain_graph=True)
 
         # sampling
@@ -108,11 +108,11 @@ if __name__ == '__main__':
 
     args = arg_parse()
 
-    seeds = [32, 42,52,62,72]
+    seeds = [32]
 
     #seeds = [123,132,213,231,312,321]
-    epochs_list = [20, 30, 40, 50]
-    node_ratio = [0.25,0.5, 0.75]
+    epochs_list = [30]
+    node_ratio = [0.5]
     for seed in seeds:
         for epochs in epochs_list:
             for rat in node_ratio:
