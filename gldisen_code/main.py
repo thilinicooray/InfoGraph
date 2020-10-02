@@ -33,8 +33,8 @@ class GLDisen(nn.Module):
         self.encoder = Encoder(dataset_num_features, hidden_dim, num_gc_layers, node_dim, class_dim)
         self.decoder = Decoder(hidden_dim, hidden_dim, dataset_num_features)
 
-        self.local_d = FF(self.embedding_dim)
-        self.global_d = FF(self.embedding_dim)
+        self.proj1 = FF(self.embedding_dim)
+        self.proj2 = FF(self.embedding_dim)
 
 
         self.init_emb()
@@ -132,12 +132,13 @@ if __name__ == '__main__':
 
     args = arg_parse()
 
-    seeds = [32]
+    #enable entire sets of hyperparameters for the full experiment
 
-    #seed = 42
+    seeds = [32]#[32,42,52,62,72]
+
     #seeds = [123,132,213,231,312,321]
-    epochs_list = [20]
-    node_ratio = [0.5]
+    epochs_list = [20]#[20,30,40,50]
+    node_ratio = [0.5]#[0.25,0.5,0.75]
     for seed in seeds:
         for epochs in epochs_list:
             for rat in node_ratio:
