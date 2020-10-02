@@ -198,7 +198,7 @@ def evaluate_embedding(embeddings, labels, search=False):
     # print(randomforest_accuracies)
     #print('randomforest', np.mean(randomforest_accuracies))
 
-    return 0.0, np.mean(svc_accuracies), 0.0, 0.0
+    return np.mean(svc_accuracies)
 
 if __name__ == '__main__':
     evaluate_embedding('./data', 'ENZYMES', np.load('tmp/emb.npy'))
