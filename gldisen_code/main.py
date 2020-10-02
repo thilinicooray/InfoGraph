@@ -16,7 +16,6 @@ import json
 from torch import optim
 
 from cortex_DIM.nn_modules.mi_networks import MIFCNet, MI1x1ConvNet
-from losses import *
 from gin import Encoder, Decoder
 from evaluate_embedding import evaluate_embedding
 from model import *
