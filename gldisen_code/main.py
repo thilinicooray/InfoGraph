@@ -98,7 +98,7 @@ class GLDisen(nn.Module):
         reconstruction_error.backward()
 
 
-        return reconstruction_error.item() , class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
+        return reconstruction_error.item() + class_kl_divergence_loss.item() + node_kl_divergence_loss.item()
 
     def get_embeddings(self, loader):
 
@@ -155,7 +155,7 @@ if __name__ == '__main__':
                 print('init seed, seed ', torch.initial_seed(), seed)
 
                 accuracies = {'svc':[]}
-                losses = {'recon':[], 'node_kl':[], 'class_kl': []}
+                losses = {'tot':[]}
 
                 log_interval = 1
                 batch_size = 128
@@ -198,27 +198,20 @@ if __name__ == '__main__':
 
                 model.train()
                 for epoch in range(1, epochs+1):
-                    recon_loss_all = 0
-                    kl_class_loss_all = 0
-                    kl_node_loss_all = 0
-                    mi_loss_all = 0
+                    loss_all = 0
+
                     #model.train()
                     for data in dataloader:
                         data = data.to(device)
                         optimizer.zero_grad()
-                        recon_loss, kl_class, kl_node = model(data.x, data.edge_index, data.batch, data.num_graphs)
-                        recon_loss_all += recon_loss
-                        kl_class_loss_all += kl_class
-                        kl_node_loss_all += kl_node
+                        loss = model(data.x, data.edge_index, data.batch, data.num_graphs)
+                        loss_all += loss
                         optimizer.step()
 
-                    losses['recon'].append(recon_loss_all/ len(dataloader))
-                    losses['node_kl'].append(kl_node_loss_all/ len(dataloader))
-                    losses['class_kl'].append(kl_class_loss_all/ len(dataloader))
+                    losses['tot'].append(loss_all/ len(dataloader))
 
-                    print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(dataloader),
-                                                                                            kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
-                    #print('all losses ', losses)
+
+                    print('Epoch {}, Total Loss {} '.format(epoch, loss_all/ len(dataloader)))
 
 
                 model.eval()
