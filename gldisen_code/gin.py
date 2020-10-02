@@ -51,16 +51,6 @@ class Encoder(torch.nn.Module):
             self.convs.append(conv)
             self.bns.append(bn)
 
-        '''
-        # node
-        self.node_mu = Linear(in_features=dim, out_features=dim, bias=True)
-        self.node_logvar = Linear(in_features=dim, out_features=dim, bias=True)
-
-        # class
-        self.class_mu = Linear(in_features=dim, out_features=dim, bias=True)
-        self.class_logvar = Linear(in_features=dim, out_features=dim, bias=True)'''
-
-
     def forward(self, x, edge_index, batch):
         if x is None:
             x = torch.ones((batch.shape[0], 1)).to(device)
@@ -79,12 +69,6 @@ class Encoder(torch.nn.Module):
 
         class_latent_space_mu = self.bns[j+2](F.relu(self.convs[j+2](x, edge_index)))
         class_latent_space_logvar = self.bns[j+3](F.relu(self.convs[j+3](x, edge_index)))
-
-        '''node_latent_space_mu = F.relu(self.node_mu(x))
-        node_latent_space_logvar = F.relu(self.node_logvar(x))
-
-        class_latent_space_mu = F.relu(self.class_mu(x))
-        class_latent_space_logvar = F.relu(self.class_logvar(x))'''
 
         return node_latent_space_mu, node_latent_space_logvar, class_latent_space_mu, class_latent_space_logvar
 
@@ -131,67 +115,6 @@ class FF(nn.Module):
         return self.block(x) + self.linear_shortcut(x)
 
 
-
-class Net(torch.nn.Module):
-    def __init__(self):
-        super(Net, self).__init__()
-
-        try:
-            num_features = dataset.num_features
-        except:
-            num_features = 1
-        dim = 32
-
-        self.encoder = Encoder(num_features, dim)
-
-        self.fc1 = Linear(dim*5, dim)
-        self.fc2 = Linear(dim, dataset.num_classes)
-
-    def forward(self, x, edge_index, batch):
-        if x is None:
-            x = torch.ones(batch.shape[0]).to(device)
-
-        x, _ = self.encoder(x, edge_index, batch)
-        x = F.relu(self.fc1(x))
-        x = F.dropout(x, p=0.5, training=self.training)
-        x = self.fc2(x)
-        return F.log_softmax(x, dim=-1)
-
-def train(epoch):
-    model.train()
-
-    if epoch == 51:
-        for param_group in optimizer.param_groups:
-            param_group['lr'] = 0.5 * param_group['lr']
-
-    loss_all = 0
-    for data in train_loader:
-        data = data.to(device)
-        optimizer.zero_grad()
-        # print(data.x.shape)
-        # [ num_nodes x num_node_labels ]
-        # print(data.edge_index.shape)
-        #  [2 x num_edges ]
-        # print(data.batch.shape)
-        # [ num_nodes ]
-        output = model(data.x, data.edge_index, data.batch)
-        loss = F.nll_loss(output, data.y)
-        loss.backward()
-        loss_all += loss.item() * data.num_graphs
-        optimizer.step()
-
-    return loss_all / len(train_dataset)
-
-def test(loader):
-    model.eval()
-
-    correct = 0
-    for data in loader:
-        data = data.to(device)
-        output = model(data.x, data.edge_index, data.batch)
-        pred = output.max(dim=1)[1]
-        correct += pred.eq(data.y).sum().item()
-    return correct / len(loader.dataset)
 
 if __name__ == '__main__':
 
