@@ -131,11 +131,11 @@ if __name__ == '__main__':
 
     #enable entire sets of hyperparameters for the full experiment
 
-    seeds = [32]#[32,42,52,62,72]
+    seeds = [32,42,52,62,72]#[32]
 
     #seeds = [123,132,213,231,312,321]
-    epochs_list = [20]#[20,30,40,50]
-    node_ratio = [0.5]#[0.25,0.5,0.75]
+    epochs_list = [20,30,40,50]#[20]
+    node_ratio = [0.25,0.5,0.75]#[0.5]#
     for seed in seeds:
         for epochs in epochs_list:
             for rat in node_ratio:
@@ -186,14 +186,6 @@ if __name__ == '__main__':
                 print('================')
 
 
-                '''model.eval()
-                emb, y = model.get_embeddings(dataloader)
-                res = evaluate_embedding(emb, y)
-                accuracies['logreg'].append(res[0])
-                accuracies['svc'].append(res[1])
-                accuracies['linearsvc'].append(res[2])
-                accuracies['randomforest'].append(res[3])'''
-
                 model.train()
                 for epoch in range(1, epochs+1):
                     loss_all = 0
@@ -206,10 +198,10 @@ if __name__ == '__main__':
                         loss_all += loss
                         optimizer.step()
 
-                    losses['tot'].append(loss_all/ len(dataloader))
+                    #losses['tot'].append(loss_all/ len(dataloader))
 
 
-                    print('Epoch {}, Total Loss {} '.format(epoch, loss_all/ len(dataloader)))
+                    #print('Epoch {}, Total Loss {} '.format(epoch, loss_all/ len(dataloader)))
 
 
                 model.eval()

@@ -1,8 +1,6 @@
-Usage (sample):
+Command to reproduce results for MUTAG:
 ```
-$ python deepinfomax.py --DS DATASET_NAME --lr 0.001 --num-gc-layers 3
+$ python -u main.py --DS MUTAG --lr 0.001 --num-gc-layers 2 --num_epochs 100 --hidden-dim 128
 ```
 
-Dataset can be downloaded at https://ls11-www.cs.tu-dortmund.de/staff/morris/graphkerneldatasets
 
-For other baseline implementations, refer to https://github.com/fanyun-sun/graph-classification.git
