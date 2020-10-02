@@ -30,7 +30,6 @@ class GL_Disen(nn.Module):
         self.init_emb()
 
     def init_emb(self):
-        initrange = -1.5 / self.embedding_dim
         for m in self.modules():
             if isinstance(m, nn.Linear):
                 torch.nn.init.xavier_uniform_(m.weight.data)
