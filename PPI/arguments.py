@@ -3,6 +3,7 @@ import argparse
 def arg_parse():
     parser = argparse.ArgumentParser(description='GcnInformax Arguments.')
     parser.add_argument('--num_epochs', dest='num_epochs', help='number of epochs')
+    parser.add_argument('--lamda', dest='lamda', help='gate amount for node')
     parser.add_argument('--local', dest='local', action='store_const', 
             const=True, default=False)
     parser.add_argument('--glob', dest='glob', action='store_const', 
