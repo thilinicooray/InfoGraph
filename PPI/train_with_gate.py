@@ -131,7 +131,7 @@ class GcnInfomax(nn.Module):
         )
 
 
-        reconstructed_node = self.decoder(self.lamda* node_latent_embeddings + (1- self.lamda)*class_latent_embeddings)
+        reconstructed_node = self.decoder(self.lamda* node_latent_embeddings + (1 - self.lamda)*class_latent_embeddings)
 
         #reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
         reconstruction_error = self.recon_loss1(reconstructed_node, edge_index, batch)
@@ -300,8 +300,8 @@ if __name__ == '__main__':
 
         #for epochs in range(20,41):
 
-        print('seed ', seed, 'epochs ', epochs)
-        lamda = args.lamda
+        print('seed ', seed, 'epochs ', epochs, args.lamda)
+        lamda = float(args.lamda)
 
 
         random.seed(seed)
