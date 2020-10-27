@@ -131,7 +131,7 @@ class GcnInfomax(nn.Module):
         )
 
 
-        reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, self.lamda* node_latent_embeddings + (1 - self.lamda)*class_latent_embeddings)
+        reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
 
         #reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
         reconstruction_error = self.recon_loss1(reconstructed_node, edge_index, batch)
@@ -231,7 +231,7 @@ class GcnInfomax(nn.Module):
                 node_latent_embeddings = self.lamda* node_latent_embeddings_only + (1- self.lamda)*class_latent_embeddings
 
                 #ret.append(torch.cat([node_latent_embeddings,class_latent_embeddings],-1).cpu().numpy())
-                ret.append(node_latent_embeddings.cpu().numpy())
+                ret.append(entangledrep.cpu().numpy())
                 y.append(data.y.cpu().numpy())
         ret = np.concatenate(ret, 0)
         y = np.concatenate(y, 0)

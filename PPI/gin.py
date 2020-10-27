@@ -102,7 +102,7 @@ class Encoder(torch.nn.Module):
         if self.training:
             return node_latent_space_mu,  node_latent_space_logvar, class_latent_space_mu, class_latent_space_logvar
         else:
-            return node_latent_space_mu,  node_latent_space_logvar, class_latent_space_mu, class_latent_space_logvar,  x
+            return node_latent_space_mu,  node_latent_space_logvar, class_latent_space_mu, class_latent_space_logvar,  xs[-1]
 
 
 class Decoder(torch.nn.Module):
@@ -110,15 +110,15 @@ class Decoder(torch.nn.Module):
         super(Decoder, self).__init__()
 
         self.linear_model = torch.nn.Sequential(OrderedDict([
-            ('linear_1', torch.nn.Linear(in_features=node_dim*3, out_features=feat_size, bias=True)),
+            ('linear_1', torch.nn.Linear(in_features=node_dim*2, out_features=feat_size, bias=True)),
             ('relu_1', Tanh()),
 
             #('linear_2', torch.nn.Linear(in_features=node_dim, out_features=feat_size, bias=True)),
             #('relu_final', Tanh())
         ]))
 
-    def forward(self, node_latent_space, class_latent_space, combo):
-        x = torch.cat((node_latent_space, class_latent_space, combo), dim=1)
+    def forward(self, node_latent_space, class_latent_space):
+        x = torch.cat((node_latent_space, class_latent_space), dim=1)
 
         #x = torch.softmax(self.linear_model(x), dim=-1)
         x = self.linear_model(x)
