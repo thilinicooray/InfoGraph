@@ -58,7 +58,7 @@ class GcnInfomax(nn.Module):
         self.prior = args.prior
 
         self.encoder = Encoder(dataset_num_features, hidden_dim, num_gc_layers, node_dim, class_dim)
-        self.decoder = Decoder(hidden_dim, hidden_dim, dataset_num_features)
+        self.decoder = Decoder(hidden_dim, hidden_dim, hidden_dim)
         self.node_discriminator = D_net_gauss(hidden_dim, hidden_dim)
         self.class_discriminator = D_net_gauss(hidden_dim, hidden_dim)
         self.lamda = lamda
@@ -131,7 +131,7 @@ class GcnInfomax(nn.Module):
         )
 
 
-        reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
+        reconstructed_node = self.decoder(self.lamda* node_latent_embeddings + (1- self.lamda)*class_latent_embeddings)
 
         #reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
         reconstruction_error = self.recon_loss1(reconstructed_node, edge_index, batch)
@@ -231,7 +231,7 @@ class GcnInfomax(nn.Module):
                 node_latent_embeddings = self.lamda* node_latent_embeddings_only + (1- self.lamda)*class_latent_embeddings
 
                 #ret.append(torch.cat([node_latent_embeddings,class_latent_embeddings],-1).cpu().numpy())
-                ret.append((entangledrep + node_latent_embeddings).cpu().numpy())
+                ret.append((node_latent_embeddings).cpu().numpy())
                 y.append(data.y.cpu().numpy())
         ret = np.concatenate(ret, 0)
         y = np.concatenate(y, 0)
@@ -292,7 +292,7 @@ if __name__ == '__main__':
     args = arg_parse()
 
     #for seed in [32,42,52,62,72]:
-    for seed in [52]:
+    for seed in [123]:
 
         #seed = 42
         #epochs = 37
@@ -301,7 +301,7 @@ if __name__ == '__main__':
         #for epochs in range(20,41):
 
         print('seed ', seed, 'epochs ', epochs, args.lamda)
-        lamda = float(args.lamda)
+        #lamda = float(args.lamda)
 
 
         random.seed(seed)
@@ -360,107 +360,113 @@ if __name__ == '__main__':
         val_dataloader = DataLoader(val_dataset, batch_size=batch_size)
         test_dataloader = DataLoader(test_dataset, batch_size=batch_size)
 
-
-        model = GcnInfomax(args.hidden_dim, args.num_gc_layers, node_dim, class_dim, lamda).double().to(device)
-        #encode/decode optimizers
-        optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-
-
-
-        print('================')
-        print('num_features: {}'.format(dataset_num_features))
-        print('hidden_dim: {}'.format(args.hidden_dim))
-        print('num_gc_layers: {}'.format(args.num_gc_layers))
-        print('================')
-
-
-        '''model.eval()
-        emb, y = model.get_embeddings(dataloader)
-        res = evaluate_embedding(emb, y)
-        accuracies['logreg'].append(res[0])
-        accuracies['svc'].append(res[1])
-        accuracies['linearsvc'].append(res[2])
-        accuracies['randomforest'].append(res[3])'''
-
-        logreg_val = []
-        logreg_valbased_test = []
-
-        best_val_round = -1
-        best_val = 0
-
-        model.train()
-        for epoch in range(1, epochs+1):
-            recon_loss_all = 0
-            kl_class_loss_all = 0
-            kl_node_loss_all = 0
-            mi_loss_all = 0
-            #model.train()
-            for data in train_dataloader:
-                data = data.to(device)
-
-
-
-
-                optimizer.zero_grad()
-                recon_loss, kl_class, kl_node = model(data.x.double(), data.edge_index, data.batch, data.num_graphs)
-                recon_loss_all += recon_loss
-                kl_class_loss_all += kl_class
-                kl_node_loss_all += kl_node
-
-
-
-                '''for name, param in model.named_parameters():
-                    print(name, param.grad)'''
-
-
-
-
-                #torch.nn.utils.clip_grad_norm_(model.parameters(), 0.25)
-                optimizer.step()
-
-            losses['recon'].append(recon_loss_all/ len(train_dataloader))
-            losses['node_kl'].append(kl_node_loss_all/ len(train_dataloader))
-            losses['class_kl'].append(kl_class_loss_all/ len(train_dataloader))
-
-
-
-            print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(train_dataloader),
-                                                                                    kl_class_loss_all / len(train_dataloader), kl_node_loss_all / len(train_dataloader)))
-
-            #used during finetune phase
-            '''if epoch % log_interval == 0:
-                model.eval()
-                #first train logistic regressor
-                #put it eval mode
-                #get eval F1
-                #get test F1
-
-
-
-
-                train_emb, train_y = model.get_embeddings(train_dataloader)
-                val_emb, val_y = model.get_embeddings(val_dataloader)
-                test_emb, test_y = model.get_embeddings(test_dataloader)
-                val_f1, test_f1 = test(train_emb, train_y, val_emb, val_y,test_emb, test_y)
-
-                print('val and test micro F1', val_f1, test_f1)'''
-
-        #torch.save(model.state_dict(), f'ppi_best_mode_32.pkl')
-        model.eval()
-
-        #if epoch == epochs:
-
-        accs = []
-        best_f1 = 0
-        best_round = 0
-
         gate_val = 0.05
         runs = 20
 
         lambdas = []
         overall_acc = []
 
-        for coef in range(1):
+        for coef in range(runs+1):
+            lamda = int(coef) * gate_val
+
+
+            model = GcnInfomax(args.hidden_dim, args.num_gc_layers, node_dim, class_dim, lamda).double().to(device)
+            #encode/decode optimizers
+            optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+
+
+
+            print('================')
+            print('num_features: {}'.format(dataset_num_features))
+            print('hidden_dim: {}'.format(args.hidden_dim))
+            print('num_gc_layers: {}'.format(args.num_gc_layers))
+            print('================')
+
+
+            '''model.eval()
+            emb, y = model.get_embeddings(dataloader)
+            res = evaluate_embedding(emb, y)
+            accuracies['logreg'].append(res[0])
+            accuracies['svc'].append(res[1])
+            accuracies['linearsvc'].append(res[2])
+            accuracies['randomforest'].append(res[3])'''
+
+            logreg_val = []
+            logreg_valbased_test = []
+
+            best_val_round = -1
+            best_val = 0
+
+            model.train()
+            for epoch in range(1, epochs+1):
+                recon_loss_all = 0
+                kl_class_loss_all = 0
+                kl_node_loss_all = 0
+                mi_loss_all = 0
+                #model.train()
+                for data in train_dataloader:
+                    data = data.to(device)
+
+
+
+
+                    optimizer.zero_grad()
+                    recon_loss, kl_class, kl_node = model(data.x.double(), data.edge_index, data.batch, data.num_graphs)
+                    recon_loss_all += recon_loss
+                    kl_class_loss_all += kl_class
+                    kl_node_loss_all += kl_node
+
+
+
+                    '''for name, param in model.named_parameters():
+                        print(name, param.grad)'''
+
+
+
+
+                    #torch.nn.utils.clip_grad_norm_(model.parameters(), 0.25)
+                    optimizer.step()
+
+                losses['recon'].append(recon_loss_all/ len(train_dataloader))
+                losses['node_kl'].append(kl_node_loss_all/ len(train_dataloader))
+                losses['class_kl'].append(kl_class_loss_all/ len(train_dataloader))
+
+
+
+                print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(train_dataloader),
+                                                                                        kl_class_loss_all / len(train_dataloader), kl_node_loss_all / len(train_dataloader)))
+
+                #used during finetune phase
+                '''if epoch % log_interval == 0:
+                    model.eval()
+                    #first train logistic regressor
+                    #put it eval mode
+                    #get eval F1
+                    #get test F1
+    
+    
+    
+    
+                    train_emb, train_y = model.get_embeddings(train_dataloader)
+                    val_emb, val_y = model.get_embeddings(val_dataloader)
+                    test_emb, test_y = model.get_embeddings(test_dataloader)
+                    val_f1, test_f1 = test(train_emb, train_y, val_emb, val_y,test_emb, test_y)
+    
+                    print('val and test micro F1', val_f1, test_f1)'''
+
+            #torch.save(model.state_dict(), f'ppi_best_mode_32.pkl')
+            model.eval()
+
+            #if epoch == epochs:
+
+            accs = []
+            best_f1 = 0
+            best_round = 0
+
+            gate_val = 0.05
+            runs = 20
+
+            #for coef in range(1):
             #lamda = int(coef) * gate_val
 
             train_emb, train_y = model.get_embeddings(train_dataloader)
@@ -510,8 +516,8 @@ if __name__ == '__main__':
 
             lambdas.append(lamda)
 
-        #savetxt('gate_acc_ppi2.csv', overall_acc, delimiter=',')
-        #savetxt('gate_val_ppi2.csv', lambdas, delimiter=',')
+        savetxt('gate_acc_ppi2.csv', overall_acc, delimiter=',')
+        savetxt('gate_val_ppi2.csv', lambdas, delimiter=',')
 
 
 
