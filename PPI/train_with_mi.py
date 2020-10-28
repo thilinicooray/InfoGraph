@@ -153,8 +153,8 @@ class GcnInfomax(nn.Module):
 
         measure='JSD'
 
-        contranstive = local_global_loss_for_mlgvae(self.node_discriminator(node_latent_embeddings), self.nclass_discriminator(global_mean_pool(ngroup_latent_embeddings, batch)),
-                                                    self.class_discriminator(global_mean_pool(class_latent_embeddings, batch)), batch, measure)
+        contranstive = local_global_loss_for_mlgvae(node_latent_embeddings, global_mean_pool(ngroup_latent_embeddings, batch),
+                                                    global_mean_pool(class_latent_embeddings, batch), batch, measure)
 
         loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error + contranstive
 
@@ -302,7 +302,7 @@ if __name__ == '__main__':
     args = arg_parse()
 
     #for seed in [32,42,52,62,72]:
-    for seed in [52]:
+    for seed in [123]:
 
         #seed = 42
         #epochs = 37
