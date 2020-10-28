@@ -61,6 +61,7 @@ class GcnInfomax(nn.Module):
         self.decoder = Decoder(hidden_dim, hidden_dim, dataset_num_features)
         self.node_discriminator = D_net_gauss(hidden_dim, hidden_dim)
         self.class_discriminator = D_net_gauss(hidden_dim, hidden_dim)
+        self.nclass_discriminator = D_net_gauss(hidden_dim, hidden_dim)
         self.lamda = lamda
 
 
@@ -160,7 +161,7 @@ class GcnInfomax(nn.Module):
         loss.backward()
 
 
-        return  reconstruction_error.item(), class_kl_divergence_loss.item() + node_kl_divergence_loss.item() + contranstive.item()
+        return  reconstruction_error.item(), class_kl_divergence_loss.item() + node_kl_divergence_loss.item() , contranstive.item()
 
 
     def edge_recon(self, z, edge_index, sigmoid=True):
