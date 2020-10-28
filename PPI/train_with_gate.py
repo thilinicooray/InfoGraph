@@ -230,8 +230,10 @@ class GcnInfomax(nn.Module):
 
                 node_latent_embeddings = self.lamda* node_latent_embeddings_only + (1- self.lamda)*class_latent_embeddings
 
+                out = self.decoder(node_latent_embeddings)
+
                 #ret.append(torch.cat([node_latent_embeddings,class_latent_embeddings],-1).cpu().numpy())
-                ret.append((node_latent_embeddings).cpu().numpy())
+                ret.append((out).cpu().numpy())
                 y.append(data.y.cpu().numpy())
         ret = np.concatenate(ret, 0)
         y = np.concatenate(y, 0)
