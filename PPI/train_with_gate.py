@@ -233,7 +233,7 @@ class GcnInfomax(nn.Module):
                 #out = self.decoder(node_latent_embeddings)
 
                 #ret.append(torch.cat([node_latent_embeddings,class_latent_embeddings],-1).cpu().numpy())
-                ret.append((node_latent_embeddings).cpu().numpy())
+                ret.append((node_latent_embeddings + entangledrep).cpu().numpy())
                 y.append(data.y.cpu().numpy())
         ret = np.concatenate(ret, 0)
         y = np.concatenate(y, 0)
@@ -518,8 +518,8 @@ if __name__ == '__main__':
 
             lambdas.append(lamda)
 
-        savetxt('gate_acc_ppi_latent1.csv', overall_acc, delimiter=',')
-        savetxt('gate_val_ppi_latent1.csv', lambdas, delimiter=',')
+        savetxt('gate_acc_ppi_latent2.csv', overall_acc, delimiter=',')
+        savetxt('gate_val_ppi_latent2.csv', lambdas, delimiter=',')
 
 
 
