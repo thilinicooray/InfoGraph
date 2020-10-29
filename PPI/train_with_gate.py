@@ -133,8 +133,8 @@ class GcnInfomax(nn.Module):
 
         reconstructed_node = self.decoder(self.lamda* node_latent_embeddings + (1- self.lamda)*class_latent_embeddings)
 
-        reconstruction_error =  mse_loss(reconstructed_node, x) 
-        #reconstruction_error = self.recon_loss1(reconstructed_node, edge_index, batch)
+        #reconstruction_error =  mse_loss(reconstructed_node, x)
+        reconstruction_error = self.recon_loss1(reconstructed_node, edge_index, batch)
 
 
         #class_kl_divergence_loss.backward(retain_graph=True)
@@ -369,7 +369,7 @@ if __name__ == '__main__':
         overall_acc = []
 
         for coef in range(runs+1):
-            lamda = 1.0 - round(int(coef) * gate_val,2)
+            lamda = round(int(coef) * gate_val,2)
 
 
             model = GcnInfomax(args.hidden_dim, args.num_gc_layers, node_dim, class_dim, lamda).double().to(device)
