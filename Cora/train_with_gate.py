@@ -385,8 +385,8 @@ if __name__ == '__main__':
 
         nb_classes = np.unique(data.y.cpu().numpy()).shape[0]
 
-        gate_val = 0.05
-        runs = 20
+        gate_val = 0.005
+        runs = 200
 
         lambdas = []
         overall_acc = []
@@ -639,8 +639,8 @@ if __name__ == '__main__':
 
             lambdas.append(lamda)
 
-        savetxt('gate_acc_cora_s1.csv', overall_acc, delimiter=',')
-        savetxt('gate_val_cora_s1.csv', lambdas, delimiter=',')
+        savetxt('gate_acc_cora_s2.csv', overall_acc, delimiter=',')
+        savetxt('gate_val_cora_s2.csv', lambdas, delimiter=',')
 
 
 
