@@ -230,10 +230,10 @@ class GcnInfomax(nn.Module):
 
                 node_latent_embeddings = self.lamda* node_latent_embeddings_only + (1- self.lamda)*class_latent_embeddings
 
-                out = self.decoder(node_latent_embeddings)
+                #out = self.decoder(node_latent_embeddings)
 
                 #ret.append(torch.cat([node_latent_embeddings,class_latent_embeddings],-1).cpu().numpy())
-                ret.append((out).cpu().numpy())
+                ret.append((node_latent_embeddings).cpu().numpy())
                 y.append(data.y.cpu().numpy())
         ret = np.concatenate(ret, 0)
         y = np.concatenate(y, 0)
@@ -369,7 +369,7 @@ if __name__ == '__main__':
         overall_acc = []
 
         for coef in range(runs+1):
-            lamda = int(coef) * gate_val
+            lamda = 1.0 - round(int(coef) * gate_val,2)
 
 
             model = GcnInfomax(args.hidden_dim, args.num_gc_layers, node_dim, class_dim, lamda).double().to(device)
@@ -518,8 +518,8 @@ if __name__ == '__main__':
 
             lambdas.append(lamda)
 
-        savetxt('gate_acc_ppi2.csv', overall_acc, delimiter=',')
-        savetxt('gate_val_ppi2.csv', lambdas, delimiter=',')
+        savetxt('gate_acc_ppi_latent1.csv', overall_acc, delimiter=',')
+        savetxt('gate_val_ppi_latent1.csv', lambdas, delimiter=',')
 
 
 
