@@ -142,12 +142,12 @@ class GcnInfomax(nn.Module):
         #node_kl_divergence_loss.backward(retain_graph=True)
         #reconstruction_error.backward()
 
-        loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error
+        loss =  class_kl_divergence_loss + 100*node_kl_divergence_loss + 100*reconstruction_error
 
         loss.backward()
 
 
-        return  reconstruction_error.item(), class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
+        return  reconstruction_error.item(), 100*class_kl_divergence_loss.item() , 100*node_kl_divergence_loss.item()
 
 
     def edge_recon(self, z, edge_index, sigmoid=True):
