@@ -233,7 +233,7 @@ class GcnInfomax(nn.Module):
                 #out = self.decoder(node_latent_embeddings)
 
                 #ret.append(torch.cat([node_latent_embeddings,class_latent_embeddings],-1).cpu().numpy())
-                ret.append((node_latent_embeddings).cpu().numpy())
+                ret.append((node_latent_embeddings + entangledrep).cpu().numpy())
                 y.append(data.y.cpu().numpy())
         ret = np.concatenate(ret, 0)
         y = np.concatenate(y, 0)
