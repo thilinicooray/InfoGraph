@@ -347,13 +347,13 @@ if __name__ == '__main__':
         EPS = 1e-15
 
         #lr = 0.000001
-        DS = 'Cora'
+        DS = 'PubMed'
         path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', DS)
         # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
 
         dataset = Planetoid(path, name=DS)
 
-        print('cora dataset summary', dataset[0])
+        print(' dataset summary', dataset[0])
         data = dataset[0].to(device)
 
 
@@ -639,8 +639,8 @@ if __name__ == '__main__':
 
             lambdas.append(lamda)
 
-        savetxt('gate_acc_cora_s2.csv', overall_acc, delimiter=',')
-        savetxt('gate_val_cora_s2.csv', lambdas, delimiter=',')
+        savetxt('gate_acc_pubmed_s1.csv', overall_acc, delimiter=',')
+        savetxt('gate_val_pubmed_s1.csv', lambdas, delimiter=',')
 
 
 
