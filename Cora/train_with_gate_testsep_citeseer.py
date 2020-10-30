@@ -429,7 +429,7 @@ if __name__ == '__main__':
             xent = nn.CrossEntropyLoss()
 
             #model.train()
-            for epoch in range(1, 50+1):
+            for epoch in range(1, 2000+1):
                 recon_loss_all = 0
                 kl_class_loss_all = 0
                 kl_node_loss_all = 0
@@ -575,7 +575,7 @@ if __name__ == '__main__':
                 current_test_list = []
 
 
-                for iter in range(100):
+                for iter in range(300):
 
                     log.train()
 
@@ -629,8 +629,8 @@ if __name__ == '__main__':
 
             lambdas.append(lamda)
 
-        savetxt('gate_acc_citeseer_testsep1_ep50_3.csv', overall_acc, delimiter=',')
-        savetxt('gate_val_citeseer_testsep1_ep50_3.csv', lambdas, delimiter=',')
+        savetxt('gate_acc_citeseer_testsep1_ep50_4.csv', overall_acc, delimiter=',')
+        savetxt('gate_val_citeseer_testsep1_ep50_4.csv', lambdas, delimiter=',')
 
 
 
