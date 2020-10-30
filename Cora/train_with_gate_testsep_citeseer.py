@@ -237,7 +237,7 @@ class GcnInfomax(nn.Module):
         train_emb1 = np.concatenate((train_emb, val_emb), axis=0)
         train_y1 = np.concatenate((train_y, val_y), axis=0)
 
-        return train_emb1, train_y1, test_emb, test_y
+        return train_emb, train_y, test_emb, test_y
 
 def test(train_z, train_y, val_z, val_y,test_z, test_y,  solver='lbfgs',
          multi_class='ovr', *args, **kwargs):
@@ -629,8 +629,8 @@ if __name__ == '__main__':
 
             lambdas.append(lamda)
 
-        savetxt('gate_acc_citeseer_testsep1_ep50_2.csv', overall_acc, delimiter=',')
-        savetxt('gate_val_citeseer_testsep1_ep50_2.csv', lambdas, delimiter=',')
+        savetxt('gate_acc_citeseer_testsep1_ep50_3.csv', overall_acc, delimiter=',')
+        savetxt('gate_val_citeseer_testsep1_ep50_3.csv', lambdas, delimiter=',')
 
 
 
