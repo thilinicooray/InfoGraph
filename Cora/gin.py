@@ -72,22 +72,26 @@ class Encoder(torch.nn.Module):
 
     def forward(self, x, edge_index):
 
-        xs = []
-        x = self.act(self.convs[0](x, edge_index))
-        for i in range(1, self.num_gc_layers):
+        val = 0
+        for i in range(self.num_gc_layers):
 
-            x += self.act(self.convs[i](x, edge_index))
+            x = self.act(self.convs[i](x, edge_index))
+
+            if i == 0:
+                val = x
+            else:
+                val = val + x
 
             # if i == 2:
                 # feature_map = x2
 
         #out = torch.cat(xs, 1)
         j = self.num_gc_layers
-        node_latent_space_mu = self.bns[j](torch.tanh(self.convs[j](x, edge_index)))
-        node_latent_space_logvar = self.bns[j+1](torch.tanh(self.convs[j+1](x, edge_index)))
+        node_latent_space_mu = self.bns[j](torch.tanh(self.convs[j](val, edge_index)))
+        node_latent_space_logvar = self.bns[j+1](torch.tanh(self.convs[j+1](val, edge_index)))
 
-        class_latent_space_mu = self.bns[j+2](torch.tanh(self.convs[j+2](x, edge_index)))
-        class_latent_space_logvar = self.bns[j+3](torch.tanh(self.convs[j+3](x, edge_index)))
+        class_latent_space_mu = self.bns[j+2](torch.tanh(self.convs[j+2](val, edge_index)))
+        class_latent_space_logvar = self.bns[j+3](torch.tanh(self.convs[j+3](val, edge_index)))
 
         '''node_latent_space_mu = F.relu(self.node_mu(x))
         node_latent_space_logvar = F.relu(self.node_logvar(x))
