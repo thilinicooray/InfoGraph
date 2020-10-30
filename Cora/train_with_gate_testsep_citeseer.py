@@ -429,7 +429,7 @@ if __name__ == '__main__':
             xent = nn.CrossEntropyLoss()
 
             #model.train()
-            for epoch in range(1, 2000+1):
+            for epoch in range(1, 50+1):
                 recon_loss_all = 0
                 kl_class_loss_all = 0
                 kl_node_loss_all = 0
@@ -562,7 +562,7 @@ if __name__ == '__main__':
 
                 log = LogReg(node_dim, nb_classes).double().cuda()
 
-                opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0)
+                opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0.01)
 
                 log.cuda()
 
@@ -629,8 +629,8 @@ if __name__ == '__main__':
 
             lambdas.append(lamda)
 
-        savetxt('gate_acc_citeseer_testsep1_ep2000.csv', overall_acc, delimiter=',')
-        savetxt('gate_val_citeseer_testsep1_ep2000.csv', lambdas, delimiter=',')
+        savetxt('gate_acc_citeseer_testsep1_ep50_1.csv', overall_acc, delimiter=',')
+        savetxt('gate_val_citeseer_testsep1_ep50_1.csv', lambdas, delimiter=',')
 
 
 
