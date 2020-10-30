@@ -73,9 +73,10 @@ class Encoder(torch.nn.Module):
     def forward(self, x, edge_index):
 
         xs = []
-        for i in range(self.num_gc_layers):
+        x = self.act(self.convs[0](x, edge_index))
+        for i in range(1, self.num_gc_layers):
 
-            x = self.act(self.convs[i](x, edge_index))
+            x += self.act(self.convs[i](x, edge_index))
 
             # if i == 2:
                 # feature_map = x2
