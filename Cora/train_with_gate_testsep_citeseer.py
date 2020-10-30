@@ -429,7 +429,7 @@ if __name__ == '__main__':
             xent = nn.CrossEntropyLoss()
 
             #model.train()
-            for epoch in range(1, 2000+1):
+            for epoch in range(1, 50+1):
                 recon_loss_all = 0
                 kl_class_loss_all = 0
                 kl_node_loss_all = 0
