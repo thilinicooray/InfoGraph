@@ -237,8 +237,6 @@ class GcnInfomax(nn.Module):
         train_emb1 = np.concatenate((train_emb, val_emb), axis=0)
         train_y1 = np.concatenate((train_y, val_y), axis=0)
 
-        print('shapes train, val, joint', train_emb.shape, train_y.shape, val_emb.shape,val_y.shape,train_emb1.shape,train_y1.shape)
-
         return train_emb1, train_y1, test_emb, test_y
 
 def test(train_z, train_y, val_z, val_y,test_z, test_y,  solver='lbfgs',
@@ -431,7 +429,7 @@ if __name__ == '__main__':
             xent = nn.CrossEntropyLoss()
 
             #model.train()
-            for epoch in range(1, 2):
+            for epoch in range(1, 50+1):
                 recon_loss_all = 0
                 kl_class_loss_all = 0
                 kl_node_loss_all = 0
@@ -631,8 +629,8 @@ if __name__ == '__main__':
 
             lambdas.append(lamda)
 
-        savetxt('gate_acc_cora_testsep1.csv', overall_acc, delimiter=',')
-        savetxt('gate_val_cora_testsep1.csv', lambdas, delimiter=',')
+        savetxt('gate_acc_cora_testsep1_ep50.csv', overall_acc, delimiter=',')
+        savetxt('gate_val_cora_testsep1_ep50.csv', lambdas, delimiter=',')
 
 
 
