@@ -575,7 +575,7 @@ if __name__ == '__main__':
                 current_test_list = []
 
 
-                for iter in range(300):
+                for iter in range(100):
 
                     log.train()
 
@@ -629,8 +629,8 @@ if __name__ == '__main__':
 
             lambdas.append(lamda)
 
-        savetxt('gate_acc_citeseer_testsep1_ep50_1.csv', overall_acc, delimiter=',')
-        savetxt('gate_val_citeseer_testsep1_ep50_1.csv', lambdas, delimiter=',')
+        savetxt('gate_acc_citeseer_testsep1_ep50_2.csv', overall_acc, delimiter=',')
+        savetxt('gate_val_citeseer_testsep1_ep50_2.csv', lambdas, delimiter=',')
 
 
 
