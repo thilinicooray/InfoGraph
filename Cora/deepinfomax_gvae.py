@@ -299,7 +299,7 @@ if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     #for seed in [32,42,52,62,72]:
-    for seed in [52]:
+    for seed in [123]:
 
         #seed = 42
         #epochs = 37
@@ -340,7 +340,7 @@ if __name__ == '__main__':
 
         dataset = Planetoid(path, name=DS)
 
-        print('cora dataset summary', dataset[0])
+        print('dataset summary', dataset[0])
         data = dataset[0].to(device)
 
 
@@ -403,7 +403,7 @@ if __name__ == '__main__':
         xent = nn.CrossEntropyLoss()
 
         #model.train()
-        for epoch in range(1, epochs+1):
+        for epoch in range(1, 50+1):
             recon_loss_all = 0
             kl_class_loss_all = 0
             kl_node_loss_all = 0
@@ -442,119 +442,173 @@ if __name__ == '__main__':
             print('all losses ', losses)
 
 
-            model.eval()
-
-            #if epoch == epochs:
+        model.eval()
 
 
-
-
-            accs = []
-            best_f1 = 0
-            best_round = 0
-
-            print('Logistic regression started!')
-
-
-            train_emb, train_y_labels, val_emb, val_y_labels,test_emb, test_y_labels  = model.get_embeddings(data)
-
-            '''from sklearn.preprocessing import StandardScaler
-            scaler = StandardScaler()
-            scaler.fit(train_emb)
-            train_emb = scaler.transform(train_emb)
-            val_emb = scaler.transform(val_emb)
-            test_emb = scaler.transform(test_emb)'''
-
-            train_emb, train_lbls = torch.from_numpy(train_emb).cuda(), torch.from_numpy(train_y_labels).cuda()
-            val_emb, val_lbls= torch.from_numpy(val_emb).cuda(), torch.from_numpy(val_y_labels).cuda()
-            test_emb, test_lbls= torch.from_numpy(test_emb).cuda(), torch.from_numpy(test_y_labels).cuda()
-
-            #print('emb', train_emb.size(), val_emb.size(), test_emb.size())
-            #print('y',  train_lbls.size(), val_lbls.size(), test_lbls.size())
-
-            '''from sklearn.preprocessing import StandardScaler
-            scaler = StandardScaler()
-            scaler.fit(train_emb)
-            train_emb = scaler.transform(train_emb)
-            val_emb = scaler.transform(val_emb)
-            test_emb = scaler.transform(test_emb)'''
+        #if epoch == epochs:
 
 
 
-            '''from sklearn.linear_model import SGDClassifier
-            from sklearn.metrics import accuracy_score
-            log = SGDClassifier(loss="log")
-            log.fit(train_emb, train_y)
 
 
-            val_pred = log.predict(val_emb)
-            test_pred = log.predict(test_emb)
-
-            tot_acc_val = accuracy_score(val_y.flatten(), val_pred.flatten())
-
-            tot_acc_test = accuracy_score(test_y.flatten(), test_pred.flatten())
-
-            if tot_acc_val > best_val:
-                best_val_round = epoch - 1'''
-
-            accs_val = []
-            accs_test = []
-            for _ in range(50):
-                log = LogReg(args.hidden_dim*2, nb_classes).double().cuda()
-                opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0)
-                log.cuda()
-                current_val_best = 0
-                current_best_iter = 0
-                current_val_list = []
-                current_test_list = []
-
-                for iter in range(300):
-                    log.train()
-                    opt.zero_grad()
-
-                    logits = log(train_emb)
-                    loss = xent(logits, train_lbls)
-
-                    loss.backward()
-                    opt.step()
-
-                logits_test = log(test_emb)
-                preds_test = torch.argmax(logits_test, dim=1)
-                acc_test = torch.sum(preds_test == test_lbls).float() / test_lbls.shape[0]
-                #current_test_list.append(acc_test)
+        '''accs = []
+        
+        best_f1 = 0
+        
+        best_round = 0'''
 
 
-                logits_val = log(val_emb)
-                preds_val = torch.argmax(logits_val, dim=1)
-                acc_val = torch.sum(preds_val == val_lbls).float() / val_lbls.shape[0]
-                #current_val_list.append(acc_val)
+        print('Logistic regression started!')
 
 
-                '''if acc_val.item() > current_val_best:
-                        current_best_iter = iter'''
 
 
-                #accs_test.append(current_val_list[current_best_iter] * 100)
-                #accs_val.append(current_test_list[current_best_iter] * 100)
 
-                accs_test.append(acc_test * 100)
-                accs_val.append(acc_val * 100)
 
-            accs_test = torch.stack(accs_test)
-            print('test ', accs_test.mean().item(), accs_test.std().item())
+        #print('emb', train_emb.size(), val_emb.size(), test_emb.size())
 
-            accs_val = torch.stack(accs_val)
-            print('val ', accs_val.mean().item(), accs_val.std().item())
+        #print('y',  train_lbls.size(), val_lbls.size(), test_lbls.size())
 
-            if accs_val.mean().item() > best_val:
+
+        '''from sklearn.preprocessing import StandardScaler
+        
+        scaler = StandardScaler()
+        
+        scaler.fit(train_emb)
+        
+        train_emb = scaler.transform(train_emb)
+        
+        val_emb = scaler.transform(val_emb)
+        
+        test_emb = scaler.transform(test_emb)'''
+
+
+
+
+        '''from sklearn.linear_model import SGDClassifier
+        
+        from sklearn.metrics import accuracy_score
+        
+        log = SGDClassifier(loss="log")
+        
+        log.fit(train_emb, train_y)
+
+
+        
+        val_pred = log.predict(val_emb)
+        
+        test_pred = log.predict(test_emb)
+
+        
+        tot_acc_val = accuracy_score(val_y.flatten(), val_pred.flatten())
+
+        
+        tot_acc_test = accuracy_score(test_y.flatten(), test_pred.flatten())
+
+        
+        if tot_acc_val > best_val:
+        
+            best_val_round = epoch - 1'''
+
+
+        accs_val = []
+
+        accs_test = []
+
+
+
+
+
+        train_emb, train_y_labels, val_emb, val_y_labels,test_emb, test_y_labels  = model.get_embeddings(data)
+
+        train_emb, train_lbls = torch.from_numpy(train_emb).cuda(), torch.from_numpy(train_y_labels).cuda()
+
+        val_emb, val_lbls= torch.from_numpy(val_emb).cuda(), torch.from_numpy(val_y_labels).cuda()
+
+        test_emb, test_lbls= torch.from_numpy(test_emb).cuda(), torch.from_numpy(test_y_labels).cuda()
+
+        best_valacc = 0
+        best_test_score = 0
+
+
+        for _ in range(50):
+
+            log = LogReg(args.hidden_dim, nb_classes).double().cuda()
+
+            opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0)
+
+            log.cuda()
+
+            current_val_best = 0
+
+            current_best_iter = 0
+
+            current_val_list = []
+
+            current_test_list = []
+
+
+            for iter in range(300):
+
+                log.train()
+
+                opt.zero_grad()
+
+
+                logits = log(train_emb)
+
+                loss = xent(logits, train_lbls)
+
+
+                loss.backward()
+
+                opt.step()
+
+
+            logits_test = log(test_emb)
+
+            preds_test = torch.argmax(logits_test, dim=1)
+
+            acc_test = torch.sum(preds_test == test_lbls).float() / test_lbls.shape[0]
+
+            #current_test_list.append(acc_test)
+
+
+
+            logits_val = log(val_emb)
+
+            preds_val = torch.argmax(logits_val, dim=1)
+
+            acc_val = torch.sum(preds_val == val_lbls).float() / val_lbls.shape[0]
+
+            #current_val_list.append(acc_val)
+
+
+
+            '''if acc_val.item() > current_val_best:
+        
+                    current_best_iter = iter'''
+
+
+
+            #accs_test.append(current_val_list[current_best_iter] * 100)
+
+            #accs_val.append(current_test_list[current_best_iter] * 100)
+
+
+            accs_test.append(acc_test * 100)
+
+            accs_val.append(acc_val * 100)
+
+
+            if acc_val > best_valacc:
+
                 best_val_round = epoch - 1
+                best_test_score = acc_test
 
 
-            logreg_val.append(accs_val.mean().item())
-            logreg_valbased_test.append(accs_test.mean().item())
-
-            print('logreg val', logreg_val)
-            print('logreg test', logreg_valbased_test)
+        #input = lamda *  local_emb + (1 - lamda)*global_emb
+        print('lambda and test acc ', best_test_score)
 
         print('best perf based on validation score val, test, in epoch', logreg_val[best_val_round], logreg_valbased_test[best_val_round], best_val_round)
 
