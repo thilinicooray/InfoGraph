@@ -334,7 +334,7 @@ if __name__ == '__main__':
         EPS = 1e-15
 
         #lr = 0.000001
-        DS = 'Cora'
+        DS = 'CiteSeer'
         path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', DS)
         # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
 
@@ -535,7 +535,7 @@ if __name__ == '__main__':
 
             log = LogReg(args.hidden_dim, nb_classes).double().cuda()
 
-            opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0)
+            opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0.01)
 
             log.cuda()
 
@@ -610,6 +610,6 @@ if __name__ == '__main__':
         #input = lamda *  local_emb + (1 - lamda)*global_emb
         print('lambda and test acc ', best_test_score)
 
-        print('best perf based on validation score val, test, in epoch', logreg_val[best_val_round], logreg_valbased_test[best_val_round], best_val_round)
+        #print('best perf based on validation score val, test, in epoch', logreg_val[best_val_round], logreg_valbased_test[best_val_round], best_val_round)
 
 
