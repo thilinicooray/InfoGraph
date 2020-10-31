@@ -24,7 +24,7 @@ from torch import optim
 
 from cortex_DIM.nn_modules.mi_networks import MIFCNet, MI1x1ConvNet
 from losses import *
-from gin_vae import Encoder, Decoder
+from gin import Encoder, Decoder
 from evaluate_embedding import evaluate_embedding, draw_plot
 from model import *
 from utils import imshow_grid, mse_loss, reparameterize, group_wise_reparameterize, accumulate_group_evidence, \
@@ -33,6 +33,7 @@ from utils import imshow_grid, mse_loss, reparameterize, group_wise_reparameteri
 from sklearn.linear_model import LogisticRegression
 
 from arguments import arg_parse
+from numpy import savetxt
 
 class D_net_gauss(nn.Module):
     def __init__(self,N,z_dim):
@@ -48,7 +49,7 @@ class D_net_gauss(nn.Module):
         return torch.sigmoid(self.lin3(x))
 
 class GcnInfomax(nn.Module):
-    def __init__(self, hidden_dim, num_gc_layers, alpha=0.5, beta=1., gamma=.1):
+    def __init__(self, hidden_dim, num_gc_layers, node_dim, class_dim, lamda, alpha=0.5, beta=1., gamma=.1):
         super(GcnInfomax, self).__init__()
 
         self.alpha = alpha
@@ -56,10 +57,11 @@ class GcnInfomax(nn.Module):
         self.gamma = gamma
         self.prior = args.prior
 
-        self.encoder = Encoder(dataset_num_features, hidden_dim, num_gc_layers)
+        self.encoder = Encoder(dataset_num_features, hidden_dim, num_gc_layers, node_dim, class_dim)
         self.decoder = Decoder(hidden_dim, hidden_dim, dataset_num_features)
         self.node_discriminator = D_net_gauss(hidden_dim, hidden_dim)
         self.class_discriminator = D_net_gauss(hidden_dim, hidden_dim)
+        self.lamda = lamda
 
 
 
@@ -81,12 +83,15 @@ class GcnInfomax(nn.Module):
 
         # batch_size = data.num_graphs
 
-        node_mu, node_logvar = self.encoder(x, edge_index)
+        node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index)
 
 
 
 
 
+        grouped_mu, grouped_logvar = accumulate_group_evidence(
+            class_mu.data, class_logvar.data, None, True
+        )
 
 
 
@@ -107,9 +112,11 @@ class GcnInfomax(nn.Module):
         '''class_kl_divergence_loss = torch.mean(
             - 0.5 * torch.sum(1 + grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp())
         )'''
-
+        class_kl_divergence_loss = - 0.5  * torch.mean(torch.sum(
+            1 + 2 * grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp().pow(2), 1))
 
         #print('class kl unwei ', class_kl_divergence_loss)
+        class_kl_divergence_loss = class_kl_divergence_loss
         #print('class kl wei ', class_kl_divergence_loss)
 
 
@@ -119,9 +126,13 @@ class GcnInfomax(nn.Module):
         the decoder consider class latent embeddings as random noise and ignore them 
         """
         node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
+        class_latent_embeddings = group_wise_reparameterize(
+            training=True, mu=grouped_mu, logvar=grouped_logvar, labels_batch=None, cuda=True
+        )
 
 
-        reconstructed_node = self.decoder(node_latent_embeddings)
+        #reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
+        reconstructed_node = self.decoder(self.lamda* node_latent_embeddings + (1- self.lamda)*class_latent_embeddings)
 
         #reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
         reconstruction_error = self.recon_loss1(reconstructed_node, edge_index)
@@ -131,12 +142,12 @@ class GcnInfomax(nn.Module):
         #node_kl_divergence_loss.backward(retain_graph=True)
         #reconstruction_error.backward()
 
-        loss =   node_kl_divergence_loss + reconstruction_error
+        loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error
 
         loss.backward()
 
 
-        return  reconstruction_error.item(), 0 , node_kl_divergence_loss.item()
+        return  reconstruction_error.item(), class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
 
 
     def edge_recon(self, z, edge_index, sigmoid=True):
@@ -192,7 +203,7 @@ class GcnInfomax(nn.Module):
 
 
 
-    def get_embeddings(self, data):
+    def get_embeddings(self, data, lamda):
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         ret = []
@@ -203,16 +214,18 @@ class GcnInfomax(nn.Module):
             x, edge_index = data.x, data.edge_index
 
 
-            node_mu, node_logvar = self.encoder(x.double(), edge_index)
+            node_mu, node_logvar, class_mu, class_logvar = self.encoder(x.double(), edge_index)
 
-            '''grouped_mu, grouped_logvar = accumulate_group_evidence(
-                class_mu.data, class_logvar.data, batch, True
+            grouped_mu, grouped_logvar = accumulate_group_evidence(
+                class_mu.data, class_logvar.data, None, True
             )
             class_latent_embeddings = group_wise_reparameterize(
-                training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
-            )'''
+                training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=None, cuda=True
+            )
 
-            node_latent = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
+            node_latent_all = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
+
+            node_latent = lamda *  node_latent_all + (1 - lamda)*class_latent_embeddings
 
         train_emb = node_latent[data.train_mask].cpu().numpy()
         train_y = data.y[data.train_mask].cpu().numpy()
@@ -221,7 +234,10 @@ class GcnInfomax(nn.Module):
         test_emb = node_latent[data.test_mask].cpu().numpy()
         test_y = data.y[data.test_mask].cpu().numpy()
 
-        return train_emb, train_y, val_emb, val_y,test_emb, test_y
+        train_emb1 = np.concatenate((train_emb, val_emb), axis=0)
+        train_y1 = np.concatenate((train_y, val_y), axis=0)
+
+        return train_emb, train_y, test_emb, test_y
 
 def test(train_z, train_y, val_z, val_y,test_z, test_y,  solver='lbfgs',
          multi_class='ovr', *args, **kwargs):
@@ -344,7 +360,8 @@ if __name__ == '__main__':
         data = dataset[0].to(device)
 
 
-
+        node_dim = 512
+        class_dim = 512
 
 
 
@@ -371,249 +388,253 @@ if __name__ == '__main__':
 
         nb_classes = np.unique(data.y.cpu().numpy()).shape[0]
 
+        gate_val = 0.05
+        runs = 20
 
-        model = GcnInfomax(args.hidden_dim, args.num_gc_layers).double().to(device)
-        #encode/decode optimizers
-        #optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-        optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+        lambdas = []
+        overall_acc = []
 
-
-
-        print('================')
-        print('num_features: {}'.format(dataset_num_features))
-        print('hidden_dim: {}'.format(args.hidden_dim))
-        print('num_gc_layers: {}'.format(args.num_gc_layers))
-        print('================')
+        for coef in range(runs+1):
+            lamda = round(int(coef) * gate_val,2)
 
 
-        '''model.eval()
-        emb, y = model.get_embeddings(dataloader)
-        res = evaluate_embedding(emb, y)
-        accuracies['logreg'].append(res[0])
-        accuracies['svc'].append(res[1])
-        accuracies['linearsvc'].append(res[2])
-        accuracies['randomforest'].append(res[3])'''
-
-        logreg_val = []
-        logreg_valbased_test = []
-
-        best_val_round = -1
-        best_val = 0
-
-        xent = nn.CrossEntropyLoss()
-
-        #model.train()
-        for epoch in range(1, 50+1):
-            recon_loss_all = 0
-            kl_class_loss_all = 0
-            kl_node_loss_all = 0
-            mi_loss_all = 0
-            model.train()
-
-
-            optimizer.zero_grad()
-            recon_loss, kl_class, kl_node = model(data.x.double(), data.edge_index)
-            recon_loss_all += recon_loss
-            kl_class_loss_all += kl_class
-            kl_node_loss_all += kl_node
+            model = GcnInfomax(args.hidden_dim, args.num_gc_layers, node_dim, class_dim, lamda).double().to(device)
+            #encode/decode optimizers
+            #optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+            optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
 
 
-            '''for name, param in model.named_parameters():
-                print(name, param.grad)'''
+            print('================')
+            print('num_features: {}'.format(dataset_num_features))
+            print('hidden_dim: {}'.format(args.hidden_dim))
+            print('num_gc_layers: {}'.format(args.num_gc_layers))
+            print('================')
+
+
+            '''model.eval()
+            emb, y = model.get_embeddings(dataloader)
+            res = evaluate_embedding(emb, y)
+            accuracies['logreg'].append(res[0])
+            accuracies['svc'].append(res[1])
+            accuracies['linearsvc'].append(res[2])
+            accuracies['randomforest'].append(res[3])'''
+
+            logreg_val = []
+            logreg_valbased_test = []
+
+            best_val_round = -1
+            best_val = 0
+
+            xent = nn.CrossEntropyLoss()
+
+            #model.train()
+            for epoch in range(1, 50+1):
+                recon_loss_all = 0
+                kl_class_loss_all = 0
+                kl_node_loss_all = 0
+                mi_loss_all = 0
+                model.train()
+
+
+                optimizer.zero_grad()
+                recon_loss, kl_class, kl_node = model(data.x.double(), data.edge_index)
+                recon_loss_all += recon_loss
+                kl_class_loss_all += kl_class
+                kl_node_loss_all += kl_node
+
+
+
+                '''for name, param in model.named_parameters():
+                    print(name, param.grad)'''
 
 
 
 
-            #torch.nn.utils.clip_grad_norm_(model.parameters(), 0.25)
-            optimizer.step()
+                #torch.nn.utils.clip_grad_norm_(model.parameters(), 0.25)
+                optimizer.step()
 
-            losses['recon'].append(recon_loss_all)
-            losses['node_kl'].append(kl_node_loss_all)
-            losses['class_kl'].append(kl_class_loss_all)
+                losses['recon'].append(recon_loss_all)
+                losses['node_kl'].append(kl_node_loss_all)
+                losses['class_kl'].append(kl_class_loss_all)
 
 
 
-            print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all ,
-                                                                                    kl_class_loss_all , kl_node_loss_all ))
+                print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all ,
+                                                                                        kl_class_loss_all , kl_node_loss_all ))
+
 
 
 
             #print('all losses ', losses)
 
 
-        model.eval()
 
+            model.eval()
 
-        #if epoch == epochs:
 
+            #if epoch == epochs:
 
 
 
 
-        '''accs = []
-        
-        best_f1 = 0
-        
-        best_round = 0'''
 
+            '''accs = []
+            
+            best_f1 = 0
+            
+            best_round = 0'''
 
-        print('Logistic regression started!')
 
+            print('Logistic regression started!')
 
 
 
 
 
-        #print('emb', train_emb.size(), val_emb.size(), test_emb.size())
 
-        #print('y',  train_lbls.size(), val_lbls.size(), test_lbls.size())
+            #print('emb', train_emb.size(), val_emb.size(), test_emb.size())
 
+            #print('y',  train_lbls.size(), val_lbls.size(), test_lbls.size())
 
-        '''from sklearn.preprocessing import StandardScaler
-        
-        scaler = StandardScaler()
-        
-        scaler.fit(train_emb)
-        
-        train_emb = scaler.transform(train_emb)
-        
-        val_emb = scaler.transform(val_emb)
-        
-        test_emb = scaler.transform(test_emb)'''
 
+            '''from sklearn.preprocessing import StandardScaler
+            
+            scaler = StandardScaler()
+            
+            scaler.fit(train_emb)
+            
+            train_emb = scaler.transform(train_emb)
+            
+            val_emb = scaler.transform(val_emb)
+            
+            test_emb = scaler.transform(test_emb)'''
 
 
 
-        '''from sklearn.linear_model import SGDClassifier
-        
-        from sklearn.metrics import accuracy_score
-        
-        log = SGDClassifier(loss="log")
-        
-        log.fit(train_emb, train_y)
 
+            '''from sklearn.linear_model import SGDClassifier
+            
+            from sklearn.metrics import accuracy_score
+            
+            log = SGDClassifier(loss="log")
+            
+            log.fit(train_emb, train_y)
+    
+    
+            
+            val_pred = log.predict(val_emb)
+            
+            test_pred = log.predict(test_emb)
+    
+            
+            tot_acc_val = accuracy_score(val_y.flatten(), val_pred.flatten())
+    
+            
+            tot_acc_test = accuracy_score(test_y.flatten(), test_pred.flatten())
+    
+            
+            if tot_acc_val > best_val:
+            
+                best_val_round = epoch - 1'''
 
-        
-        val_pred = log.predict(val_emb)
-        
-        test_pred = log.predict(test_emb)
 
-        
-        tot_acc_val = accuracy_score(val_y.flatten(), val_pred.flatten())
+            accs_val = []
 
-        
-        tot_acc_test = accuracy_score(test_y.flatten(), test_pred.flatten())
+            accs_test = []
 
-        
-        if tot_acc_val > best_val:
-        
-            best_val_round = epoch - 1'''
 
 
-        accs_val = []
 
-        accs_test = []
 
+            train_emb, train_y_labels,test_emb, test_y_labels  = model.get_embeddings(data, lamda)
 
+            train_emb, train_lbls = torch.from_numpy(train_emb).cuda(), torch.from_numpy(train_y_labels).cuda()
 
 
+            test_emb, test_lbls= torch.from_numpy(test_emb).cuda(), torch.from_numpy(test_y_labels).cuda()
 
-        train_emb, train_y_labels, val_emb, val_y_labels,test_emb, test_y_labels  = model.get_embeddings(data)
+            best_valacc = 0
+            best_test_score = 0
 
-        train_emb, train_lbls = torch.from_numpy(train_emb).cuda(), torch.from_numpy(train_y_labels).cuda()
 
-        val_emb, val_lbls= torch.from_numpy(val_emb).cuda(), torch.from_numpy(val_y_labels).cuda()
+            for _ in range(50):
 
-        test_emb, test_lbls= torch.from_numpy(test_emb).cuda(), torch.from_numpy(test_y_labels).cuda()
+                log = LogReg(node_dim, nb_classes).double().cuda()
 
-        best_valacc = 0
-        best_test_score = 0
+                opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0)
 
+                log.cuda()
 
-        for _ in range(50):
+                current_val_best = 0
 
-            log = LogReg(args.hidden_dim, nb_classes).double().cuda()
+                current_best_iter = 0
 
-            opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0)
+                current_val_list = []
 
-            log.cuda()
+                current_test_list = []
 
-            current_val_best = 0
 
-            current_best_iter = 0
+                for iter in range(300):
 
-            current_val_list = []
+                    log.train()
 
-            current_test_list = []
+                    opt.zero_grad()
 
 
-            for iter in range(300):
+                    logits = log(train_emb)
 
-                log.train()
+                    loss = xent(logits, train_lbls)
 
-                opt.zero_grad()
 
+                    loss.backward()
 
-                logits = log(train_emb)
+                    opt.step()
 
-                loss = xent(logits, train_lbls)
 
+                logits_test = log(test_emb)
 
-                loss.backward()
+                preds_test = torch.argmax(logits_test, dim=1)
 
-                opt.step()
+                acc_test = torch.sum(preds_test == test_lbls).float() / test_lbls.shape[0]
 
 
-            logits_test = log(test_emb)
 
-            preds_test = torch.argmax(logits_test, dim=1)
+                #current_val_list.append(acc_val)
 
-            acc_test = torch.sum(preds_test == test_lbls).float() / test_lbls.shape[0]
 
-            #current_test_list.append(acc_test)
 
+                '''if acc_val.item() > current_val_best:
+            
+                        current_best_iter = iter'''
 
 
-            logits_val = log(val_emb)
 
-            preds_val = torch.argmax(logits_val, dim=1)
+                #accs_test.append(current_val_list[current_best_iter] * 100)
 
-            acc_val = torch.sum(preds_val == val_lbls).float() / val_lbls.shape[0]
+                #accs_val.append(current_test_list[current_best_iter] * 100)
 
-            #current_val_list.append(acc_val)
 
+                accs_test.append(acc_test * 100)
 
-
-            '''if acc_val.item() > current_val_best:
-        
-                    current_best_iter = iter'''
-
-
-
-            #accs_test.append(current_val_list[current_best_iter] * 100)
-
-            #accs_val.append(current_test_list[current_best_iter] * 100)
-
-
-            accs_test.append(acc_test * 100)
-
-            accs_val.append(acc_val * 100)
-
-
-            '''if acc_val > best_valacc:
-
-                best_val_round = epoch - 1
-                best_test_score = acc_test'''
 
             accs = torch.stack(accs_test)
             mean = accs.mean().item()
             std = accs.std().item()
 
+            #input = lamda *  local_emb + (1 - lamda)*global_emb
+            print('lambda and test acc & std', lamda, mean, std)
 
-        #input = lamda *  local_emb + (1 - lamda)*global_emb
-        print('lambda and test acc ', mean, std)
+            overall_acc.append(mean)
 
-        #print('best perf based on validation score val, test, in epoch', logreg_val[best_val_round], logreg_valbased_test[best_val_round], best_val_round)
+            lambdas.append(lamda)
+
+        savetxt('gate_acc_citeseer_testsep1_ep50_4.csv', overall_acc, delimiter=',')
+        savetxt('gate_val_citeseer_testsep1_ep50_4.csv', lambdas, delimiter=',')
+
+
+
+
+
 
 
