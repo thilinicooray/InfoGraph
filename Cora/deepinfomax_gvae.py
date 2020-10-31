@@ -334,7 +334,7 @@ if __name__ == '__main__':
         EPS = 1e-15
 
         #lr = 0.000001
-        DS = 'CiteSeer'
+        DS = 'PubMed'
         path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', DS)
         # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
 
@@ -535,7 +535,7 @@ if __name__ == '__main__':
 
             log = LogReg(args.hidden_dim, nb_classes).double().cuda()
 
-            opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0.01)
+            opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0)
 
             log.cuda()
 
