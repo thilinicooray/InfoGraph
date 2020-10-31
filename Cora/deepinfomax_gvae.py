@@ -338,7 +338,7 @@ if __name__ == '__main__':
         path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', DS)
         # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
 
-        dataset = Planetoid(path, name=DS)
+        dataset = Planetoid(path, name=DS, split='full')
 
         print('dataset summary', dataset[0])
         data = dataset[0].to(device)
@@ -439,7 +439,7 @@ if __name__ == '__main__':
 
 
 
-            print('all losses ', losses)
+            #print('all losses ', losses)
 
 
         model.eval()
