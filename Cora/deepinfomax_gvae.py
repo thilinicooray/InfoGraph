@@ -338,7 +338,7 @@ if __name__ == '__main__':
         path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', DS)
         # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
 
-        dataset = Planetoid(path, name=DS, split='full')
+        dataset = Planetoid(path, name=DS)
 
         print('dataset summary', dataset[0])
         data = dataset[0].to(device)
@@ -535,7 +535,7 @@ if __name__ == '__main__':
 
             log = LogReg(args.hidden_dim, nb_classes).double().cuda()
 
-            opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0)
+            opt = torch.optim.Adam(log.parameters(), lr=1e-2, weight_decay=0.01)
 
             log.cuda()
 
