@@ -237,7 +237,7 @@ class GcnInfomax(nn.Module):
         train_emb1 = np.concatenate((train_emb, val_emb), axis=0)
         train_y1 = np.concatenate((train_y, val_y), axis=0)
 
-        return train_emb1, train_y1, test_emb, test_y
+        return train_emb, train_y, test_emb, test_y
 
 def test(train_z, train_y, val_z, val_y,test_z, test_y,  solver='lbfgs',
          multi_class='ovr', *args, **kwargs):
