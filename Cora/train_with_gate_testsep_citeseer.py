@@ -629,8 +629,8 @@ if __name__ == '__main__':
 
             lambdas.append(lamda)
 
-        savetxt('gate_acc_citeseer_testsep1_ep50_4.csv', overall_acc, delimiter=',')
-        savetxt('gate_val_citeseer_testsep1_ep50_4.csv', lambdas, delimiter=',')
+        savetxt('gate_acc_citeseer_testsep1_ep50_correct.csv', overall_acc, delimiter=',')
+        savetxt('gate_val_citeseer_testsep1_ep50_correct.csv', lambdas, delimiter=',')
 
 
 
