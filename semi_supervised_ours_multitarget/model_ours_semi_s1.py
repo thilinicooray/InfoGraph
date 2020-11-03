@@ -191,7 +191,7 @@ class Net(torch.nn.Module):
         self.fc1_joint = torch.nn.Linear(2 * dim, dim)
         self.fc2_joint = torch.nn.Linear(dim, target)
 
-        self.att_gate = torch.nn.Linear(dim, 1)
+        self.att_gate = torch.nn.Linear(2*dim, 1)
 
         self.init_emb()
 
