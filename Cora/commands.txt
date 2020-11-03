@@ -1,0 +1,8 @@
+nohup python -u train_with_gate_testsep.py  --lr 0.001 --num-gc-layers 1 --num_epochs 50 --hidden-dim 512 > logs/nohup_traingate_lamda_iter_s1_cora_50epoch_logregtrain_directtest_correct.out 2>&1 &
+
+nohup python -u train_with_gate_testsep_citeseer.py  --lr 0.001 --num-gc-layers 1 --num_epochs 50 --hidden-dim 512 > logs/nohup_traingate_lamda_iter_s1_citeseer_50epoch_logregtrain_directtest_weidec01_correct.out 2>&1 &
+
+nohup python -u train_with_gate_testsep_pubmed.py  --lr 0.001 --num-gc-layers 4 --num_epochs 50 --hidden-dim 32 > logs/nohup_traingate_lamda_iter_s1_pubmed_50epoch_logregtrain_directtest_hid32_4layers.out 2>&1 &
+
+baseline
+nohup python -u deepinfomax_gvae.py  --lr 0.001 --num-gc-layers 3 --num_epochs 50 --hidden-dim 512 > logs/nohup_gvae_pubbmed_3layer_512.out 2>&1 &
