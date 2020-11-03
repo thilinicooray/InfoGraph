@@ -191,6 +191,8 @@ class Net(torch.nn.Module):
         self.fc1_joint = torch.nn.Linear(2 * dim, dim)
         self.fc2_joint = torch.nn.Linear(dim, target)
 
+        self.att_gate = torch.nn.Linear(dim, 1)
+
         self.init_emb()
 
     def init_emb(self):
@@ -298,7 +300,7 @@ class Net(torch.nn.Module):
         graph_emb_1 = self.sup_encoder(data)
         _, _, _, _, graph_emb_2 = self.encoder(data)
 
-        alpha = 0.5
+        alpha = torch.sigmoid(self.att_gate(graph_emb_1*graph_emb_2))
 
         graph_emb = alpha * graph_emb_1 + (1-alpha)*graph_emb_2
 
