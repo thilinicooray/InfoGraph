@@ -104,7 +104,7 @@ def train(epoch, use_unsup_loss):
 
 def test(loader, std):
     model.eval()
-    error = torch.zeros(target).to(device)
+    error = 0
 
     with torch.no_grad():
 
