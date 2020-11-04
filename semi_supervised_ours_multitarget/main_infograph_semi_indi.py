@@ -196,12 +196,12 @@ if __name__ == '__main__':
         for epoch in range(1, epochs + 1):
             #lr = scheduler.optimizer.param_groups[0]['lr']
             loss = train(epoch, use_unsup_loss)
-            val_error_by_target, val_error = test(val_loader, std)
+            val_error = test(val_loader, std)
             scheduler.step(val_error)
 
             if best_val_error is None or val_error <= best_val_error:
                 print('Update')
-                test_error_by_target, test_error = test(test_loader, std)
+                test_error = test(test_loader, std)
                 best_val_error = val_error
 
 
@@ -209,8 +209,8 @@ if __name__ == '__main__':
                   'Test MAE: {:.7f},'.format(epoch, 0.001, loss, val_error, test_error))'''
 
             print('epoch ', epoch, 'tot_val_error', val_error)
-            print('val error by target ', val_error_by_target)
-            print('test error by target ', test_error_by_target)
+            print('val error by target ', val_error)
+            print('test error by target ', test_error)
 
         with open('supervised.log', 'a+') as f:
             f.write('{},{},{},{},{},{},{},{}\n'.format(target,args.train_num,use_unsup_loss,separate_encoder,args.lamda,args.weight_decay,val_error,test_error))
