@@ -143,7 +143,7 @@ if __name__ == '__main__':
 
     target = args.target
     dim = 32
-    epochs = 500
+    epochs = 200
     batch_size = 20
     lamda = args.lamda
     use_unsup_loss = args.use_unsup_loss
@@ -203,7 +203,7 @@ if __name__ == '__main__':
     #print('Epoch: {:03d}, Validation MAE: {:.7f}, Test MAE: {:.7f},'.format(0, val_error, test_error))
 
     best_val_error = None
-    for epoch in range(1, epochs):
+    for epoch in range(1, epochs + 1):
         #lr = scheduler.optimizer.param_groups[0]['lr']
         loss = train(epoch, use_unsup_loss)
         val_error_by_target, val_error = test(val_loader, stds_all)
