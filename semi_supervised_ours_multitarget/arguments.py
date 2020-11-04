@@ -2,7 +2,7 @@ import argparse
 
 def arg_parse():
     parser = argparse.ArgumentParser(description='GcnInformax Arguments.')
-    parser.add_argument('--target', dest='target', type=int, default=0,
+    parser.add_argument('--target', dest='target', type=int, default=12,
                         help='')
     parser.add_argument('--train-num', dest='train_num', type=int, default=5000)
     #parser.add_argument('--multi-target', dest='multi_target', type=str, help='')

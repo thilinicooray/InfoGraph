@@ -91,15 +91,15 @@ def train(epoch, use_unsup_loss):
             data = data.to(device)
             optimizer.zero_grad()
 
-            pred, our_loss = model.our_loss(data)
+            pred = model(data)
 
-            sup_loss = F.mse_loss(pred[:,0], data.y[:,0]) + F.mse_loss(pred[:,1], data.y[:,1]) + F.mse_loss(pred[:,2], data.y[:,2]) \
-                       + F.mse_loss(pred[:,3], data.y[:,3])  + F.mse_loss(pred[:,4], data.y[:,4]) + F.mse_loss(pred[:,5], data.y[:,5]) \
-                       + F.mse_loss(pred[:,6], data.y[:,6]) + F.mse_loss(pred[:,7], data.y[:,7]) + F.mse_loss(pred[:,8], data.y[:,8]) \
-                       + F.mse_loss(pred[:,9], data.y[:,9]) + F.mse_loss(pred[:,10], data.y[:,10]) + F.mse_loss(pred[:,11], data.y[:,11])
+            sup_loss = (F.mse_loss(pred[:,0], data.y[:,0]) + F.mse_loss(pred[:,1], data.y[:,1]) + F.mse_loss(pred[:,2], data.y[:,2])
+                        + F.mse_loss(pred[:,3], data.y[:,3])  + F.mse_loss(pred[:,4], data.y[:,4]) + F.mse_loss(pred[:,5], data.y[:,5])
+                        + F.mse_loss(pred[:,6], data.y[:,6]) + F.mse_loss(pred[:,7], data.y[:,7]) + F.mse_loss(pred[:,8], data.y[:,8])
+                        + F.mse_loss(pred[:,9], data.y[:,9]) + F.mse_loss(pred[:,10], data.y[:,10]) + F.mse_loss(pred[:,11], data.y[:,11]))/12
 
 
-            loss = 20*sup_loss/ 12 + our_loss
+            loss = sup_loss
 
             loss.backward()
             loss_all += loss.item() * data.num_graphs
