@@ -63,6 +63,8 @@ def train(epoch, use_unsup_loss):
 
             pred = model(data)
 
+            print('size ', pred.size(), data.y.size())
+
             sup_loss = F.mse_loss(pred, data.y)
 
 
@@ -193,7 +195,7 @@ if __name__ == '__main__':
             print(len(train_dataset), len(val_dataset), len(test_dataset))
 
 
-        model = Net(dataset.num_features, dim, target, use_unsup_loss, separate_encoder).to(device)
+        model = Net(dataset.num_features, dim, 1, use_unsup_loss, separate_encoder).to(device)
         optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=args.weight_decay)
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
             optimizer, mode='min', factor=0.7, patience=5, min_lr=0.000001)
