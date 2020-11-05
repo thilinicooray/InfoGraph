@@ -277,7 +277,7 @@ class Net(torch.nn.Module):
             training=True, mu=grouped_mu, logvar=grouped_logvar, labels_batch=data.batch, cuda=True
         )
 
-        joint_disen = self.ff3(torch.cat([node_latent_embeddings, class_latent_embeddings], -1))
+        joint_disen = F.relu(self.ff3(torch.cat([node_latent_embeddings, class_latent_embeddings], -1)))
         joint_disen_graph = F.relu(self.set2set_disennodes(joint_disen, data.batch))
 
 
