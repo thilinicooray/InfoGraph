@@ -181,7 +181,7 @@ class Net(torch.nn.Module):
 
         self.ff1 = FF(2*dim, dim)
         self.ff2 = FF(2*dim, dim)
-        self.ff3 = FF(4*dim, dim)
+        self.ff3 = torch.nn.Linear(4*dim, dim)
 
         self.set2set_disennodes = Set2Set(dim, processing_steps=3)
 
