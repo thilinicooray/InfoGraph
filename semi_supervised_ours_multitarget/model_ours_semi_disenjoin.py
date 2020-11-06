@@ -280,7 +280,8 @@ class Net(torch.nn.Module):
         )
 
         #joint_disen = self.ff3(torch.cat([node_latent_embeddings, class_latent_embeddings], -1))
-        joint_disen_graph = self.ff3(global_mean_pool(class_latent_embeddings, data.batch))
+        #joint_disen_graph = self.ff3(global_mean_pool(class_latent_embeddings, data.batch))
+        joint_disen_graph = global_mean_pool(class_latent_embeddings, data.batch)
         #joint_disen_graph = F.relu(self.set2set_disennodes(joint_disen, data.batch))
 
 
