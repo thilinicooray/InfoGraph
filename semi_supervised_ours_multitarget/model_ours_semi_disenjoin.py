@@ -124,10 +124,10 @@ class Decoder(torch.nn.Module):
         super(Decoder, self).__init__()
 
         self.linear_model = torch.nn.Sequential(OrderedDict([
-            ('linear_1', torch.nn.Linear(in_features=node_dim + class_dim, out_features=32, bias=True)),
+            ('linear_1', torch.nn.Linear(in_features=node_dim + class_dim, out_features=node_dim, bias=True)),
             ('relu_1', ReLU()),
 
-            ('linear_2', torch.nn.Linear(in_features=32, out_features=feat_size, bias=True)),
+            ('linear_2', torch.nn.Linear(in_features=node_dim, out_features=feat_size, bias=True)),
             ('relu_final', ReLU()),
         ]))
 
@@ -182,9 +182,7 @@ class Net(torch.nn.Module):
         self.ff1 = FF(2*dim, dim)
         self.ff2 = FF(2*dim, dim)
         self.ff3 = nn.Sequential(
-            nn.Linear(4*dim, dim),
-            nn.ReLU(),
-            nn.Linear(dim, dim),
+            nn.Linear(2*dim, 2*dim),
         )
 
         self.set2set_disennodes = Set2Set(dim, processing_steps=3)
@@ -276,13 +274,14 @@ class Net(torch.nn.Module):
         sup_graph_emb = self.sup_encoder(data)
         node_mu, node_logvar, grouped_mu, grouped_logvar = self.encoder(data)
 
-        node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
+        #node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
         class_latent_embeddings = group_wise_reparameterize(
             training=True, mu=grouped_mu, logvar=grouped_logvar, labels_batch=data.batch, cuda=True
         )
 
-        joint_disen = self.ff3(torch.cat([node_latent_embeddings, class_latent_embeddings], -1))
-        joint_disen_graph = F.relu(self.set2set_disennodes(joint_disen, data.batch))
+        #joint_disen = self.ff3(torch.cat([node_latent_embeddings, class_latent_embeddings], -1))
+        joint_disen_graph = self.ff3(class_latent_embeddings)
+        #joint_disen_graph = F.relu(self.set2set_disennodes(joint_disen, data.batch))
 
 
 
