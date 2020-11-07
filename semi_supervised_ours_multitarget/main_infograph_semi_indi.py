@@ -62,7 +62,7 @@ def train(epoch, use_unsup_loss):
 
             pred = model(data)
 
-            sup_loss = F.mse_loss(pred, data.y.unsqueeze(-1))
+            sup_loss = F.mse_loss(pred.squeeze(), data.y)
 
 
 
