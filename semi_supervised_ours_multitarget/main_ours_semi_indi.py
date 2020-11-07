@@ -134,98 +134,100 @@ if __name__ == '__main__':
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    for target in range(12):
-        print('CURRENT TARGET ', target)
+    target = args.target
 
-        #target =
-        dim = 32
-        epochs = 200
-        batch_size = 20
-        lamda = args.lamda
-        use_unsup_loss = args.use_unsup_loss
-        separate_encoder = args.separate_encoder
+    #for target in range(12):
+    print('CURRENT TARGET ', target)
 
-        path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'QM9')
-        transform = T.Compose([MyTransform(), Complete(), T.Distance(norm=False)])
-        dataset = QM9(path, transform=transform).shuffle()
-        print('num_features : {}\n'.format(dataset.num_features))
+    #target =
+    dim = 32
+    epochs = 200
+    batch_size = 20
+    lamda = args.lamda
+    use_unsup_loss = args.use_unsup_loss
+    separate_encoder = args.separate_encoder
 
-        print('dataset ', dataset.data)
+    path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'QM9')
+    transform = T.Compose([MyTransform(), Complete(), T.Distance(norm=False)])
+    dataset = QM9(path, transform=transform).shuffle()
+    print('num_features : {}\n'.format(dataset.num_features))
 
-        # Normalize targets to mean = 0 and std = 1.
+    print('dataset ', dataset.data)
 
-        '''stds = []
+    # Normalize targets to mean = 0 and std = 1.
+
+    '''stds = []
     
-        for t in range(target):
-            mean = dataset.data.y[:, t].mean().item()
-            std = dataset.data.y[:, t].std().item()
-            dataset.data.y[:, t] = (dataset.data.y[:, t] - mean) / std
+    for t in range(target):
+        mean = dataset.data.y[:, t].mean().item()
+        std = dataset.data.y[:, t].std().item()
+        dataset.data.y[:, t] = (dataset.data.y[:, t] - mean) / std
     
-            stds.append(torch.tensor([std]))
+        stds.append(torch.tensor([std]))
     
-        stds_all = torch.stack(stds,0).to(device)'''
+    stds_all = torch.stack(stds,0).to(device)'''
 
-        mean = dataset.data.y[:, target].mean().item()
-        std = dataset.data.y[:, target].std().item()
-        dataset.data.y[:, target] = (dataset.data.y[:, target] - mean) / std
+    mean = dataset.data.y[:, target].mean().item()
+    std = dataset.data.y[:, target].std().item()
+    dataset.data.y[:, target] = (dataset.data.y[:, target] - mean) / std
 
-        # print(type(dataset[0]))
-        # print(type(dataset.data.x)) #tensor
-        # print(type(dataset.data.y)) #tensor
-        # input()
+    # print(type(dataset[0]))
+    # print(type(dataset.data.x)) #tensor
+    # print(type(dataset.data.y)) #tensor
+    # input()
 
-        # Split datasets.
-        test_dataset = dataset[:10000]
-        val_dataset = dataset[10000:20000]
-        train_dataset = dataset[20000:20000+args.train_num]
+    # Split datasets.
+    test_dataset = dataset[:10000]
+    val_dataset = dataset[10000:20000]
+    train_dataset = dataset[20000:20000+args.train_num]
 
-        test_loader = DataLoader(test_dataset, batch_size=batch_size)
-        val_loader = DataLoader(val_dataset, batch_size=batch_size)
-        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
-        if use_unsup_loss:
-            unsup_train_dataset = dataset[20000:]
-            unsup_train_loader = DataLoader(unsup_train_dataset, batch_size=batch_size, shuffle=True)
+    if use_unsup_loss:
+        unsup_train_dataset = dataset[20000:]
+        unsup_train_loader = DataLoader(unsup_train_dataset, batch_size=batch_size, shuffle=True)
 
-            print(len(train_dataset), len(val_dataset), len(test_dataset), len(unsup_train_dataset))
-        else:
-            print('supervised setup')
-            print(len(train_dataset), len(val_dataset), len(test_dataset))
-
-
-        model = Net(dataset.num_features, dim, 1, use_unsup_loss, separate_encoder).to(device)
-        optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=args.weight_decay)
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer, mode='min', factor=0.7, patience=5, min_lr=0.000001)
-
-        #val_error = test(val_loader)
-        #test_error = test(test_loader)
-        #print('Epoch: {:03d}, Validation MAE: {:.7f}, Test MAE: {:.7f},'.format(0, val_error, test_error))
-
-        best_val_error = None
-        for epoch in range(1, epochs+1):
-            #lr = scheduler.optimizer.param_groups[0]['lr']
-            loss = train(epoch, use_unsup_loss)
-            val_error = test(val_loader, std)
-            scheduler.step(val_error)
-
-            if best_val_error is None or val_error <= best_val_error:
-                print('Update')
-                test_error = test(test_loader, std)
-                best_val_error = val_error
+        print(len(train_dataset), len(val_dataset), len(test_dataset), len(unsup_train_dataset))
+    else:
+        print('supervised setup')
+        print(len(train_dataset), len(val_dataset), len(test_dataset))
 
 
-            '''print('Epoch: {:03d}, LR: {:7f}, Loss: {:.7f}, Validation MAE: {:.7f}, '
-                  'Test MAE: {:.7f},'.format(epoch, 0.001, loss, val_error, test_error))'''
+    model = Net(dataset.num_features, dim, 1, use_unsup_loss, separate_encoder).to(device)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=args.weight_decay)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+        optimizer, mode='min', factor=0.7, patience=5, min_lr=0.000001)
 
-            print('epoch ', epoch, 'tot_val_error', val_error)
-            print('val error by target ', val_error)
-            print('test error by target ', test_error)
+    #val_error = test(val_loader)
+    #test_error = test(test_loader)
+    #print('Epoch: {:03d}, Validation MAE: {:.7f}, Test MAE: {:.7f},'.format(0, val_error, test_error))
 
-        with open('supervised.log', 'a+') as f:
-            f.write('{},{},{},{},{},{},{},{}\n'.format(target,args.train_num,use_unsup_loss,separate_encoder,args.lamda,args.weight_decay,val_error,test_error))
+    best_val_error = None
+    for epoch in range(1, epochs+1):
+        #lr = scheduler.optimizer.param_groups[0]['lr']
+        loss = train(epoch, use_unsup_loss)
+        val_error = test(val_loader, std)
+        scheduler.step(val_error)
 
-        try:
-            torch.save(model, 'saved_models/{}.model'.format(target))
-        except Exception as e:
-            print(e)
+        if best_val_error is None or val_error <= best_val_error:
+            print('Update')
+            test_error = test(test_loader, std)
+            best_val_error = val_error
+
+
+        '''print('Epoch: {:03d}, LR: {:7f}, Loss: {:.7f}, Validation MAE: {:.7f}, '
+              'Test MAE: {:.7f},'.format(epoch, 0.001, loss, val_error, test_error))'''
+
+        print('epoch ', epoch, 'tot_val_error', val_error)
+        print('val error by target ', val_error)
+        print('test error by target ', test_error)
+
+    with open('supervised.log', 'a+') as f:
+        f.write('{},{},{},{},{},{},{},{}\n'.format(target,args.train_num,use_unsup_loss,separate_encoder,args.lamda,args.weight_decay,val_error,test_error))
+
+    try:
+        torch.save(model, 'saved_models/{}.model'.format(target))
+    except Exception as e:
+        print(e)
