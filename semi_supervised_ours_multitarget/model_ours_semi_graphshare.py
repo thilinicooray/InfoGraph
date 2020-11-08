@@ -233,7 +233,7 @@ class Net(torch.nn.Module):
         return total_loss
 
     def unsup_sup_loss(self, data):
-        sup_out = self.encoder(data)
+        sup_out = self.sup_encoder(data)
         unsup_out = self.encoder(data)
 
 
@@ -294,7 +294,7 @@ class Net(torch.nn.Module):
 
     def forward(self, data):
 
-        out = self.encoder(data)
+        out = self.sup_encoder(data)
         #sup_graph_emb = self.set2set(out, data.batch)
 
 
