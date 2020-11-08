@@ -233,7 +233,7 @@ class Net(torch.nn.Module):
         return total_loss
 
     def unsup_sup_loss(self, data):
-        sup_out = self.sup_encoder(data)
+        sup_out = self.encoder(data)
         unsup_out = self.encoder(data)
 
 
@@ -294,7 +294,7 @@ class Net(torch.nn.Module):
 
     def forward(self, data):
 
-        out = self.sup_encoder(data)
+        out = self.encoder(data)
 
         graph_mu_id_s = F.relu(self.graph_mu_conv(out, data.edge_index, data.edge_attr))
         graph_lv_id_s = F.relu(self.graph_lv_conv(out, data.edge_index, data.edge_attr))
