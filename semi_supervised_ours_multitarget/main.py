@@ -17,7 +17,7 @@ from torch_geometric.utils import remove_self_loops
 class MyTransform(object):
     def __call__(self, data):
         # Specify target.
-        data.y = data.y[:, :target]
+        data.y = data.y[:, target]
         return data
 
 
@@ -89,15 +89,8 @@ def train(epoch, use_unsup_loss):
             data = data.to(device)
             optimizer.zero_grad()
 
-            pred = model(data)
-
-            sup_loss = F.mse_loss(pred[:,0], data.y[:,0]) + F.mse_loss(pred[:,1], data.y[:,1]) + F.mse_loss(pred[:,2], data.y[:,2]) \
-                       + F.mse_loss(pred[:,3], data.y[:,3])  + F.mse_loss(pred[:,4], data.y[:,4]) + F.mse_loss(pred[:,5], data.y[:,5]) \
-                       + F.mse_loss(pred[:,6], data.y[:,6]) + F.mse_loss(pred[:,7], data.y[:,7]) + F.mse_loss(pred[:,8], data.y[:,8]) \
-                       + F.mse_loss(pred[:,9], data.y[:,9]) + F.mse_loss(pred[:,10], data.y[:,10]) + F.mse_loss(pred[:,11], data.y[:,11])
-
-
-            loss = sup_loss/ 12
+            sup_loss = F.mse_loss(model(data), data.y)
+            loss = sup_loss
 
             loss.backward()
             loss_all += loss.item() * data.num_graphs
@@ -106,21 +99,14 @@ def train(epoch, use_unsup_loss):
         return loss_all / len(train_loader.dataset)
 
 
-def test(loader, std_all):
+def test(loader):
     model.eval()
-    error = torch.zeros(target).to(device)
+    error = 0
 
-    with torch.no_grad():
-
-        for data in loader:
-            data = data.to(device)
-
-            stds_all = std_all.squeeze()
-            stds_allbatch = stds_all.expand_as(data.y)
-
-            error += torch.sum((model(data) * stds_allbatch - data.y * stds_allbatch).abs(),0)  # MAE
-
-    return error / len(loader.dataset), torch.mean(error / len(loader.dataset))
+    for data in loader:
+        data = data.to(device)
+        error += (model(data) * std - data.y * std).abs().sum().item()  # MAE
+    return error / len(loader.dataset)
 
 
 def seed_everything(seed=1234):
@@ -142,7 +128,9 @@ if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     target = args.target
-    dim = 32
+
+    print('CURRENT TARGET ', target)
+    dim = 64
     epochs = 500
     batch_size = 20
     lamda = args.lamda
@@ -158,16 +146,9 @@ if __name__ == '__main__':
 
     # Normalize targets to mean = 0 and std = 1.
 
-    stds = []
-
-    for t in range(target):
-        mean = dataset.data.y[:, t].mean().item()
-        std = dataset.data.y[:, t].std().item()
-        dataset.data.y[:, t] = (dataset.data.y[:, t] - mean) / std
-
-        stds.append(torch.tensor([std]))
-
-    stds_all = torch.stack(stds,0).to(device)
+    mean = dataset.data.y[:, target].mean().item()
+    std = dataset.data.y[:, target].std().item()
+    dataset.data.y[:, target] = (dataset.data.y[:, target] - mean) / std
 
     # print(type(dataset[0]))
     # print(type(dataset.data.x)) #tensor
@@ -206,12 +187,12 @@ if __name__ == '__main__':
     for epoch in range(1, epochs):
         #lr = scheduler.optimizer.param_groups[0]['lr']
         loss = train(epoch, use_unsup_loss)
-        val_error_by_target, val_error = test(val_loader, stds_all)
+        val_error = test(val_loader)
         scheduler.step(val_error)
 
         if best_val_error is None or val_error <= best_val_error:
             print('Update')
-            test_error_by_target, test_error = test(test_loader, stds_all)
+            test_error = test(test_loader)
             best_val_error = val_error
 
 
@@ -219,8 +200,8 @@ if __name__ == '__main__':
               'Test MAE: {:.7f},'.format(epoch, 0.001, loss, val_error, test_error))'''
 
         print('epoch ', epoch, 'tot_val_error', val_error)
-        print('val error by target ', val_error_by_target)
-        print('test error by target ', test_error_by_target)
+        print('val error by target ', val_error)
+        print('test error by target ', test_error)
 
     with open('supervised.log', 'a+') as f:
         f.write('{},{},{},{},{},{},{},{}\n'.format(target,args.train_num,use_unsup_loss,separate_encoder,args.lamda,args.weight_decay,val_error,test_error))

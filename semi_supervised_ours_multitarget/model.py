@@ -76,7 +76,7 @@ class FF(nn.Module):
         return self.block(x) + self.linear_shortcut(x)
 
 class Net(torch.nn.Module):
-    def __init__(self, num_features, dim, target, use_unsup_loss=False, separate_encoder=False):
+    def __init__(self, num_features, dim, use_unsup_loss=False, separate_encoder=False):
         super(Net, self).__init__()
 
         self.embedding_dim = dim
@@ -92,7 +92,7 @@ class Net(torch.nn.Module):
             self.ff2 = FF(2*dim, dim)
 
         self.fc1 = torch.nn.Linear(2 * dim, dim)
-        self.fc2 = torch.nn.Linear(dim, target)
+        self.fc2 = torch.nn.Linear(dim, 1)
 
         if use_unsup_loss:
             self.local_d = FF(dim, dim)
@@ -113,7 +113,7 @@ class Net(torch.nn.Module):
         out, M = self.encoder(data)
         out = F.relu(self.fc1(out))
         out = self.fc2(out)
-        pred = out
+        pred = out.view(-1)
         return pred
 
     def unsup_loss(self, data):

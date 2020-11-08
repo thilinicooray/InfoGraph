@@ -122,9 +122,10 @@ if __name__ == '__main__':
     args = arg_parse()
 
     target = args.target
+    print('CURRENT TARGET ', target)
     ema_decay = .999
     dim = 64
-    epochs = 1000
+    epochs = 500
     batch_size = 20
     lamda = args.lamda
     use_unsup_loss = True#args.use_unsup_loss
