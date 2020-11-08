@@ -295,6 +295,8 @@ class Net(torch.nn.Module):
     def forward(self, data):
 
         out = self.encoder(data)
+        #sup_graph_emb = self.set2set(out, data.batch)
+
 
         graph_mu_id_s = F.relu(self.graph_mu_conv(out, data.edge_index, data.edge_attr))
         graph_lv_id_s = F.relu(self.graph_lv_conv(out, data.edge_index, data.edge_attr))
@@ -308,10 +310,10 @@ class Net(torch.nn.Module):
         grouped_logvar_s = torch.repeat_interleave(g_lv_s, count, dim=0)
 
         graph_emb = group_wise_reparameterize(
-            training=True, mu=grouped_mu_s, logvar=grouped_logvar_s, labels_batch=data.batch, cuda=True
+            training=False, mu=grouped_mu_s, logvar=grouped_logvar_s, labels_batch=data.batch, cuda=True
         )
 
-        out = F.relu(self.fc1(global_mean_pool(graph_emb,data.batch)))
+        out = F.relu(self.fc1(global_mean_pool(graph_emb,data.batch)) )
         out = self.fc2(out)
         classification = out
 
