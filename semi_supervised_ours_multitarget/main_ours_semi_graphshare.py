@@ -75,7 +75,7 @@ def train(epoch, use_unsup_loss):
             unsup_sup_loss = model.unsup_sup_loss(data2)
 
 
-            loss = 20*sup_loss + unsup_loss + unsup_sup_loss * lamda
+            loss = sup_loss + unsup_loss + unsup_sup_loss * lamda
 
             loss.backward()
 
