@@ -122,11 +122,19 @@ class Net(torch.nn.Module):
 
         self.set2set_mu = Set2Set(dim, processing_steps=3)
         self.set2set_lv = Set2Set(dim, processing_steps=3)
+        self.set2set = Set2Set(dim, processing_steps=3)
 
 
 
         self.ff1 = FF(2*dim, dim)
         self.ff2 = FF(2*dim, dim)
+        self.ff3 = nn.Sequential(
+            nn.Linear(4*dim, dim),
+        )
+        self.ff4 = FF(2*dim, dim)
+        self.ff5 = FF(2*dim, dim)
+
+        self.set2set_disennodes = Set2Set(dim, processing_steps=3)
 
 
         self.decoder = Decoder(dim*2, dim*2, num_features)
@@ -246,6 +254,8 @@ class Net(torch.nn.Module):
 
         graph_mu_id_us = F.relu(self.graph_mu_conv(unsup_out, data.edge_index, data.edge_attr))
         graph_lv_id_us = F.relu(self.graph_lv_conv(unsup_out, data.edge_index, data.edge_attr))
+        node_mu = F.relu(self.node_mu_conv(unsup_out, data.edge_index, data.edge_attr))
+        node_logvar = F.relu(self.node_lv_conv(unsup_out, data.edge_index, data.edge_attr))
 
         g_mu_us = self.set2set_mu(graph_mu_id_us, data.batch)
         g_lv_us = self.set2set_lv(graph_lv_id_us, data.batch)
@@ -263,9 +273,22 @@ class Net(torch.nn.Module):
         g_enc1 = self.ff2(global_mean_pool(class_latent_embeddings_us,data.batch))
 
         measure = 'JSD'
-        loss = global_global_loss_(g_enc, g_enc1, data.edge_index, data.batch, measure)
+        loss1 = global_global_loss_(g_enc, g_enc1, data.edge_index, data.batch, measure)
 
-        return loss
+
+
+        sup_graph_emb = self.set2set(sup_out)
+        node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
+        joint_disen = self.ff3(torch.cat([node_latent_embeddings, class_latent_embeddings_us], -1))
+        joint_disen_graph = F.relu(self.set2set_disennodes(joint_disen, data.batch))
+
+        g_enc_n = self.ff4(sup_graph_emb)
+        g_enc1_n = self.ff5(joint_disen_graph)
+
+        measure = 'JSD'
+        loss2 = global_global_loss_(g_enc_n, g_enc1_n, data.edge_index, data.batch, measure)
+
+        return loss1 + loss2
 
 
 
