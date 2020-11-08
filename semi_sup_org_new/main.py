@@ -123,6 +123,7 @@ if __name__ == '__main__':
     # Hyperparameters
     # ============
     target = args.target
+    print('got the target as ', target)
     dim = 64
     epochs = 500
     batch_size = 20
