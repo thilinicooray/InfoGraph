@@ -277,7 +277,7 @@ class Net(torch.nn.Module):
 
 
 
-        sup_graph_emb = self.set2set(sup_out)
+        sup_graph_emb = self.set2set(sup_out, data.batch)
         node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
         joint_disen = self.ff3(torch.cat([node_latent_embeddings, class_latent_embeddings_us], -1))
         joint_disen_graph = F.relu(self.set2set_disennodes(joint_disen, data.batch))
