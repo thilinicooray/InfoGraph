@@ -1,5 +1,5 @@
 #!/bin/bash
-for i in {1..5}
+for i in {0..11}
 do
-   echo "Welcome $i times"
+   echo "CURRENT TARGET $i "
 done
