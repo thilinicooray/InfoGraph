@@ -120,7 +120,7 @@ def test(loader, std_all):
             stds_all = std_all.squeeze()
             stds_allbatch = stds_all.expand_as(data.y)
 
-            error += torch.sum((model.forward_eval(data) * stds_allbatch - data.y * stds_allbatch).abs(),0)  # MAE
+            error += torch.sum((model(data) * stds_allbatch - data.y * stds_allbatch).abs(),0)  # MAE
 
     return error / len(loader.dataset), torch.mean(error / len(loader.dataset))
 

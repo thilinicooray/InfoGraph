@@ -243,14 +243,19 @@ class Net(torch.nn.Module):
         g_mu_s = self.set2set_mu(graph_mu_id_s, data.batch)
         g_lv_s = self.set2set_lv(graph_lv_id_s, data.batch)
 
-        _, count = torch.unique(data.batch,  return_counts=True)
+        '''_, count = torch.unique(data.batch,  return_counts=True)
 
         grouped_mu_s = torch.repeat_interleave(g_mu_s, count, dim=0)
         grouped_logvar_s = torch.repeat_interleave(g_lv_s, count, dim=0)
 
         class_latent_embeddings_s = group_wise_reparameterize(
             training=True, mu=grouped_mu_s, logvar=grouped_logvar_s, labels_batch=data.batch, cuda=True
+        )'''
+
+        class_latent_embeddings_s = reparameterize(
+            training=True, mu=g_mu_s, logvar=g_lv_s
         )
+
 
         graph_mu_id_us = F.relu(self.graph_mu_conv(unsup_out, data.edge_index, data.edge_attr))
         graph_lv_id_us = F.relu(self.graph_lv_conv(unsup_out, data.edge_index, data.edge_attr))
@@ -260,13 +265,16 @@ class Net(torch.nn.Module):
         g_mu_us = self.set2set_mu(graph_mu_id_us, data.batch)
         g_lv_us = self.set2set_lv(graph_lv_id_us, data.batch)
 
-        _, count = torch.unique(data.batch,  return_counts=True)
+        '''_, count = torch.unique(data.batch,  return_counts=True)
 
         grouped_mu_us = torch.repeat_interleave(g_mu_us, count, dim=0)
         grouped_logvar_us = torch.repeat_interleave(g_lv_us, count, dim=0)
 
         class_latent_embeddings_us = group_wise_reparameterize(
             training=True, mu=grouped_mu_us, logvar=grouped_logvar_us, labels_batch=data.batch, cuda=True
+        )'''
+        class_latent_embeddings_us = reparameterize(
+            training=True, mu=g_mu_us, logvar=g_lv_us
         )
 
         g_enc = self.ff1(global_mean_pool(class_latent_embeddings_s,data.batch))
@@ -304,40 +312,16 @@ class Net(torch.nn.Module):
         g_mu_s = self.set2set_mu(graph_mu_id_s, data.batch)
         g_lv_s = self.set2set_lv(graph_lv_id_s, data.batch)
 
-        _, count = torch.unique(data.batch,  return_counts=True)
-
-        grouped_mu_s = torch.repeat_interleave(g_mu_s, count, dim=0)
-        grouped_logvar_s = torch.repeat_interleave(g_lv_s, count, dim=0)
-
-        graph_emb = group_wise_reparameterize(
-            training=True, mu=grouped_mu_s, logvar=grouped_logvar_s, labels_batch=data.batch, cuda=True
-        )
-
-        out = F.relu(self.fc1(global_mean_pool(graph_emb,data.batch)) )
-        out = self.fc2(out)
-        classification = out
-
-        return classification
-
-    def forward_eval(self, data):
-
-        out = self.encoder(data)
-        #sup_graph_emb = self.set2set(out, data.batch)
-
-
-        graph_mu_id_s = F.relu(self.graph_mu_conv(out, data.edge_index, data.edge_attr))
-        graph_lv_id_s = F.relu(self.graph_lv_conv(out, data.edge_index, data.edge_attr))
-
-        g_mu_s = self.set2set_mu(graph_mu_id_s, data.batch)
-        g_lv_s = self.set2set_lv(graph_lv_id_s, data.batch)
-
-        _, count = torch.unique(data.batch,  return_counts=True)
+        '''_, count = torch.unique(data.batch,  return_counts=True)
 
         grouped_mu_s = torch.repeat_interleave(g_mu_s, count, dim=0)
         grouped_logvar_s = torch.repeat_interleave(g_lv_s, count, dim=0)
 
         graph_emb = group_wise_reparameterize(
             training=False, mu=grouped_mu_s, logvar=grouped_logvar_s, labels_batch=data.batch, cuda=True
+        )'''
+        graph_emb = reparameterize(
+            training=False, mu=g_mu_s, logvar=g_lv_s
         )
 
         out = F.relu(self.fc1(global_mean_pool(graph_emb,data.batch)) )
