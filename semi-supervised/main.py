@@ -56,8 +56,6 @@ def train(epoch, use_unsup_loss):
     if use_unsup_loss:
         for data, data2 in zip(train_loader, unsup_train_loader):
 
-            print('data train ', data, data2)
-
             data = data.to(device)
             data2 = data2.to(device)
             optimizer.zero_grad()
