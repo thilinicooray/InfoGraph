@@ -72,10 +72,10 @@ def train(epoch, use_unsup_loss):
 
             unsup_loss = model.our_loss(data2)
 
-            unsup_sup_loss = model.unsup_sup_loss(data2)
+            #unsup_sup_loss = model.unsup_sup_loss(data2)
 
 
-            loss = 100*sup_loss + unsup_loss + unsup_sup_loss * lamda
+            loss = sup_loss + unsup_loss #+ unsup_sup_loss * lamda
 
             loss.backward()
 
@@ -145,7 +145,7 @@ if __name__ == '__main__':
 
     target = args.target
     dim = 32
-    epochs = 200
+    epochs = 1000
     batch_size = 20
     lamda = args.lamda
     use_unsup_loss = args.use_unsup_loss
