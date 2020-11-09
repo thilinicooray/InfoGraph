@@ -97,7 +97,7 @@ class FF(nn.Module):
         return self.block(x) + self.linear_shortcut(x)
 
 class Net(torch.nn.Module):
-    def __init__(self, num_features, dim, target, use_unsup_loss=False, separate_encoder=False):
+    def __init__(self, num_features, dim, use_unsup_loss=False, separate_encoder=False):
         super(Net, self).__init__()
 
         self.embedding_dim = dim
@@ -140,7 +140,7 @@ class Net(torch.nn.Module):
         self.decoder = Decoder(dim*2, dim*2, num_features)
 
         self.fc1 = torch.nn.Linear(2 * dim, dim)
-        self.fc2 = torch.nn.Linear(dim, target)
+        self.fc2 = torch.nn.Linear(dim, 1)
 
         self.init_emb()
 
@@ -317,7 +317,7 @@ class Net(torch.nn.Module):
 
         out = F.relu(self.fc1(global_mean_pool(graph_emb,data.batch)) )
         out = self.fc2(out)
-        classification = out
+        classification = out.view(-1)
 
         return classification
 

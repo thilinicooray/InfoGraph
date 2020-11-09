@@ -1,25 +1,23 @@
-import os
-import sys
-import os.path as osp
-import numpy as np
-import random
-
-import torch
-import torch.nn.functional as F
 from torch.nn import Sequential, Linear, ReLU, GRU
-
-import torch_geometric.transforms as T
+from torch_geometric.data import DataLoader
 from torch_geometric.datasets import QM9
 from torch_geometric.nn import NNConv, Set2Set
-from torch_geometric.data import DataLoader
 from torch_geometric.utils import remove_self_loops
+import numpy as np
+import os
+import os.path as osp
+import random
+import sys
+import torch
+import torch.nn.functional as F
+import torch_geometric.transforms as T
+
 
 class MyTransform(object):
     def __call__(self, data):
         # Specify target.
-        data.y = data.y[:, :target]
+        data.y = data.y[:, target]
         return data
-
 
 class Complete(object):
     def __call__(self, data):
@@ -55,21 +53,11 @@ def train(epoch, use_unsup_loss):
 
     if use_unsup_loss:
         for data, data2 in zip(train_loader, unsup_train_loader):
-
             data = data.to(device)
             data2 = data2.to(device)
             optimizer.zero_grad()
 
-
-            pred = model(data)
-
-            sup_loss = (F.mse_loss(pred[:,0], data.y[:,0]) + F.mse_loss(pred[:,1], data.y[:,1]) + F.mse_loss(pred[:,2], data.y[:,2])
-                        + F.mse_loss(pred[:,3], data.y[:,3])  + F.mse_loss(pred[:,4], data.y[:,4]) + F.mse_loss(pred[:,5], data.y[:,5])
-                        + F.mse_loss(pred[:,6], data.y[:,6]) + F.mse_loss(pred[:,7], data.y[:,7]) + F.mse_loss(pred[:,8], data.y[:,8])
-                        + F.mse_loss(pred[:,9], data.y[:,9]) + F.mse_loss(pred[:,10], data.y[:,10]) + F.mse_loss(pred[:,11], data.y[:,11]))/12
-
-
-
+            sup_loss = F.mse_loss(model(data), data.y)
             unsup_loss = model.our_loss(data2)
 
             unsup_sup_loss = model.unsup_sup_loss(data2)
@@ -77,34 +65,25 @@ def train(epoch, use_unsup_loss):
 
             loss = sup_loss + unsup_loss + unsup_sup_loss
 
+
             loss.backward()
-
-            loss_all += loss.item() * data.num_graphs
-
-            optimizer.step()
 
             sup_loss_all += sup_loss.item()
             unsup_loss_all += unsup_loss.item()
             unsup_sup_loss_all += unsup_sup_loss.item()
+            loss_all += loss.item() * data.num_graphs
+
+            optimizer.step()
 
         print(sup_loss_all, unsup_loss_all, unsup_sup_loss_all)
 
-
         return loss_all / len(train_loader.dataset)
     else:
-        print('supervised only model training')
         for data in train_loader:
             data = data.to(device)
             optimizer.zero_grad()
 
-            pred = model(data)
-
-            sup_loss = (F.mse_loss(pred[:,0], data.y[:,0]) + F.mse_loss(pred[:,1], data.y[:,1]) + F.mse_loss(pred[:,2], data.y[:,2])
-                        + F.mse_loss(pred[:,3], data.y[:,3])  + F.mse_loss(pred[:,4], data.y[:,4]) + F.mse_loss(pred[:,5], data.y[:,5])
-                        + F.mse_loss(pred[:,6], data.y[:,6]) + F.mse_loss(pred[:,7], data.y[:,7]) + F.mse_loss(pred[:,8], data.y[:,8])
-                        + F.mse_loss(pred[:,9], data.y[:,9]) + F.mse_loss(pred[:,10], data.y[:,10]) + F.mse_loss(pred[:,11], data.y[:,11]))/12
-
-
+            sup_loss = F.mse_loss(model(data), data.y)
             loss = sup_loss
 
             loss.backward()
@@ -113,23 +92,14 @@ def train(epoch, use_unsup_loss):
 
         return loss_all / len(train_loader.dataset)
 
-
-def test(loader, std_all):
+def test(loader):
     model.eval()
-    error = torch.zeros(target).to(device)
+    error = 0
 
-    with torch.no_grad():
-
-        for data in loader:
-            data = data.to(device)
-
-            stds_all = std_all.squeeze()
-            stds_allbatch = stds_all.expand_as(data.y)
-
-            error += torch.sum((model(data) * stds_allbatch - data.y * stds_allbatch).abs(),0)  # MAE
-
-    return error / len(loader.dataset), torch.mean(error / len(loader.dataset))
-
+    for data in loader:
+        data = data.to(device)
+        error += (model(data) * std - data.y * std).abs().sum().item()  # MAE
+    return error / len(loader.dataset)
 
 def seed_everything(seed=1234):
     random.seed(seed)
@@ -143,15 +113,17 @@ def seed_everything(seed=1234):
 
 if __name__ == '__main__':
     seed_everything()
-    from model_ours_semi_graphshare import Net
+    from model_ours import Net
     from arguments import arg_parse
     args = arg_parse()
 
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
+    # ============
+    # Hyperparameters
+    # ============
     target = args.target
-    dim = 32
-    epochs = 1000
+    print('got the target as ', target)
+    dim = 64
+    epochs = 500
     batch_size = 20
     lamda = args.lamda
     use_unsup_loss = args.use_unsup_loss
@@ -162,25 +134,14 @@ if __name__ == '__main__':
     dataset = QM9(path, transform=transform).shuffle()
     print('num_features : {}\n'.format(dataset.num_features))
 
-    print('dataset ', dataset.data)
-
     # Normalize targets to mean = 0 and std = 1.
-
-    stds = []
-
-    for t in range(target):
-        mean = dataset.data.y[:, t].mean().item()
-        std = dataset.data.y[:, t].std().item()
-        dataset.data.y[:, t] = (dataset.data.y[:, t] - mean) / std
-
-        stds.append(torch.tensor([std]))
-
-    stds_all = torch.stack(stds,0).to(device)
+    mean = dataset.data.y[:, target].mean().item()
+    std = dataset.data.y[:, target].std().item()
+    dataset.data.y[:, target] = (dataset.data.y[:, target] - mean) / std
 
     # print(type(dataset[0]))
     # print(type(dataset.data.x)) #tensor
     # print(type(dataset.data.y)) #tensor
-    # input()
 
     # Split datasets.
     test_dataset = dataset[:10000]
@@ -197,43 +158,32 @@ if __name__ == '__main__':
 
         print(len(train_dataset), len(val_dataset), len(test_dataset), len(unsup_train_dataset))
     else:
-        print('supervised setup')
         print(len(train_dataset), len(val_dataset), len(test_dataset))
 
-
-    model = Net(dataset.num_features, dim, target, use_unsup_loss, separate_encoder).to(device)
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model = Net(dataset.num_features, dim, use_unsup_loss, separate_encoder).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=args.weight_decay)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer, mode='min', factor=0.7, patience=5, min_lr=0.000001)
 
-    #val_error = test(val_loader)
-    #test_error = test(test_loader)
-    #print('Epoch: {:03d}, Validation MAE: {:.7f}, Test MAE: {:.7f},'.format(0, val_error, test_error))
+    val_error = test(val_loader)
+    test_error = test(test_loader)
+    print('Epoch: {:03d}, Validation MAE: {:.7f}, Test MAE: {:.7f},'.format(0, val_error, test_error))
 
     best_val_error = None
-    for epoch in range(1, epochs+1):
-        #lr = scheduler.optimizer.param_groups[0]['lr']
+    for epoch in range(1, epochs):
+        lr = scheduler.optimizer.param_groups[0]['lr']
         loss = train(epoch, use_unsup_loss)
-        val_error_by_target, val_error = test(val_loader, stds_all)
+        val_error = test(val_loader)
         scheduler.step(val_error)
 
         if best_val_error is None or val_error <= best_val_error:
-            print('Update')
-            test_error_by_target, test_error = test(test_loader, stds_all)
+            test_error = test(test_loader)
             best_val_error = val_error
 
 
-        '''print('Epoch: {:03d}, LR: {:7f}, Loss: {:.7f}, Validation MAE: {:.7f}, '
-              'Test MAE: {:.7f},'.format(epoch, 0.001, loss, val_error, test_error))'''
-
-        print('epoch ', epoch, 'tot_val_error', val_error)
-        print('val error by target ', val_error_by_target)
-        print('test error by target ', test_error_by_target)
+        print('Epoch: {:03d}, LR: {:7f}, Loss: {:.7f}, Validation MAE: {:.7f}, '
+              'Test MAE: {:.7f},'.format(epoch, lr, loss, val_error, test_error))
 
     with open('supervised.log', 'a+') as f:
         f.write('{},{},{},{},{},{},{},{}\n'.format(target,args.train_num,use_unsup_loss,separate_encoder,args.lamda,args.weight_decay,val_error,test_error))
-
-    try:
-        torch.save(model, 'saved_models/{}.model'.format(target))
-    except Exception as e:
-        print(e)
