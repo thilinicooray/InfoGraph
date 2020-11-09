@@ -75,13 +75,19 @@ def train(epoch, use_unsup_loss):
             unsup_sup_loss = model.unsup_sup_loss(data2)
 
 
-            loss = sup_loss + unsup_loss + unsup_sup_loss * lamda
+            loss = sup_loss + unsup_loss + unsup_sup_loss
 
             loss.backward()
 
             loss_all += loss.item() * data.num_graphs
 
             optimizer.step()
+
+            sup_loss_all += sup_loss.item()
+            unsup_loss_all += unsup_loss.item()
+            unsup_sup_loss_all += unsup_sup_loss.item()
+
+        print(sup_loss_all, unsup_loss_all, unsup_sup_loss_all)
 
 
         return loss_all / len(train_loader.dataset)
