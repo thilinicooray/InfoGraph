@@ -60,17 +60,17 @@ def train(epoch, use_unsup_loss):
             sup_loss = F.mse_loss(model(data), data.y)
             unsup_loss = model.our_loss(data2)
 
-            unsup_sup_loss = model.unsup_sup_loss(data2)
+            #unsup_sup_loss = model.unsup_sup_loss(data2)
 
 
-            loss = sup_loss + unsup_loss + unsup_sup_loss
+            loss = sup_loss + unsup_loss #+ unsup_sup_loss
 
 
             loss.backward()
 
             sup_loss_all += sup_loss.item()
             unsup_loss_all += unsup_loss.item()
-            unsup_sup_loss_all += unsup_sup_loss.item()
+            #unsup_sup_loss_all += unsup_sup_loss.item()
             loss_all += loss.item() * data.num_graphs
 
             optimizer.step()
