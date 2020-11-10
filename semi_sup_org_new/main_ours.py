@@ -123,7 +123,7 @@ if __name__ == '__main__':
     target = args.target
     print('got the target as ', target)
     dim = 64
-    epochs = 200
+    epochs = 500
     batch_size = 20
     lamda = args.lamda
     use_unsup_loss = args.use_unsup_loss
