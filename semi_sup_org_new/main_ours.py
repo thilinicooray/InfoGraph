@@ -162,7 +162,7 @@ if __name__ == '__main__':
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = Net(dataset.num_features, dim, use_unsup_loss, separate_encoder).to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=args.weight_decay)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.005, weight_decay=args.weight_decay)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer, mode='min', factor=0.7, patience=5, min_lr=0.000001)
 
