@@ -296,7 +296,7 @@ class Net(torch.nn.Module):
 
     def forward(self, data):
 
-        out = self.encoder(data)
+        out = self.sup_encoder(data)
         #sup_graph_emb = self.set2set(out, data.batch)
 
 
