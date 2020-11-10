@@ -255,8 +255,8 @@ class Net(torch.nn.Module):
 
         graph_mu_id_us = F.relu(self.graph_mu_conv(unsup_out, data.edge_index, data.edge_attr))
         graph_lv_id_us = F.relu(self.graph_lv_conv(unsup_out, data.edge_index, data.edge_attr))
-        node_mu = F.relu(self.node_mu_conv(unsup_out, data.edge_index, data.edge_attr))
-        node_logvar = F.relu(self.node_lv_conv(unsup_out, data.edge_index, data.edge_attr))
+        #node_mu = F.relu(self.node_mu_conv(unsup_out, data.edge_index, data.edge_attr))
+        #node_logvar = F.relu(self.node_lv_conv(unsup_out, data.edge_index, data.edge_attr))
 
         g_mu_us = self.set2set_mu(graph_mu_id_us, data.batch)
         g_lv_us = self.set2set_lv(graph_lv_id_us, data.batch)
@@ -279,7 +279,7 @@ class Net(torch.nn.Module):
 
 
 
-        sup_graph_emb = self.set2set(sup_out, data.batch)
+        '''sup_graph_emb = self.set2set(sup_out, data.batch)
         node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
         joint_disen = self.ff3(torch.cat([node_latent_embeddings, class_latent_embeddings_us], -1))
         joint_disen_graph = F.relu(self.set2set_disennodes(joint_disen, data.batch))
@@ -288,9 +288,9 @@ class Net(torch.nn.Module):
         g_enc1_n = self.ff5(joint_disen_graph)
 
         measure = 'JSD'
-        loss2 = global_global_loss_(g_enc_n, g_enc1_n, data.edge_index, data.batch, measure)
+        loss2 = global_global_loss_(g_enc_n, g_enc1_n, data.edge_index, data.batch, measure)'''
 
-        return loss1 + loss2
+        return loss1
 
 
 

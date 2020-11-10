@@ -122,7 +122,7 @@ if __name__ == '__main__':
     # ============
     target = args.target
     print('got the target as ', target)
-    dim = 64
+    dim = 32
     epochs = 200
     batch_size = 20
     lamda = args.lamda
