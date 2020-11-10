@@ -176,7 +176,7 @@ class Net(torch.nn.Module):
             1 + 2 * node_logvar - node_mu.pow(2) - node_logvar.exp().pow(2), 1))
 
 
-        node_kl_divergence_loss = 100*node_kl_divergence_loss
+        node_kl_divergence_loss = 1*node_kl_divergence_loss
 
 
         # kl-divergence error for class latent space
@@ -187,7 +187,7 @@ class Net(torch.nn.Module):
             1 + 2 * grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp().pow(2), 1))
 
         #print('class kl unwei ', class_kl_divergence_loss)
-        class_kl_divergence_loss = 100*class_kl_divergence_loss
+        class_kl_divergence_loss = 1*class_kl_divergence_loss
         #print('class kl wei ', class_kl_divergence_loss)
 
 
@@ -212,8 +212,8 @@ class Net(torch.nn.Module):
 
         reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
 
-        #reconstruction_error =  mse_loss(reconstructed_node, data.x) # + self.recon_loss1(reconstructed_node, data.edge_index, data.batch)
-        reconstruction_error = self.recon_loss1(reconstructed_node, data.edge_index, data.batch)
+        reconstruction_error =  mse_loss(reconstructed_node, data.x) # + self.recon_loss1(reconstructed_node, data.edge_index, data.batch)
+        #reconstruction_error = self.recon_loss1(reconstructed_node, data.edge_index, data.batch)
 
 
         '''out_node = F.relu(self.fc1_sup(node_graph))
