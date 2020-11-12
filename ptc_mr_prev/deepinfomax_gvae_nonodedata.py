@@ -167,7 +167,7 @@ class GcnInfomax(nn.Module):
 
         #return loss
 
-    def get_embeddings(self, loader):
+    '''def get_embeddings(self, loader):
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         ret = []
@@ -177,7 +177,7 @@ class GcnInfomax(nn.Module):
                 data.to(device)
                 x, edge_index, batch = data.x, data.edge_index, data.batch
                 if not dataset.num_features:
-                    x = torch.ones((batch.shape[0],1)).to(device)
+                    x = torch.ones((batch.shape[0],5)).to(device)
                 node_mu, node_logvar = self.encoder(x, edge_index, batch)
 
                 #node_latent_embeddings = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
@@ -200,9 +200,9 @@ class GcnInfomax(nn.Module):
                 y.append(data.y.cpu().numpy())
         ret = np.concatenate(ret, 0)
         y = np.concatenate(y, 0)
-        return ret, y
+        return ret, y'''
 
-    '''def get_embeddings(self, loader):
+    def get_embeddings(self, loader):
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         ret = []
@@ -233,7 +233,7 @@ class GcnInfomax(nn.Module):
                 y.append(data.y.cpu().numpy())
         ret = np.concatenate(ret, 0)
         y = np.concatenate(y, 0)
-        return ret, y'''
+        return ret, y
 
 if __name__ == '__main__':
 
@@ -274,7 +274,7 @@ if __name__ == '__main__':
             dataset_num_features = 1
 
         if not dataset_num_features:
-            dataset_num_features = 1
+            dataset_num_features = 5
 
         dataloader = DataLoader(dataset, batch_size=batch_size)
 
@@ -303,7 +303,7 @@ if __name__ == '__main__':
                 data = data.to(device)
                 if not dataset.num_features:
 
-                    data.x = torch.ones((data.batch.shape[0], 1)).to(device)
+                    data.x = torch.ones((data.batch.shape[0], 5)).to(device)
                 optimizer.zero_grad()
                 recon_loss, kl_class, kl_node = model(data.x, data.edge_index, data.batch, data.num_graphs)
                 recon_loss_all += recon_loss
