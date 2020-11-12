@@ -99,7 +99,7 @@ class GcnInfomax(nn.Module):
         reconstructed_node = self.decoder(node_latent_embeddings)
 
         #reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
-        reconstruction_error = 1e-7*self.recon_loss1(reconstructed_node, edge_index, batch)
+        reconstruction_error = 1e-4*self.recon_loss1(reconstructed_node, edge_index, batch)
 
 
         #class_kl_divergence_loss.backward(retain_graph=True)
@@ -240,10 +240,10 @@ if __name__ == '__main__':
     args = arg_parse()
 
 
-    seed = 32
+    seed = 52
     #epochs = 20
 
-    epochs_list = [20, 30, 40, 50]
+    epochs_list = [50, 40, 30, 20]
 
     for epochs in epochs_list:
 
@@ -263,11 +263,11 @@ if __name__ == '__main__':
         batch_size = 128
         lr = args.lr
         DS = args.DS
-        path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data_degree', DS)
+        path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', DS)
         # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
 
-        #dataset = TUDataset(path, name=DS).shuffle()
-        dataset = TUDataset(path, name=DS, pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=88)).shuffle()
+        dataset = TUDataset(path, name=DS).shuffle()
+        #dataset = TUDataset(path, name=DS, pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=88)).shuffle()
         try:
             dataset_num_features = dataset.num_features
         except:
