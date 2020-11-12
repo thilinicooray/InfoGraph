@@ -243,7 +243,7 @@ if __name__ == '__main__':
     seed = 32
     #epochs = 20
 
-    epochs_list = [40]
+    epochs_list = [20, 30, 40, 50]
 
     for epochs in epochs_list:
 
