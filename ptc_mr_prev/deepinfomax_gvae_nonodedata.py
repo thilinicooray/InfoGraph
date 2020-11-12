@@ -77,7 +77,7 @@ class GcnInfomax(nn.Module):
             1 + 2 * node_logvar - node_mu.pow(2) - node_logvar.exp().pow(2), 1))
 
 
-        node_kl_divergence_loss = 1e-3*node_kl_divergence_loss
+        node_kl_divergence_loss = node_kl_divergence_loss
 
 
         # kl-divergence error for class latent space
@@ -99,7 +99,7 @@ class GcnInfomax(nn.Module):
         reconstructed_node = self.decoder(node_latent_embeddings)
 
         #reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
-        reconstruction_error = self.recon_loss1(reconstructed_node, edge_index, batch)
+        reconstruction_error = 1e-3*self.recon_loss1(reconstructed_node, edge_index, batch)
 
 
         #class_kl_divergence_loss.backward(retain_graph=True)
@@ -240,7 +240,7 @@ if __name__ == '__main__':
     args = arg_parse()
 
 
-    seed = 32
+    seed = 42
     #epochs = 20
 
     epochs_list = [20, 30, 40, 50]
