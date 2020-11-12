@@ -176,8 +176,8 @@ class GcnInfomax(nn.Module):
             for data in loader:
                 data.to(device)
                 x, edge_index, batch = data.x, data.edge_index, data.batch
-                if x is None:
-                    x = torch.ones((batch.shape[0],1)).to(device)
+                if not dataset.num_features:
+                    x = torch.ones((batch.shape[0],5)).double().to(device)
                 node_mu, node_logvar = self.encoder(x, edge_index, batch)
 
                 #node_latent_embeddings = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
