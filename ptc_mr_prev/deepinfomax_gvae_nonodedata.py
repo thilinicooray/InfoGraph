@@ -7,17 +7,18 @@ import numpy as np
 import json
 import random
 # from core.encoders import *
-
+import torch_geometric
 from torch_geometric.datasets import TUDataset
 from torch_geometric.data import DataLoader
 from torch_geometric.nn import global_mean_pool, global_add_pool, global_max_pool
+from torch_geometric.utils import negative_sampling, remove_self_loops, add_self_loops, to_dense_adj, to_dense_batch
 import sys
 import json
 from torch import optim
 
 from cortex_DIM.nn_modules.mi_networks import MIFCNet, MI1x1ConvNet
 from losses import *
-from gin_gvae import Encoder, Decoder
+from gin_gvae_nonodedata import Encoder, Decoder
 from evaluate_embedding import evaluate_embedding
 from model import *
 from utils import imshow_grid, mse_loss, reparameterize, group_wise_reparameterize, accumulate_group_evidence
@@ -54,21 +55,37 @@ class GcnInfomax(nn.Module):
 
     def forward(self, x, edge_index, batch, num_graphs):
 
-        # batch_size = data.num_graphs
-        if x is None:
-            x = torch.ones(batch.shape[0]).to(device)
+        n_nodes = x.size(0)
 
-        node_mu, node_logvar = self.encoder(x, edge_index, batch)
+        # batch_size = data.num_graphs
+
+        node_mu, node_logvar= self.encoder(x, edge_index, batch)
+
+
+
+
+
+
 
 
         # kl-divergence error for style latent space
-        node_kl_divergence_loss = torch.mean(
+        '''node_kl_divergence_loss = torch.mean(
             - 0.5 * torch.sum(1 + node_logvar - node_mu.pow(2) - node_logvar.exp())
-        )
-        node_kl_divergence_loss = node_kl_divergence_loss *num_graphs
-        node_kl_divergence_loss.backward(retain_graph=True)
+        )'''
+
+        node_kl_divergence_loss = -0.5 / n_nodes * torch.mean(torch.sum(
+            1 + 2 * node_logvar - node_mu.pow(2) - node_logvar.exp().pow(2), 1))
+
+
+        node_kl_divergence_loss = node_kl_divergence_loss
+
 
         # kl-divergence error for class latent space
+        '''class_kl_divergence_loss = torch.mean(
+            - 0.5 * torch.sum(1 + grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp())
+        )'''
+
+        #print('class kl wei ', class_kl_divergence_loss)
 
 
         # reconstruct samples
@@ -78,19 +95,77 @@ class GcnInfomax(nn.Module):
         """
         node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
 
-        #need to reduce ml between node and class latents
-        '''measure='JSD'
-        mi_loss = local_global_loss_disen(node_latent_embeddings, class_latent_embeddings, edge_index, batch, measure)
-        mi_loss.backward(retain_graph=True)'''
 
         reconstructed_node = self.decoder(node_latent_embeddings)
-        #check input feat first
-        #print('recon ', x[0],reconstructed_node[0])
-        reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
-        reconstruction_error.backward()
+
+        #reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
+        reconstruction_error = self.recon_loss1(reconstructed_node, edge_index, batch)
+
+
+        #class_kl_divergence_loss.backward(retain_graph=True)
+        #node_kl_divergence_loss.backward(retain_graph=True)
+        #reconstruction_error.backward()
+
+        loss =  node_kl_divergence_loss + reconstruction_error
+
+        loss.backward()
 
 
         return reconstruction_error.item() , 0 , node_kl_divergence_loss.item()
+
+    def edge_recon(self, z, edge_index, sigmoid=True):
+        r"""Decodes the latent variables :obj:`z` into edge probabilities for
+        the given node-pairs :obj:`edge_index`.
+
+        Args:
+            z (Tensor): The latent space :math:`\mathbf{Z}`.
+            sigmoid (bool, optional): If set to :obj:`False`, does not apply
+                the logistic sigmoid function to the output.
+                (default: :obj:`True`)
+        """
+        value = (z[edge_index[0]] * z[edge_index[1]]).sum(dim=1)
+        return torch.sigmoid(value) if sigmoid else value
+
+
+    def recon_loss1(self, z, edge_index, batch):
+
+        EPS = 1e-15
+        MAX_LOGSTD = 10
+        r"""Given latent variables :obj:`z`, computes the binary cross
+        entropy loss for positive edges :obj:`pos_edge_index` and negative
+        sampled edges.
+  
+        Args:
+            z (Tensor): The latent space :math:`\mathbf{Z}`.
+            pos_edge_index (LongTensor): The positive edges to train against.
+        """
+
+        #org_adj = to_dense_adj(edge_index, batch)
+        pos_weight = float(z.size(0) * z.size(0) - edge_index.size(0)) / edge_index.size(0)
+        norm = z.size(0) * z.size(0) / float((z.size(0) * z.size(0) - edge_index.size(0)) * 2)
+
+
+
+        recon_adj = self.edge_recon(z, edge_index)
+
+
+        pos_loss = -torch.log(
+            recon_adj + EPS).mean()
+
+        # Do not include self-loops in negative samples
+        pos_edge_index, _ = remove_self_loops(edge_index)
+        pos_edge_index, _ = add_self_loops(pos_edge_index)
+
+        neg_edge_index = negative_sampling(pos_edge_index, z.size(0)) #random thingggg
+        neg_loss = -torch.log(1 -
+                              self.edge_recon(z, neg_edge_index) +
+                              EPS).mean()
+
+        return norm*(pos_loss*pos_weight + neg_loss)
+
+        #loss = F.binary_cross_entropy_with_logits(rec, org_adj)
+
+        #return loss
 
     def get_embeddings(self, loader):
 
@@ -133,7 +208,7 @@ if __name__ == '__main__':
     seed = 32
     #epochs = 20
 
-    epochs_list = [20, 30, 40, 50]
+    epochs_list = [40]
 
     for epochs in epochs_list:
 
@@ -156,14 +231,15 @@ if __name__ == '__main__':
         path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', DS)
         # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
 
-        dataset = TUDataset(path, name=DS).shuffle()
+        #dataset = TUDataset(path, name=DS).shuffle()
+        dataset = TUDataset(path, name=DS, pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=136)).shuffle()
         try:
             dataset_num_features = dataset.num_features
         except:
             dataset_num_features = 1
 
         if not dataset_num_features:
-            dataset_num_features = 1
+            dataset_num_features = 5
 
         dataloader = DataLoader(dataset, batch_size=batch_size)
 
