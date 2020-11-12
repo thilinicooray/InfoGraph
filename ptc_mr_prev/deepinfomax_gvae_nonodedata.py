@@ -21,7 +21,7 @@ from losses import *
 from gin_gvae_nonodedata import Encoder, Decoder
 from evaluate_embedding import evaluate_embedding
 from model import *
-from utils import imshow_grid, mse_loss, reparameterize, group_wise_reparameterize, accumulate_group_evidence
+from utils import imshow_grid, mse_loss, reparameterize, group_wise_reparameterize, accumulate_group_evidence,group_wise_reparameterize_new, accumulate_group_evidence_new
 
 from arguments import arg_parse
 
@@ -167,7 +167,7 @@ class GcnInfomax(nn.Module):
 
         #return loss
 
-    '''def get_embeddings(self, loader):
+    def get_embeddings(self, loader):
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         ret = []
@@ -184,11 +184,11 @@ class GcnInfomax(nn.Module):
 
                 #class_emb = global_add_pool(node_latent_embeddings, batch)
 
-                grouped_node_mu, grouped_node_logvar = accumulate_group_evidence(
+                grouped_node_mu, grouped_node_logvar = accumulate_group_evidence_new(
                     node_mu.data, node_logvar.data, batch, True
                 )
 
-                accumulated_node_latent_embeddings = group_wise_reparameterize(
+                accumulated_node_latent_embeddings = group_wise_reparameterize_new(
                     training=False, mu=grouped_node_mu, logvar=grouped_node_logvar, labels_batch=batch, cuda=True
                 )
 
@@ -198,9 +198,9 @@ class GcnInfomax(nn.Module):
                 y.append(data.y.cpu().numpy())
         ret = np.concatenate(ret, 0)
         y = np.concatenate(y, 0)
-        return ret, y'''
+        return ret, y
 
-    def get_embeddings(self, loader):
+    '''def get_embeddings(self, loader):
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         ret = []
@@ -231,7 +231,7 @@ class GcnInfomax(nn.Module):
                 y.append(data.y.cpu().numpy())
         ret = np.concatenate(ret, 0)
         y = np.concatenate(y, 0)
-        return ret, y
+        return ret, y'''
 
 if __name__ == '__main__':
 
