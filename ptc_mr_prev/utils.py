@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 from torch.autograd import Variable
 from mpl_toolkits.axes_grid1 import ImageGrid
 
+from torch_geometric.nn import global_mean_pool, global_add_pool, global_max_pool
+
 
 def accumulate_group_evidence(class_mu, class_logvar, batch, is_cuda):
     """
@@ -139,3 +141,65 @@ def imshow_grid(images, shape=[2, 8], name='default', save=False):
         plt.clf()
     else:
         plt.show()
+
+def accumulate_group_evidence_new(class_mu, class_logvar, batch, is_cuda):
+    """
+    :param class_mu: mu values for class latent embeddings of each sample in the mini-batch
+    :param class_logvar: logvar values for class latent embeddings for each sample in the mini-batch
+    :param labels_batch: class labels of each sample (the operation of accumulating class evidence can also
+        be performed using group labels instead of actual class labels)
+    :param is_cuda:
+    :return:
+    """
+
+    class_var = class_logvar.exp_()
+
+    class_var[class_var == float(0)] = 1e-6
+
+    var_opp = class_var.pow(-1)
+
+    grouped_var = global_add_pool(var_opp, batch)
+
+    grouped_var = grouped_var.pow(-1)
+
+    mu_new = class_mu * class_var.pow(-1)
+
+    grouped_mu = global_add_pool(mu_new, batch)
+
+
+    grouped_mu = grouped_mu * grouped_var
+
+    grouped_var[grouped_var == float(0)] = 1e-6
+
+
+    grouped_lvar = torch.log(grouped_var)
+
+
+    _, count = torch.unique(batch,  return_counts=True)
+
+    grouped_mu_expanded = torch.repeat_interleave(grouped_mu, count, dim=0)
+    grouped_lvar_expanded = torch.repeat_interleave(grouped_lvar, count, dim=0)
+
+
+    return grouped_mu_expanded, grouped_lvar_expanded
+
+def group_wise_reparameterize_new(training, mu, logvar, labels_batch, cuda):
+
+    if training:
+
+        g_mu = global_mean_pool(mu, labels_batch)
+        g_logvar = global_mean_pool(logvar, labels_batch)
+
+        std = g_logvar.mul(0.5).exp_()
+        eps = Variable(std.data.new(std.size()).normal_())
+        graph_wise_sample = eps.mul(std).add_(g_mu)
+
+        _, count = torch.unique(labels_batch,  return_counts=True)
+
+        grouped_mu_expanded = torch.repeat_interleave(graph_wise_sample, count, dim=0)
+
+        return grouped_mu_expanded
+
+
+    else:
+        return mu
