@@ -240,7 +240,7 @@ if __name__ == '__main__':
     args = arg_parse()
 
 
-    seed = 52
+    seed = 32
     #epochs = 20
 
     epochs_list = [50, 40, 30, 20]
