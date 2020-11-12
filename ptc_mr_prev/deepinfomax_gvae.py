@@ -119,7 +119,7 @@ if __name__ == '__main__':
     args = arg_parse()
 
 
-    seed = 42
+    seed = 62
     epochs = 30
 
     print('seed ', seed, 'epochs ', epochs)
