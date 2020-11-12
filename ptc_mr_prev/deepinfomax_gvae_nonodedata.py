@@ -263,11 +263,11 @@ if __name__ == '__main__':
         batch_size = 128
         lr = args.lr
         DS = args.DS
-        path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', DS)
+        path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data_degree', DS)
         # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
 
-        dataset = TUDataset(path, name=DS).shuffle()
-        #dataset = TUDataset(path, name=DS, pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=88)).shuffle()
+        #dataset = TUDataset(path, name=DS).shuffle()
+        dataset = TUDataset(path, name=DS, pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=88)).shuffle()
         try:
             dataset_num_features = dataset.num_features
         except:
