@@ -266,6 +266,9 @@ if __name__ == '__main__':
             #model.train()
             for data in dataloader:
                 data = data.to(device)
+                if not dataset.num_features:
+
+                    data.x = torch.ones((data.batch.shape[0], 5)).double().to(device)
                 optimizer.zero_grad()
                 recon_loss, kl_class, kl_node = model(data.x, data.edge_index, data.batch, data.num_graphs)
                 recon_loss_all += recon_loss

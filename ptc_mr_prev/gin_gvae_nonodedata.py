@@ -4,7 +4,7 @@ from collections import OrderedDict
 
 import torch
 import torch.nn.functional as F
-from torch.nn import Sequential, Linear, ReLU, Tanh
+from torch.nn import Sequential, Linear, ReLU,Tanh
 from torch_geometric.datasets import TUDataset
 from torch_geometric.data import DataLoader
 from torch_geometric.nn import GINConv, global_add_pool
