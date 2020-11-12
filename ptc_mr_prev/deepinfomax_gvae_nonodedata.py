@@ -99,7 +99,7 @@ class GcnInfomax(nn.Module):
         reconstructed_node = self.decoder(node_latent_embeddings)
 
         #reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
-        reconstruction_error = self.recon_loss1(reconstructed_node, edge_index, batch)
+        reconstruction_error = 1e-7*self.recon_loss1(reconstructed_node, edge_index, batch)
 
 
         #class_kl_divergence_loss.backward(retain_graph=True)
@@ -194,7 +194,7 @@ class GcnInfomax(nn.Module):
 
                 class_emb = global_mean_pool(accumulated_node_latent_embeddings, batch)
 
-                print('clz emb ', class_emb[:5,:3])
+                #print('clz emb ', class_emb[:5,:3])
 
                 ret.append(class_emb.cpu().numpy())
                 y.append(data.y.cpu().numpy())
