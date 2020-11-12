@@ -167,7 +167,7 @@ class GcnInfomax(nn.Module):
 
         #return loss
 
-    def get_embeddings(self, loader):
+    '''def get_embeddings(self, loader):
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         ret = []
@@ -193,6 +193,39 @@ class GcnInfomax(nn.Module):
                 )
 
                 class_emb = global_mean_pool(accumulated_node_latent_embeddings, batch)
+
+                ret.append(class_emb.cpu().numpy())
+                y.append(data.y.cpu().numpy())
+        ret = np.concatenate(ret, 0)
+        y = np.concatenate(y, 0)
+        return ret, y'''
+
+    def get_embeddings(self, loader):
+
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        ret = []
+        y = []
+        with torch.no_grad():
+            for data in loader:
+
+                data.to(device)
+                x, edge_index, batch = data.x, data.edge_index, data.batch
+
+                #print(x, edge_index, data.x)
+                #x = torch.rand(data.batch.shape[0], 5).to(device)
+                if not dataset.num_features:
+                    x = torch.ones((batch.shape[0],5)).double().to(device)
+                #print('eval train', x.type())
+                node_mu, node_logvar = self.encoder(x, edge_index, batch)
+
+
+                node_latent_embeddings = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
+
+
+                class_emb = global_add_pool(node_latent_embeddings, batch)
+
+                #print('clz emb ', class_emb[:5,:3])
+
 
                 ret.append(class_emb.cpu().numpy())
                 y.append(data.y.cpu().numpy())
