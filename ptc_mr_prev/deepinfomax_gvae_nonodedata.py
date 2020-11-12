@@ -184,11 +184,11 @@ class GcnInfomax(nn.Module):
 
                 #class_emb = global_add_pool(node_latent_embeddings, batch)
 
-                grouped_node_mu, grouped_node_logvar = accumulate_group_evidence_new(
+                grouped_node_mu, grouped_node_logvar = accumulate_group_evidence(
                     node_mu.data, node_logvar.data, batch, True
                 )
 
-                accumulated_node_latent_embeddings = group_wise_reparameterize_new(
+                accumulated_node_latent_embeddings = group_wise_reparameterize(
                     training=False, mu=grouped_node_mu, logvar=grouped_node_logvar, labels_batch=batch, cuda=True
                 )
 
