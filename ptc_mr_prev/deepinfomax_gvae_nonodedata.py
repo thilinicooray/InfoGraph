@@ -177,7 +177,7 @@ class GcnInfomax(nn.Module):
                 data.to(device)
                 x, edge_index, batch = data.x, data.edge_index, data.batch
                 if not dataset.num_features:
-                    x = torch.ones((batch.shape[0],5)).to(device)
+                    x = torch.ones((batch.shape[0],1)).to(device)
                 node_mu, node_logvar = self.encoder(x, edge_index, batch)
 
                 #node_latent_embeddings = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
@@ -263,18 +263,18 @@ if __name__ == '__main__':
         batch_size = 128
         lr = args.lr
         DS = args.DS
-        path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data_degree', DS)
+        path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', DS)
         # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
 
-        #dataset = TUDataset(path, name=DS).shuffle()
-        dataset = TUDataset(path, name=DS, pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=250)).shuffle()
+        dataset = TUDataset(path, name=DS).shuffle()
+        #dataset = TUDataset(path, name=DS, pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=250)).shuffle()
         try:
             dataset_num_features = dataset.num_features
         except:
             dataset_num_features = 1
 
         if not dataset_num_features:
-            dataset_num_features = 5
+            dataset_num_features = 1
 
         dataloader = DataLoader(dataset, batch_size=batch_size)
 
@@ -303,7 +303,7 @@ if __name__ == '__main__':
                 data = data.to(device)
                 if not dataset.num_features:
 
-                    data.x = torch.ones((data.batch.shape[0], 5)).to(device)
+                    data.x = torch.ones((data.batch.shape[0], 1)).to(device)
                 optimizer.zero_grad()
                 recon_loss, kl_class, kl_node = model(data.x, data.edge_index, data.batch, data.num_graphs)
                 recon_loss_all += recon_loss
