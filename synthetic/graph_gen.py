@@ -18,7 +18,7 @@ class SyntheticERDataset(InMemoryDataset):
         return []
     @property
     def processed_file_names(self):
-        return ['../data/SyntheticER/data.pt']
+        return ['data.pt']
 
     def download(self):
         pass
@@ -38,7 +38,7 @@ class SyntheticERDataset(InMemoryDataset):
 
             x = torch.cat([node_feat,g], -1)
 
-            print('all', p, n, node_feat)
+            print('all', p, n, g, node_feat)
 
             data = Data(x=x, edge_index=edge_index)
             data_list.append(data)
