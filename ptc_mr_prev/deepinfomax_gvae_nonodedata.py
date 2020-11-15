@@ -99,7 +99,7 @@ class GcnInfomax(nn.Module):
         reconstructed_node = self.decoder(node_latent_embeddings)
 
         #reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
-        reconstruction_error = 1e-7*self.recon_loss1(reconstructed_node, edge_index, batch)
+        reconstruction_error = 1e-5*self.recon_loss1(reconstructed_node, edge_index, batch)
 
 
         #class_kl_divergence_loss.backward(retain_graph=True)
@@ -167,7 +167,7 @@ class GcnInfomax(nn.Module):
 
         #return loss
 
-    '''def get_embeddings(self, loader):
+    def get_embeddings(self, loader):
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         ret = []
@@ -200,9 +200,9 @@ class GcnInfomax(nn.Module):
                 y.append(data.y.cpu().numpy())
         ret = np.concatenate(ret, 0)
         y = np.concatenate(y, 0)
-        return ret, y'''
+        return ret, y
 
-    def get_embeddings(self, loader):
+    '''def get_embeddings(self, loader):
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         ret = []
@@ -233,17 +233,17 @@ class GcnInfomax(nn.Module):
                 y.append(data.y.cpu().numpy())
         ret = np.concatenate(ret, 0)
         y = np.concatenate(y, 0)
-        return ret, y
+        return ret, y'''
 
 if __name__ == '__main__':
 
     args = arg_parse()
 
 
-    seed = 62
+    seed = 52
     #epochs = 20
 
-    epochs_list = [50, 40, 30, 20]
+    epochs_list = [50]
 
     for epochs in epochs_list:
 
