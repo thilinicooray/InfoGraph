@@ -159,7 +159,7 @@ if __name__ == '__main__':
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     #scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
 
-    dataset_num_features = train_dataset.num_features
+    dataset_num_features = 2
 
     print('================')
     print('lr: {}'.format(lr))
