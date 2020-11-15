@@ -31,7 +31,7 @@ class SyntheticERDataset(InMemoryDataset):
         for i in range(1):
             p = np.random.uniform(0,1)
             g_val = np.array( [np.random.choice(5)])
-            g_id = torch.from_numpy(g_val).unsqueeze(0)
+            g_id = torch.from_numpy(g_val).unsqueeze(0).float()
             g = g_id.expand(n,1)
             node_feat = torch.normal(0, 0.1, (n,1))
             edge_index = erdos_renyi_graph(n,p)
