@@ -180,7 +180,7 @@ if __name__ == '__main__':
 
     path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'SyntheticER')
 
-    dataset = SyntheticERDataset(path).shuffle()
+    dataset = SyntheticERDataset(path)
 
     train_dataset = dataset[:3000]
     test_dataset = dataset[3000:]
