@@ -68,6 +68,8 @@ if __name__ == '__main__':
 
     for data in train_loader:
         data = data.to(device)
-        print('data ', data.batch, data.x)
-        break
+        #print('data ', data.batch, data.x)
+        #break
+
+
 
