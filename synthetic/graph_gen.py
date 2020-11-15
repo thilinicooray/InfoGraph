@@ -28,7 +28,7 @@ class SyntheticERDataset(InMemoryDataset):
         data_list = []
         n = 10
 
-        for i in range(1):
+        for i in range(4000):
             p = np.random.uniform(0,1)
             g_val = np.array( [np.random.choice(5)])
             g_id = torch.from_numpy(g_val).unsqueeze(0).float()
