@@ -121,7 +121,7 @@ class GLDisen(nn.Module):
                 z_l= None
                 for frac in [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]:
 
-                    x_new = torch.cat([x[:,0].qnsqueeze(-1),(x[:,1]* frac).qnsqueeze(-1)],-1)
+                    x_new = torch.cat([x[:,0].unsqueeze(-1),(x[:,1]* frac).unsqueeze(-1)],-1)
                     print('x ', x.size(), x_new.size())
 
                     print('data', x, x_new)
