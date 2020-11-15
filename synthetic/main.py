@@ -154,12 +154,13 @@ if __name__ == '__main__':
 
     lr = args.lr
     epochs = 50
+    dataset_num_features = 2
 
     model = GLDisen(8, 2, 1, 1).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     #scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
 
-    dataset_num_features = 2
+
 
     print('================')
     print('lr: {}'.format(lr))
