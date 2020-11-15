@@ -107,6 +107,7 @@ class GLDisen(nn.Module):
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         ret = []
         y = []
+        i = 0
         with torch.no_grad():
             for data in loader:
                 data.to(device)
@@ -159,8 +160,10 @@ class GLDisen(nn.Module):
                 savetxt('synth_zg_{}.csv'.format('gfix'), z_g.cpu().numpy(), delimiter=',')
                 savetxt('synth_zl_{}.csv'.format('gfix'), z_l.cpu().numpy(), delimiter=',')
 
+                i += 1
 
-                break
+                if i == 6:
+                    break
 
         return None
 
