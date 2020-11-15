@@ -185,7 +185,7 @@ if __name__ == '__main__':
             #losses['tot'].append(loss_all/ len(dataloader))
 
 
-            print('Epoch {}, Total Loss {} '.format(epoch, loss_all/ len(train_loader)))
+        print('Epoch {}, Total Loss {} '.format(epoch, loss_all/ len(train_loader)))
 
 
     model.eval()
