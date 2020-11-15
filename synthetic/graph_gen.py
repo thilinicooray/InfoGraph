@@ -38,8 +38,6 @@ class SyntheticERDataset(InMemoryDataset):
 
             x = torch.cat([node_feat,g], -1)
 
-            print('all', p, n, g, node_feat)
-
             data = Data(x=x, edge_index=edge_index)
             data_list.append(data)
 
