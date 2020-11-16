@@ -115,6 +115,13 @@ class GLDisen(nn.Module):
                 if x is None:
                     x = torch.ones((batch.shape[0],1)).to(device)
 
+                node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index, batch)
+
+
+                node_latent_embeddings_org = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
+
+                indiclass_latent_embeddings_org = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
+
                 # global change, local fix
                 input_g = None
                 input_l = None
@@ -147,14 +154,14 @@ class GLDisen(nn.Module):
                     indiclass_latent_embeddings = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
 
                     if z_g is None:
-                        z_g = indiclass_latent_embeddings
+                        z_g = indiclass_latent_embeddings - indiclass_latent_embeddings_org
                     else:
-                        z_g = torch.cat((z_g.clone(), indiclass_latent_embeddings), 0)
+                        z_g = torch.cat((z_g.clone(), (indiclass_latent_embeddings-indiclass_latent_embeddings_org)), 0)
 
                     if z_l is None:
-                        z_l = node_latent_embeddings[:,0]
+                        z_l = node_latent_embeddings[:,0] - node_latent_embeddings_org[:,0]
                     else:
-                        z_l = torch.cat((z_l.clone(), node_latent_embeddings[:,0]), 0)
+                        z_l = torch.cat((z_l.clone(), (node_latent_embeddings[:,0]-node_latent_embeddings_org[:,0])), 0)
 
 
                 savetxt('synth_inputg_{}.csv'.format('gfix'), input_g.cpu().numpy(), delimiter=',')
