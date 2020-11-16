@@ -315,7 +315,7 @@ if __name__ == '__main__':
                                                                                 kl_class_loss_all / len(train_loader), kl_node_loss_all / len(train_loader)))
 
 
-    torch.save(model.state_dict(), f'syner_model2.pkl')
+    torch.save(model.state_dict(), f'syner_model3.pkl')
 
 
     #model.eval()
