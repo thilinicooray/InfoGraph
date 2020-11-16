@@ -124,7 +124,7 @@ class GLDisen(nn.Module):
                 print('fraction ', fractions_list)
                 for frac in fractions_list:
 
-                    x_new = torch.cat([(x[:,0]+frac).unsqueeze(-1),(x[:,-1]).unsqueeze(-1)],-1)
+                    x_new = torch.cat([(x[:,0]).unsqueeze(-1),(x[:,-1]*frac).unsqueeze(-1)],-1)
                     print('x ', x.size(), x_new.size())
 
                     print('data', x, x_new)
@@ -212,7 +212,7 @@ if __name__ == '__main__':
     print('num_gc_layers: {}'.format(args.num_gc_layers))
     print('================')
 
-    model.load_state_dict(torch.load(f'syner_model4.pkl'))
+    model.load_state_dict(torch.load(f'syner_model9.pkl'))
 
 
     '''model.train()
