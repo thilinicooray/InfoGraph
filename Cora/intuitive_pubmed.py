@@ -473,6 +473,8 @@ if __name__ == '__main__':
 
         model.eval()
 
+        torch.save(model.state_dict(), f'pubmed_1.pkl')
+
 
         #if epoch == epochs:
 
