@@ -115,7 +115,7 @@ class GLDisen(nn.Module):
                 if x is None:
                     x = torch.ones((batch.shape[0],1)).to(device)
 
-                node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index, batch)
+                node_mu, node_logvar, class_mu, class_logvar = self.encoder(x[:,:2], edge_index, batch)
 
 
                 node_latent_embeddings_org = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
