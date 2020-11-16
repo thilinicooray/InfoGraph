@@ -154,14 +154,14 @@ class GLDisen(nn.Module):
                     indiclass_latent_embeddings = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
 
                     if z_g is None:
-                        z_g = indiclass_latent_embeddings - indiclass_latent_embeddings_org
+                        z_g = indiclass_latent_embeddings
                     else:
-                        z_g = torch.cat((z_g.clone(), (indiclass_latent_embeddings-indiclass_latent_embeddings_org)), 0)
+                        z_g = torch.cat((z_g.clone(), (indiclass_latent_embeddings)), 0)
 
                     if z_l is None:
-                        z_l = node_latent_embeddings[:,0] - node_latent_embeddings_org[:,0]
+                        z_l = node_latent_embeddings[:,0]
                     else:
-                        z_l = torch.cat((z_l.clone(), (node_latent_embeddings[:,0]-node_latent_embeddings_org[:,0])), 0)
+                        z_l = torch.cat((z_l.clone(), (node_latent_embeddings[:,0])), 0)
 
 
                 savetxt('synth_inputg_{}.csv'.format('gfix'), input_g.cpu().numpy(), delimiter=',')

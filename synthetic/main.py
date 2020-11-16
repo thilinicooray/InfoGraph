@@ -64,7 +64,7 @@ class GLDisen(nn.Module):
             - 0.5 * torch.sum(1 + node_logvar - node_mu.pow(2) - node_logvar.exp())
         )
         #node_kl_divergence_loss = 0.0000001 * node_kl_divergence_loss *num_graphs
-        node_kl_divergence_loss = node_kl_divergence_loss*512
+        node_kl_divergence_loss = node_kl_divergence_loss
         node_kl_divergence_loss.backward(retain_graph=True)
 
         # kl-divergence error for class latent space
@@ -72,7 +72,7 @@ class GLDisen(nn.Module):
             - 0.5 * torch.sum(1 + grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp())
         )
         #class_kl_divergence_loss = 0.0000001 * class_kl_divergence_loss * num_graphs
-        class_kl_divergence_loss =  class_kl_divergence_loss*512
+        class_kl_divergence_loss =  class_kl_divergence_loss
         class_kl_divergence_loss.backward(retain_graph=True)
 
         # reconstruct samples
@@ -90,12 +90,12 @@ class GLDisen(nn.Module):
         mi_loss = local_global_loss_disen(node_latent_embeddings, class_latent_embeddings, edge_index, batch, measure)
         mi_loss.backward(retain_graph=True)'''
 
-        reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
+        #reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
         #check input feat first
         #print('recon ', x[0],reconstructed_node[0])
         #reconstruction_error =  0.1*mse_loss(reconstructed_node, x)
         #reconstruction_error =  mse_loss(reconstructed_node, x)
-        reconstruction_error = self.recon_loss1(reconstructed_node, edge_index, batch)*512
+        reconstruction_error = self.recon_loss1(node_latent_embeddings, edge_index, batch)+ mse_loss(class_latent_embeddings, x[:,1])+ mse_loss(node_latent_embeddings, x[:,0])
         reconstruction_error.backward()
 
 
@@ -315,7 +315,7 @@ if __name__ == '__main__':
                                                                                 kl_class_loss_all / len(train_loader), kl_node_loss_all / len(train_loader)))
 
 
-    torch.save(model.state_dict(), f'syner_model13.pkl')
+    torch.save(model.state_dict(), f'syner_model14.pkl')
 
 
     #model.eval()
