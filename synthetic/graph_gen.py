@@ -30,16 +30,20 @@ class SyntheticERDataset(InMemoryDataset):
 
         for i in range(4000):
             p = np.random.uniform(0,1)
-            g_val = np.array([np.random.randint(1,10)])
+            g_val = np.array([np.random.randint(2,9)])
             mean_1 = np.random.randint(2,9)
             mean_2 = np.random.randint(2,9)
             g_id = torch.from_numpy(g_val).unsqueeze(0).float()
             g = g_id.expand(n,1)
+            f_id_1 = torch.from_numpy(mean_1).unsqueeze(0).float()
+            f_1 = f_id_1.expand(n,1)
+            f_id_2 = torch.from_numpy(mean_2).unsqueeze(0).float()
+            f_2 = f_id_2.expand(n,1)
             node_feat1 = torch.normal(mean_1, 1, (n,1))
             node_feat2 = torch.normal(mean_2, 1, (n,1))
             edge_index = erdos_renyi_graph(n,p)
 
-            x = torch.cat([node_feat1,node_feat2,g], -1)
+            x = torch.cat([node_feat1,node_feat2,g,f_1,f_2], -1)
 
             print('data x', x)
 
