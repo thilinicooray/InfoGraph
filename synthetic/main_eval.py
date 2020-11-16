@@ -124,7 +124,7 @@ class GLDisen(nn.Module):
                 print('fraction ', fractions_list)
                 for frac in fractions_list:
 
-                    x_new = torch.cat([(x[:,0]).unsqueeze(-1),(x[:,-1]+frac).unsqueeze(-1)],-1)
+                    x_new = torch.cat([(x[:,0]*frac).unsqueeze(-1),(x[:,-1]).unsqueeze(-1)],-1)
                     print('x ', x.size(), x_new.size())
 
                     print('data', x, x_new)
