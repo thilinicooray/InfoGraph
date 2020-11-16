@@ -361,7 +361,7 @@ if __name__ == '__main__':
 
 
         node_dim = 32
-        class_dim = 1
+        class_dim = 32
 
 
 
