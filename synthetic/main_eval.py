@@ -130,9 +130,9 @@ class GLDisen(nn.Module):
                     print('data', x, x_new)
 
                     if input_g is None:
-                        input_g = x_new[:,1]
+                        input_g = x_new[:,-1]
                     else:
-                        input_g = torch.cat((input_g.clone(), x_new[:,1]), 0)
+                        input_g = torch.cat((input_g.clone(), x_new[:,-1]), 0)
 
                     if input_l is None:
                         input_l = x_new[:,0]
