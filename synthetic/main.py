@@ -97,7 +97,7 @@ class GLDisen(nn.Module):
         reconstruction_error.backward()
 
 
-        return reconstruction_error.item() + class_kl_divergence_loss.item() + node_kl_divergence_loss.item()
+        return reconstruction_error.item() , class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
 
     def get_embeddings(self, loader):
 
@@ -143,7 +143,7 @@ if __name__ == '__main__':
 
     path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'SyntheticER')
 
-    dataset = SyntheticERDataset(path).shuffle()
+    dataset = SyntheticERDataset(path)#.shuffle()
 
     train_dataset = dataset[:3000]
     test_dataset = dataset[3000:]
@@ -154,7 +154,7 @@ if __name__ == '__main__':
 
     lr = args.lr
     epochs = 50
-    dataset_num_features = 2
+    dataset_num_features = 3
 
     model = GLDisen(8, 2, 1, 1).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
@@ -173,21 +173,28 @@ if __name__ == '__main__':
     model.train()
     for epoch in range(1, epochs+1):
         loss_all = 0
+        recon_loss_all = 0
+        kl_class_loss_all = 0
+        kl_node_loss_all = 0
 
         #model.train()
         for data in train_loader:
             data = data.to(device)
             optimizer.zero_grad()
-            loss = model(data.x, data.edge_index, data.batch, data.num_graphs)
-            loss_all += loss
+            recon_loss, kl_class, kl_node = model(data.x[:,:3], data.edge_index, data.batch, data.num_graphs)
+            recon_loss_all += recon_loss
+            kl_class_loss_all += kl_class
+            kl_node_loss_all += kl_node
             optimizer.step()
 
             #losses['tot'].append(loss_all/ len(dataloader))
 
 
-        print('Epoch {}, Total Loss {} '.format(epoch, loss_all/ len(train_loader)))
+        print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(train_loader),
+                                                                                kl_class_loss_all / len(train_loader), kl_node_loss_all / len(train_loader)))
 
-    torch.save(model.state_dict(), f'syner_model1.pkl')
+
+        #torch.save(model.state_dict(), f'syner_model1.pkl')
 
 
     #model.eval()
