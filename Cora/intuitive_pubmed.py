@@ -360,8 +360,8 @@ if __name__ == '__main__':
         data = dataset[0].to(device)
 
 
-        node_dim = 32
-        class_dim = 32
+        node_dim = 512
+        class_dim = 512
 
 
 
