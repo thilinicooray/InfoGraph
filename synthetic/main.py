@@ -64,7 +64,7 @@ class GLDisen(nn.Module):
             - 0.5 * torch.sum(1 + node_logvar - node_mu.pow(2) - node_logvar.exp())
         )
         #node_kl_divergence_loss = 0.0000001 * node_kl_divergence_loss *num_graphs
-        node_kl_divergence_loss = 0.0001 *node_kl_divergence_loss
+        node_kl_divergence_loss = node_kl_divergence_loss
         node_kl_divergence_loss.backward(retain_graph=True)
 
         # kl-divergence error for class latent space
@@ -72,7 +72,7 @@ class GLDisen(nn.Module):
             - 0.5 * torch.sum(1 + grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp())
         )
         #class_kl_divergence_loss = 0.0000001 * class_kl_divergence_loss * num_graphs
-        class_kl_divergence_loss =  0.0001 *class_kl_divergence_loss
+        class_kl_divergence_loss =  class_kl_divergence_loss
         class_kl_divergence_loss.backward(retain_graph=True)
 
         # reconstruct samples
@@ -277,7 +277,7 @@ if __name__ == '__main__':
     epochs = 50
     dataset_num_features = 2
 
-    model = GLDisen(2, 2, 3, 1).to(device)
+    model = GLDisen(2, 2, 1, 1).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     #scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
 
