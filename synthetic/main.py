@@ -93,9 +93,9 @@ class GLDisen(nn.Module):
         reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
         #check input feat first
         #print('recon ', x[0],reconstructed_node[0])
-        reconstruction_error =  0.1*mse_loss(reconstructed_node, x)
+        #reconstruction_error =  0.1*mse_loss(reconstructed_node, x)
         #reconstruction_error =  mse_loss(reconstructed_node, x)
-        #reconstruction_error = self.recon_loss1(reconstructed_node, edge_index, batch)
+        reconstruction_error = 0.000001 *self.recon_loss1(reconstructed_node, edge_index, batch)
         reconstruction_error.backward()
 
 
