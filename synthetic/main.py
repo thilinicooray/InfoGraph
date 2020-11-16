@@ -64,7 +64,7 @@ class GLDisen(nn.Module):
             - 0.5 * torch.sum(1 + node_logvar - node_mu.pow(2) - node_logvar.exp())
         )
         #node_kl_divergence_loss = 0.0000001 * node_kl_divergence_loss *num_graphs
-        node_kl_divergence_loss = node_kl_divergence_loss
+        node_kl_divergence_loss = 0.0001 *node_kl_divergence_loss
         node_kl_divergence_loss.backward(retain_graph=True)
 
         # kl-divergence error for class latent space
@@ -72,7 +72,7 @@ class GLDisen(nn.Module):
             - 0.5 * torch.sum(1 + grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp())
         )
         #class_kl_divergence_loss = 0.0000001 * class_kl_divergence_loss * num_graphs
-        class_kl_divergence_loss =  class_kl_divergence_loss
+        class_kl_divergence_loss =  0.0001 *class_kl_divergence_loss
         class_kl_divergence_loss.backward(retain_graph=True)
 
         # reconstruct samples
@@ -93,9 +93,9 @@ class GLDisen(nn.Module):
         reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
         #check input feat first
         #print('recon ', x[0],reconstructed_node[0])
-        #reconstruction_error =  0.1*mse_loss(reconstructed_node, x) * num_graphs
+        reconstruction_error =  0.1*mse_loss(reconstructed_node, x)
         #reconstruction_error =  mse_loss(reconstructed_node, x)
-        reconstruction_error = self.recon_loss1(reconstructed_node, edge_index, batch)
+        #reconstruction_error = self.recon_loss1(reconstructed_node, edge_index, batch)
         reconstruction_error.backward()
 
 
@@ -274,7 +274,7 @@ if __name__ == '__main__':
     test_loader = DataLoader(test_dataset, batch_size=512)
 
     lr = args.lr
-    epochs = 50
+    epochs = 30
     dataset_num_features = 3
 
     model = GLDisen(8, 2, 1, 1).to(device)
@@ -315,7 +315,7 @@ if __name__ == '__main__':
                                                                                 kl_class_loss_all / len(train_loader), kl_node_loss_all / len(train_loader)))
 
 
-        #torch.save(model.state_dict(), f'syner_model1.pkl')
+    torch.save(model.state_dict(), f'syner_model2.pkl')
 
 
     #model.eval()
