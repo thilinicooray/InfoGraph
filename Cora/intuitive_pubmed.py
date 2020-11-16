@@ -58,7 +58,7 @@ class GcnInfomax(nn.Module):
         self.prior = args.prior
 
         self.encoder = Encoder(dataset_num_features, hidden_dim, num_gc_layers, node_dim, class_dim)
-        self.decoder = Decoder(hidden_dim, hidden_dim, dataset_num_features)
+        self.decoder = Decoder(node_dim, class_dim, dataset_num_features)
         self.node_discriminator = D_net_gauss(hidden_dim, hidden_dim)
         self.class_discriminator = D_net_gauss(hidden_dim, hidden_dim)
         self.lamda = lamda
@@ -360,8 +360,8 @@ if __name__ == '__main__':
         data = dataset[0].to(device)
 
 
-        node_dim = 512
-        class_dim = 512
+        node_dim = 32
+        class_dim = 1
 
 
 
