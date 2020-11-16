@@ -127,8 +127,8 @@ class GcnInfomax(nn.Module):
 
                 indiclass_latent_embeddings = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
 
-                savetxt('mutag_node_emb32_{}.csv'.format(k), node_latent_embeddings.cpu().numpy(), delimiter=',')
-                savetxt('mutag_graph_emb32_{}.csv'.format(k), indiclass_latent_embeddings.cpu().numpy(), delimiter=',')
+                #savetxt('mutag_node_emb32_{}.csv'.format(k), node_latent_embeddings.cpu().numpy(), delimiter=',')
+                #savetxt('mutag_graph_emb32_{}.csv'.format(k), indiclass_latent_embeddings.cpu().numpy(), delimiter=',')
 
 
                 grouped_mu, grouped_logvar = accumulate_group_evidence(
@@ -146,6 +146,12 @@ class GcnInfomax(nn.Module):
                 accumulated_class_latent_embeddings = group_wise_reparameterize(
                     training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
                 )
+
+
+                reconstructed_node = self.decoder(node_latent_embeddings, accumulated_class_latent_embeddings)
+
+                print('recon', reconstructed_node)
+
 
                 sim_node = torch.sigmoid(torch.matmul(class_mu.t(), node_mu)).cpu().numpy()
                 graph_node = torch.sigmoid(torch.matmul(class_mu.t(), class_mu)).cpu().numpy()
