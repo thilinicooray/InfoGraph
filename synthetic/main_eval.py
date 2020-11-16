@@ -162,11 +162,11 @@ class GLDisen(nn.Module):
                 savetxt('synth_zg_{}.csv'.format('gfix'), z_g.cpu().numpy(), delimiter=',')
                 savetxt('synth_zl_{}.csv'.format('gfix'), z_l.cpu().numpy(), delimiter=',')
 
-                '''i += 1
+                i += 1
 
                 if i == 6:
-                    break'''
-                break
+                    break
+                #break
 
         return None
 
