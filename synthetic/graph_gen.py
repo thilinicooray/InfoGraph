@@ -31,8 +31,8 @@ class SyntheticERDataset(InMemoryDataset):
         for i in range(4000):
             p = np.random.uniform(0,1)
             g_val = np.array([np.random.randint(1,10)])
-            mean_1 = np.array([np.random.randint(2,9)])
-            mean_2 = np.array([np.random.randint(2,9)])
+            mean_1 = np.random.randint(2,9)
+            mean_2 = np.random.randint(2,9)
             g_id = torch.from_numpy(g_val).unsqueeze(0).float()
             g = g_id.expand(n,1)
             node_feat1 = torch.normal(mean_1, 1, (n,1))
