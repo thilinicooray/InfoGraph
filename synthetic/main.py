@@ -277,7 +277,7 @@ if __name__ == '__main__':
     epochs = 50
     dataset_num_features = 2
 
-    model = GLDisen(8, 2, 1, 1).to(device)
+    model = GLDisen(2, 2, 1, 1).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     #scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
 
@@ -315,7 +315,7 @@ if __name__ == '__main__':
                                                                                 kl_class_loss_all / len(train_loader), kl_node_loss_all / len(train_loader)))
 
 
-    torch.save(model.state_dict(), f'syner_model3.pkl')
+    torch.save(model.state_dict(), f'syner_model4.pkl')
 
 
     #model.eval()
