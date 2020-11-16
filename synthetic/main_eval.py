@@ -120,9 +120,11 @@ class GLDisen(nn.Module):
                 input_l = None
                 z_g = None
                 z_l= None
-                for frac in [0,1,2,3]:
+                fractions_list = torch.arange(0, 1.2, 0.2)
+                print('fraction ', fractions_list)
+                for frac in fractions_list:
 
-                    x_new = torch.cat([x[:,0].unsqueeze(-1),(x[:,1]+frac).unsqueeze(-1)],-1)
+                    x_new = torch.cat([x[:,0].unsqueeze(-1),x[:,1].unsqueeze(-1),(x[:,2]+frac).unsqueeze(-1)],-1)
                     print('x ', x.size(), x_new.size())
 
                     print('data', x, x_new)
@@ -160,10 +162,11 @@ class GLDisen(nn.Module):
                 savetxt('synth_zg_{}.csv'.format('gfix'), z_g.cpu().numpy(), delimiter=',')
                 savetxt('synth_zl_{}.csv'.format('gfix'), z_l.cpu().numpy(), delimiter=',')
 
-                i += 1
+                '''i += 1
 
                 if i == 6:
-                    break
+                    break'''
+                break
 
         return None
 
@@ -209,7 +212,7 @@ if __name__ == '__main__':
     print('num_gc_layers: {}'.format(args.num_gc_layers))
     print('================')
 
-    model.load_state_dict(torch.load(f'syner_model1.pkl'))
+    model.load_state_dict(torch.load(f'syner_model2.pkl'))
 
 
     '''model.train()
