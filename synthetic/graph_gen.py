@@ -43,7 +43,7 @@ class SyntheticERDataset(InMemoryDataset):
             node_feat2 = torch.normal(mean_2, 1, (n,1))
             edge_index = erdos_renyi_graph(n,p)
 
-            x = torch.cat([node_feat1,node_feat2,g,f_1,f_2], -1)
+            x = torch.cat([node_feat1,g,f_1,f_2], -1)
 
             print('data x', x)
 

@@ -274,8 +274,8 @@ if __name__ == '__main__':
     test_loader = DataLoader(test_dataset, batch_size=512)
 
     lr = args.lr
-    epochs = 30
-    dataset_num_features = 3
+    epochs = 50
+    dataset_num_features = 2
 
     model = GLDisen(8, 2, 1, 1).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
@@ -302,7 +302,7 @@ if __name__ == '__main__':
         for data in train_loader:
             data = data.to(device)
             optimizer.zero_grad()
-            recon_loss, kl_class, kl_node = model(data.x[:,:3], data.edge_index, data.batch, data.num_graphs)
+            recon_loss, kl_class, kl_node = model(data.x[:,:2], data.edge_index, data.batch, data.num_graphs)
             recon_loss_all += recon_loss
             kl_class_loss_all += kl_class
             kl_node_loss_all += kl_node
