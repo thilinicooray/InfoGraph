@@ -148,7 +148,7 @@ class GcnInfomax(nn.Module):
                 )
 
 
-                reconstructed_node = self.decoder(node_latent_embeddings, torch.zeros_like(accumulated_class_latent_embeddings))
+                reconstructed_node = self.decoder(node_latent_embeddings, accumulated_class_latent_embeddings)
 
                 print('recon', reconstructed_node)
 
