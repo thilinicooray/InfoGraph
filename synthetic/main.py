@@ -94,8 +94,8 @@ class GLDisen(nn.Module):
         #check input feat first
         #print('recon ', x[0],reconstructed_node[0])
         #reconstruction_error =  0.1*mse_loss(reconstructed_node, x)
-        #reconstruction_error =  mse_loss(reconstructed_node, x)
-        reconstruction_error = 0.001 *self.recon_loss1(reconstructed_node, edge_index, batch)
+        reconstruction_error =  mse_loss(reconstructed_node, x)
+        #reconstruction_error = 0.001 *self.recon_loss1(reconstructed_node, edge_index, batch)
         reconstruction_error.backward()
 
 
@@ -315,7 +315,7 @@ if __name__ == '__main__':
                                                                                 kl_class_loss_all / len(train_loader), kl_node_loss_all / len(train_loader)))
 
 
-    torch.save(model.state_dict(), f'syner_model7.pkl')
+    torch.save(model.state_dict(), f'syner_model8.pkl')
 
 
     #model.eval()
