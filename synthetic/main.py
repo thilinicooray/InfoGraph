@@ -274,7 +274,7 @@ if __name__ == '__main__':
     test_loader = DataLoader(test_dataset, batch_size=512)
 
     lr = args.lr
-    epochs = 50
+    epochs = 30
     dataset_num_features = 2
 
     model = GLDisen(2, 2, 1, 1).to(device)
@@ -315,7 +315,7 @@ if __name__ == '__main__':
                                                                                 kl_class_loss_all / len(train_loader), kl_node_loss_all / len(train_loader)))
 
 
-    torch.save(model.state_dict(), f'syner_model9.pkl')
+    torch.save(model.state_dict(), f'syner_model10.pkl')
 
 
     #model.eval()
