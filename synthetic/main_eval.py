@@ -164,8 +164,8 @@ class GLDisen(nn.Module):
 
                 i += 1
 
-                if i == 6:
-                    break
+                '''if i == 6:
+                    break'''
                 #break
 
         return None

@@ -95,7 +95,7 @@ class GLDisen(nn.Module):
         #print('recon ', x[0],reconstructed_node[0])
         #reconstruction_error =  0.1*mse_loss(reconstructed_node, x)
         #reconstruction_error =  mse_loss(reconstructed_node, x)
-        reconstruction_error = 0.000001 *self.recon_loss1(reconstructed_node, edge_index, batch)
+        reconstruction_error = 0.001 *self.recon_loss1(reconstructed_node, edge_index, batch)
         reconstruction_error.backward()
 
 
@@ -277,7 +277,7 @@ if __name__ == '__main__':
     epochs = 50
     dataset_num_features = 2
 
-    model = GLDisen(2, 2, 1, 1).to(device)
+    model = GLDisen(2, 2, 3, 1).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     #scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
 
@@ -315,7 +315,7 @@ if __name__ == '__main__':
                                                                                 kl_class_loss_all / len(train_loader), kl_node_loss_all / len(train_loader)))
 
 
-    torch.save(model.state_dict(), f'syner_model5.pkl')
+    torch.save(model.state_dict(), f'syner_model6.pkl')
 
 
     #model.eval()
