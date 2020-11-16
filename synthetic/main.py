@@ -19,6 +19,7 @@ from torch import optim
 from gin import *
 from evaluate_embedding import evaluate_embedding
 from utils import imshow_grid, mse_loss, reparameterize, group_wise_reparameterize, accumulate_group_evidence
+from torch_geometric.utils import negative_sampling, remove_self_loops, add_self_loops, to_dense_adj, to_dense_batch
 
 from arguments import arg_parse
 from graph_gen import SyntheticERDataset
@@ -93,11 +94,131 @@ class GLDisen(nn.Module):
         #check input feat first
         #print('recon ', x[0],reconstructed_node[0])
         #reconstruction_error =  0.1*mse_loss(reconstructed_node, x) * num_graphs
-        reconstruction_error =  mse_loss(reconstructed_node, x)
+        #reconstruction_error =  mse_loss(reconstructed_node, x)
+        reconstruction_error = self.recon_loss1(reconstructed_node, edge_index, batch)
         reconstruction_error.backward()
 
 
         return reconstruction_error.item() , class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
+
+    def edge_recon(self, z, edge_index, sigmoid=True):
+        r"""Decodes the latent variables :obj:`z` into edge probabilities for
+        the given node-pairs :obj:`edge_index`.
+
+        Args:
+            z (Tensor): The latent space :math:`\mathbf{Z}`.
+            sigmoid (bool, optional): If set to :obj:`False`, does not apply
+                the logistic sigmoid function to the output.
+                (default: :obj:`True`)
+        """
+        value = (z[edge_index[0]] * z[edge_index[1]]).sum(dim=1)
+        return torch.sigmoid(value) if sigmoid else value
+
+    def recon_loss(self, z, edge_index, batch):
+
+        EPS = 1e-15
+        MAX_LOGSTD = 10
+        r"""Given latent variables :obj:`z`, computes the binary cross
+        entropy loss for positive edges :obj:`pos_edge_index` and negative
+        sampled edges.
+  
+        Args:
+            z (Tensor): The latent space :math:`\mathbf{Z}`.
+            pos_edge_index (LongTensor): The positive edges to train against.
+        """
+
+        #reco = self.edge_recon(z, edge_index)
+
+        #print('edge recon try ', reco.size(), edge_index.size(), reco [:10], edge_index[0][:10], edge_index[1][:10])
+
+
+        #recon_adj = self.edge_recon(z, edge_index)
+
+
+        a, idx_tensor = to_dense_batch(z, batch)
+        a_t = a.permute(0, 2, 1)
+
+        #print('batch size', a.size(), a_t.size())
+
+        rec = torch.bmm(a, a_t)
+
+        #print('inner pro', rec.size())
+
+        org_adj = to_dense_adj(edge_index, batch)
+
+
+        pos_weight = float(z.size(0) * z.size(0) - org_adj.sum()) / org_adj.sum()
+        norm = z.size(0) * z.size(0) / float((z.size(0) * z.size(0) - org_adj.sum()) * 2)
+
+
+        #print('new' ,rec, 'org', org_adj)
+
+
+        '''#adj = torch.matmul(z, z.t())
+  
+  
+        #r_adj = to_dense_adj(recon_adj, batch)
+        #org_adj = to_dense_adj(edge_index, batch)
+  
+        #print(r_adj.size(), org_adj.size())
+  
+        recon_adj = self.edge_recon(z, edge_index)
+  
+  
+        pos_loss = -torch.log(
+            recon_adj + EPS).mean()
+  
+        # Do not include self-loops in negative samples
+        pos_edge_index, _ = remove_self_loops(edge_index)
+        pos_edge_index, _ = add_self_loops(pos_edge_index)
+  
+        neg_edge_index = negative_sampling(pos_edge_index, z.size(0)) #random thingggg
+        neg_loss = -torch.log(1 -
+                              self.edge_recon(z, neg_edge_index) +
+                              EPS).mean()
+  
+        return pos_loss + neg_loss'''
+
+        loss = norm * F.binary_cross_entropy_with_logits(rec, org_adj, pos_weight=pos_weight)
+
+        return loss
+
+
+    def recon_loss1(self, z, edge_index, batch):
+
+        EPS = 1e-15
+        MAX_LOGSTD = 10
+        r"""Given latent variables :obj:`z`, computes the binary cross
+        entropy loss for positive edges :obj:`pos_edge_index` and negative
+        sampled edges.
+  
+        Args:
+            z (Tensor): The latent space :math:`\mathbf{Z}`.
+            pos_edge_index (LongTensor): The positive edges to train against.
+        """
+
+        #org_adj = to_dense_adj(edge_index, batch)
+        pos_weight = float(z.size(0) * z.size(0) - edge_index.size(0)) / edge_index.size(0)
+        norm = z.size(0) * z.size(0) / float((z.size(0) * z.size(0) - edge_index.size(0)) * 2)
+
+
+
+        recon_adj = self.edge_recon(z, edge_index)
+
+
+        pos_loss = -torch.log(
+            recon_adj + EPS).mean()
+
+        # Do not include self-loops in negative samples
+        pos_edge_index, _ = remove_self_loops(edge_index)
+        pos_edge_index, _ = add_self_loops(pos_edge_index)
+
+        neg_edge_index = negative_sampling(pos_edge_index, z.size(0)) #random thingggg
+        neg_loss = -torch.log(1 -
+                              self.edge_recon(z, neg_edge_index) +
+                              EPS).mean()
+
+        return norm*(pos_loss*pos_weight + neg_loss)
 
     def get_embeddings(self, loader):
 
