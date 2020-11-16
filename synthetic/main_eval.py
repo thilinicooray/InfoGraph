@@ -122,9 +122,9 @@ class GLDisen(nn.Module):
 
                 indiclass_latent_embeddings_org = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
 
-                reconstructed_node = self.decoder(node_latent_embeddings_org, indiclass_latent_embeddings_org)
+                #reconstructed_node = self.decoder(node_latent_embeddings_org, indiclass_latent_embeddings_org)
 
-                print('recon node ', reconstructed_node)
+                #print('recon node ', reconstructed_node)
 
                 # global change, local fix
                 input_g = None
@@ -223,7 +223,7 @@ if __name__ == '__main__':
     print('num_gc_layers: {}'.format(args.num_gc_layers))
     print('================')
 
-    model.load_state_dict(torch.load(f'syner_model13.pkl'))
+    model.load_state_dict(torch.load(f'syner_model14.pkl'))
 
 
     '''model.train()
