@@ -361,7 +361,7 @@ if __name__ == '__main__':
 
 
         node_dim = 512
-        class_dim = 1
+        class_dim = 512
 
 
 
@@ -473,7 +473,7 @@ if __name__ == '__main__':
 
         model.eval()
 
-        torch.save(model.state_dict(), f'pubmed_1.pkl')
+        torch.save(model.state_dict(), f'pubmed_512.pkl')
 
 
         #if epoch == epochs:
