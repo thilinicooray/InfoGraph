@@ -526,7 +526,7 @@ if __name__ == '__main__':
         from sklearn.inspection import permutation_importance
 
         #regr = RandomForestRegressor(random_state=0)
-        regr = RandomForestRegressor(n_estimators=500,
+        regr = RandomForestRegressor(n_estimators=1000,
                               criterion='mse', random_state=0)
         regr.fit(train_feat, train_targets)
 
