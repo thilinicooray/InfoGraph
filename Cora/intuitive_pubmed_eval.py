@@ -534,6 +534,7 @@ if __name__ == '__main__':
 
 
         predic = regr.predict(test_feat)
+        score = regr.score(test_feat, test_targets)
 
         print('ored ', predic.shape, test_targets.shape)
 
