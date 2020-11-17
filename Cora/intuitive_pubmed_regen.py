@@ -238,9 +238,13 @@ class GcnInfomax(nn.Module):
         val_article_correct = regen_article_1[data.val_mask].cpu().numpy()
         val_article_local = regen_article_2[data.val_mask].cpu().numpy()
 
-        savetxt('corrext_article.csv', val_x, delimiter=',')
+        diff = np.power(val_article_correct-val_article_local, 2)
+        mask = val_x == 0
+        print('val' , mask[0, :10])
+
+        '''savetxt('corrext_article.csv', val_x, delimiter=',')
         savetxt('regen_article.csv', val_article_correct, delimiter=',')
-        savetxt('regen_local_article.csv', val_article_local, delimiter=',')
+        savetxt('regen_local_article.csv', val_article_local, delimiter=',')'''
 
 
         return None
