@@ -223,12 +223,14 @@ class GcnInfomax(nn.Module):
         test_targets = global_latent_all[data.test_mask].cpu().numpy()
         train_x = x[data.train_mask].cpu().numpy()
         test_x = x[data.test_mask].cpu().numpy()
+        train_y = data.y[data.train_mask].cpu().numpy()
+        test_y = data.y[data.test_mask].cpu().numpy()
 
 
 
 
 
-        return train_x, train_targets, test_x, test_targets
+        return train_x, train_targets, train_y, test_x, test_targets,test_y
 
 def test(train_z, train_y, val_z, val_y,test_z, test_y,  solver='lbfgs',
          multi_class='ovr', *args, **kwargs):
@@ -408,9 +410,38 @@ if __name__ == '__main__':
 
         model.eval()
 
-        train_feat, train_targets,test_feat, test_targets  = model.get_embeddings(data, lamda)
+        train_feat, train_targets, train_y, test_feat, test_targets, test_y  = model.get_embeddings(data, lamda)
 
-        from sklearn import linear_model
+        K = 20
+
+        index_array = np.argpartition(train_feat, kth=-K, axis=-1)[:,-K:]
+        #index_array = (-coef).argsort(axis=-1)[:, :K]
+        print(index_array.shape)
+        #savetxt('pubmed_topwordidx_1.csv', index_array, delimiter=',')
+        word_freq_dict = {}
+
+        for i in range(60):
+            for j in range(20):
+                idx = index_array[i][j]
+                if idx not in word_freq_dict:
+                    word_freq_dict[idx] = 1
+                else:
+                    word_freq_dict[idx] += 1
+
+        sorted_words = sorted(word_freq_dict.items(), reverse=True, key=lambda kv: kv[1])
+
+        import csv
+
+        with open('word_freq_input_train.csv','w') as f:
+            writer = csv.writer(f)
+            writer.writerow(['word_idx', 'freq'])
+            for i in range(len(sorted_words)):
+                item = sorted_words[i]
+                writer.writerow([item[0], item[1]])
+
+
+
+        '''from sklearn import linear_model
 
         regr = linear_model.LinearRegression()
         regr.fit(train_feat, train_targets)
@@ -445,7 +476,10 @@ if __name__ == '__main__':
             writer.writerow(['word_idx', 'freq'])
             for i in range(len(sorted_words)):
                 item = sorted_words[i]
-                writer.writerow([item[0], item[1]])
+                writer.writerow([item[0], item[1]])'''
+
+
+
 
 
 
