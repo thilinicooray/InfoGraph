@@ -532,11 +532,11 @@ if __name__ == '__main__':
         from sklearn.inspection import permutation_importance
 
         regr = RandomForestRegressor(random_state=0)
-        regr.fit(train_feat, train_targets[0])
+        regr.fit(train_feat, train_targets)
 
         #coef = regr.feature_importances_
 
-        result = permutation_importance(regr, train_feat, train_targets[0], n_repeats=10,random_state=0)
+        result = permutation_importance(regr, train_feat, train_targets, n_repeats=10,random_state=0)
 
         coef = result.importances_mean
         print('Coefficients:', coef.shape)
