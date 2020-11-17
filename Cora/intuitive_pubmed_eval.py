@@ -217,16 +217,10 @@ class GcnInfomax(nn.Module):
             node_mu, node_logvar, class_mu, class_logvar = self.encoder(x.double(), edge_index)
 
 
-            #global_latent_all = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
-            grouped_mu, grouped_logvar = accumulate_group_evidence(
-                class_mu.data, class_logvar.data, None, True
-            )
-            global_latent_all = group_wise_reparameterize(
-                training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=None, cuda=True
-            )
+            global_latent_all = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
 
-        train_targets = global_latent_all[data.train_mask].cpu().detach().numpy()
-        test_targets = global_latent_all[data.test_mask].cpu().detach().numpy()
+        train_targets = global_latent_all[data.train_mask].cpu().numpy()
+        test_targets = global_latent_all[data.test_mask].cpu().numpy()
         train_x = x[data.train_mask].cpu().numpy()
         test_x = x[data.test_mask].cpu().numpy()
         train_y = data.y[data.train_mask].cpu().numpy()
@@ -562,7 +556,7 @@ if __name__ == '__main__':
 
         import csv
 
-        with open('word_freq_randomforestreg_permimpor_1.csv','w') as f:
+        with open('word_freq_randomforestreg_permimpor_local.csv','w') as f:
             writer = csv.writer(f)
             writer.writerow(['word_idx', 'freq'])
             for i in range(len(sorted_words)):
