@@ -528,9 +528,14 @@ if __name__ == '__main__':
         regr = RandomForestRegressor(random_state=0)
         regr.fit(train_feat, train_targets)
 
+
+        predic = regr.predict(test_feat)
+
+        print('ored ', predic.shape, test_targets.shape)
+
         #coef = regr.feature_importances_
 
-        result = permutation_importance(regr, train_feat, train_targets, n_repeats=10,random_state=0)
+        '''result = permutation_importance(regr, train_feat, train_targets, n_repeats=10,random_state=0)
 
         coef = result.importances_mean
         print('Coefficients:', coef.shape)
@@ -561,7 +566,7 @@ if __name__ == '__main__':
             writer.writerow(['word_idx', 'freq'])
             for i in range(len(sorted_words)):
                 item = sorted_words[i]
-                writer.writerow([item[0], item[1]])
+                writer.writerow([item[0], item[1]])'''
 
 
 
