@@ -240,7 +240,8 @@ class GcnInfomax(nn.Module):
 
         diff = val_article_correct-val_article_local
         mask = (val_x > 0).astype(int)
-        print('val' , mask[0, :10])
+        masked_diff = diff * mask
+        print('val' , masked_diff[0, :10], diff[0, :10])
 
         '''savetxt('corrext_article.csv', val_x, delimiter=',')
         savetxt('regen_article.csv', val_article_correct, delimiter=',')
