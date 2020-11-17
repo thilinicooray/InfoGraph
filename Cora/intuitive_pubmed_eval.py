@@ -491,19 +491,18 @@ if __name__ == '__main__':
         #savetxt('pubmed_coef1.csv', coef, delimiter=',')
         K = 20
 
-        index_array = np.argpartition(coef, kth=-K, axis=-1)[:,-K:]
+        index_array = np.argpartition(coef, kth=-K, axis=-1)[-K:]
         #index_array = (-coef).argsort(axis=-1)[:, :K]
         print(index_array.shape)
         #savetxt('pubmed_topwordidx_1.csv', index_array, delimiter=',')
         word_freq_dict = {}
 
-        for i in range(512):
-            for j in range(20):
-                idx = index_array[i][j]
-                if idx not in word_freq_dict:
-                    word_freq_dict[idx] = 1
-                else:
-                    word_freq_dict[idx] += 1
+        for j in range(20):
+            idx = index_array[j]
+            if idx not in word_freq_dict:
+                word_freq_dict[idx] = 1
+            else:
+                word_freq_dict[idx] += 1
 
         sorted_words = sorted(word_freq_dict.items(), reverse=True, key=lambda kv: kv[1])
 
