@@ -414,7 +414,7 @@ if __name__ == '__main__':
 
         K = 20
 
-        index_array = np.argpartition(train_feat, kth=-K, axis=-1)[:,-K:]
+        index_array = np.argpartition(test_feat, kth=-K, axis=-1)[:,-K:]
         #index_array = (-coef).argsort(axis=-1)[:, :K]
         print(index_array.shape)
         #savetxt('pubmed_topwordidx_1.csv', index_array, delimiter=',')
@@ -432,7 +432,7 @@ if __name__ == '__main__':
 
         import csv
 
-        with open('word_freq_input_train.csv','w') as f:
+        with open('word_freq_input_test.csv','w') as f:
             writer = csv.writer(f)
             writer.writerow(['word_idx', 'freq'])
             for i in range(len(sorted_words)):
