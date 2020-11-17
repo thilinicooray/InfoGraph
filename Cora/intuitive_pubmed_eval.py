@@ -217,7 +217,13 @@ class GcnInfomax(nn.Module):
             node_mu, node_logvar, class_mu, class_logvar = self.encoder(x.double(), edge_index)
 
 
-            global_latent_all = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
+            #global_latent_all = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
+            grouped_mu, grouped_logvar = accumulate_group_evidence(
+                class_mu.data, class_logvar.data, None, True
+            )
+            global_latent_all = group_wise_reparameterize(
+                training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=None, cuda=True
+            )
 
         train_targets = global_latent_all[data.train_mask].cpu().numpy()
         test_targets = global_latent_all[data.test_mask].cpu().numpy()
@@ -413,7 +419,7 @@ if __name__ == '__main__':
 
         train_feat, train_targets, train_y, test_feat, test_targets, test_y  = model.get_embeddings(data, lamda)
 
-        print('first train feat ', train_feat.shape, train_y)
+        '''print('first train feat ', train_feat.shape, train_y)
 
         #K = 500
 
@@ -480,7 +486,7 @@ if __name__ == '__main__':
             writer.writerow(['word_idx', 'freq'])
             for i in range(len(sorted_words_3)):
                 item = sorted_words_3[i]
-                writer.writerow([item[0], item[1]])
+                writer.writerow([item[0], item[1]])'''
 
 
 
@@ -522,15 +528,15 @@ if __name__ == '__main__':
                 writer.writerow([item[0], item[1]])'''
 
 
-        '''from sklearn.ensemble import RandomForestRegressor
+        from sklearn.ensemble import RandomForestRegressor
         from sklearn.inspection import permutation_importance
 
         regr = RandomForestRegressor(random_state=0)
-        regr.fit(train_feat, train_targets)
+        regr.fit(train_feat, train_targets[0])
 
         #coef = regr.feature_importances_
 
-        result = permutation_importance(regr, train_feat, train_targets, n_repeats=10,random_state=0)
+        result = permutation_importance(regr, train_feat, train_targets[0], n_repeats=10,random_state=0)
 
         coef = result.importances_mean
         print('Coefficients:', coef.shape)
@@ -556,12 +562,12 @@ if __name__ == '__main__':
 
         import csv
 
-        with open('word_freq_randomforestreg_permimpor.csv','w') as f:
+        with open('word_freq_randomforestreg_permimpor_1.csv','w') as f:
             writer = csv.writer(f)
             writer.writerow(['word_idx', 'freq'])
             for i in range(len(sorted_words)):
                 item = sorted_words[i]
-                writer.writerow([item[0], item[1]])'''
+                writer.writerow([item[0], item[1]])
 
 
 
