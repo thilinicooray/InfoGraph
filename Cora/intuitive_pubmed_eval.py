@@ -529,9 +529,12 @@ if __name__ == '__main__':
         regr.fit(train_feat, train_targets)
 
 
-        predic = regr.score(test_feat, test_targets)
+        predic = regr.predict(test_feat)
 
-        print('ored ', predic, predic.shape, test_targets.shape)
+        print('ored ', predic.shape, test_targets.shape)
+
+        savetxt('regression_pred.csv', predic, delimiter=',')
+        savetxt('regression_true.csv', test_targets, delimiter=',')
 
         #coef = regr.feature_importances_
 
