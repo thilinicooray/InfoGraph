@@ -422,10 +422,10 @@ if __name__ == '__main__':
         #savetxt('pubmed_coef1.csv', coef, delimiter=',')
         K = 20
 
-        #index_array = np.argpartition(coef, kth=-K, axis=-1)[:,-K:]
-        index_array = (-coef).argsort(axis=-1)[:, :K]
+        index_array = np.argpartition(coef, kth=-K, axis=-1)[:,-K:]
+        #index_array = (-coef).argsort(axis=-1)[:, :K]
         print(index_array.shape)
-        savetxt('pubmed_topwordidx.csv', index_array, delimiter=',')
+        savetxt('pubmed_topwordidx_1.csv', index_array, delimiter=',')
 
 
 
