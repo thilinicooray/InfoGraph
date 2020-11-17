@@ -217,7 +217,7 @@ class GcnInfomax(nn.Module):
             node_mu, node_logvar, class_mu, class_logvar = self.encoder(x.double(), edge_index)
 
 
-            global_latent_all = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
+            global_latent_all = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
 
         train_targets = global_latent_all[data.train_mask].cpu().numpy()
         test_targets = global_latent_all[data.test_mask].cpu().numpy()
@@ -531,13 +531,13 @@ if __name__ == '__main__':
         regr.fit(train_feat, train_targets)
 
 
-        predic = regr.predict(test_feat)
-        score = regr.score(test_feat, test_targets)
+        #predic = regr.predict(test_feat)
+        #score = regr.score(test_feat, test_targets)
 
-        print('ored ', score, predic.shape, test_targets.shape)
+        #print('ored ', score, predic.shape, test_targets.shape)
 
-        savetxt('regression_pred_local.csv', predic, delimiter=',')
-        savetxt('regression_true_local.csv', test_targets, delimiter=',')
+        #savetxt('regression_pred_local.csv', predic, delimiter=',')
+        #savetxt('regression_true_local.csv', test_targets, delimiter=',')
 
         #coef = regr.feature_importances_
 
@@ -567,7 +567,7 @@ if __name__ == '__main__':
 
         import csv
 
-        with open('word_freq_randomforestreg_permimpor_local1.csv','w') as f:
+        with open('word_freq_randomforestreg_permimpor_global2.csv','w') as f:
             writer = csv.writer(f)
             writer.writerow(['word_idx', 'freq'])
             for i in range(len(sorted_words)):
