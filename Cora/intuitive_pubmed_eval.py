@@ -548,7 +548,7 @@ if __name__ == '__main__':
 
 
         #savetxt('pubmed_coef1.csv', coef, delimiter=',')
-        K = 500
+        '''K = 500
 
         index_array = np.argpartition(coef, kth=-K, axis=-1)[-K:]
         #index_array = (-coef).argsort(axis=-1)[:, :K]
@@ -572,8 +572,24 @@ if __name__ == '__main__':
             writer.writerow(['word_idx', 'freq'])
             for i in range(len(sorted_words)):
                 item = sorted_words[i]
-                writer.writerow([item[0], item[1]])
+                writer.writerow([item[0], item[1]])'''
 
+
+        global_importance_dict = {}
+
+        for i in range(500):
+            global_importance_dict[i] = coef[i]
+
+        sorted_words = sorted(global_importance_dict.items(), reverse=True, key=lambda kv: kv[1])
+
+        import csv
+
+        with open('word_freq_randomforestreg_permimpor_global2.csv','w') as f:
+            writer = csv.writer(f)
+            writer.writerow(['word_idx', 'importance'])
+            for i in range(len(sorted_words)):
+                item = sorted_words[i]
+                writer.writerow([item[0], item[1]])
 
 
 
