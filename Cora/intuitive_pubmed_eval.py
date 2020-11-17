@@ -415,7 +415,11 @@ if __name__ == '__main__':
         regr = linear_model.LinearRegression()
         regr.fit(train_feat, train_targets)
 
-        print('Coefficients: \n', regr.coef_.shape)
+        coef = regr.coef_
+
+        print('Coefficients:', coef.shape)
+
+        savetxt('pubmed_coef1.csv', coef, delimiter=',')
 
 
 
