@@ -217,7 +217,7 @@ class GcnInfomax(nn.Module):
             node_mu, node_logvar, class_mu, class_logvar = self.encoder(x.double(), edge_index)
 
 
-            global_latent_all = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
+            global_latent_all = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
 
         train_targets = global_latent_all[data.train_mask].cpu().numpy()
         test_targets = global_latent_all[data.test_mask].cpu().numpy()
@@ -584,7 +584,7 @@ if __name__ == '__main__':
 
         import csv
 
-        with open('word_freq_randomforestreg_permimpor_global2.csv','w') as f:
+        with open('word_freq_randomforestreg_permimpor_local2.csv','w') as f:
             writer = csv.writer(f)
             writer.writerow(['word_idx', 'importance'])
             for i in range(len(sorted_words)):
