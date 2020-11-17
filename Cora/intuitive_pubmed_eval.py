@@ -529,7 +529,7 @@ if __name__ == '__main__':
         regr = RandomForestRegressor(n_estimators=500,
                               criterion='mse',
                               min_weight_fraction_leaf=0.001,
-                              min_impurity_decrease=0.01, random_state=123)
+                              min_impurity_decrease=0.01, random_state=0)
         regr.fit(train_feat, train_targets)
 
 
