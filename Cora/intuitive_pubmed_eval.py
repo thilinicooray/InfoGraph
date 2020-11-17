@@ -225,8 +225,8 @@ class GcnInfomax(nn.Module):
                 training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=None, cuda=True
             )
 
-        train_targets = global_latent_all[data.train_mask].cpu().numpy()
-        test_targets = global_latent_all[data.test_mask].cpu().numpy()
+        train_targets = global_latent_all[data.train_mask].detach().numpy()
+        test_targets = global_latent_all[data.test_mask].detach().numpy()
         train_x = x[data.train_mask].cpu().numpy()
         test_x = x[data.test_mask].cpu().numpy()
         train_y = data.y[data.train_mask].cpu().numpy()
