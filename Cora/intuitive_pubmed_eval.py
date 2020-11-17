@@ -377,6 +377,8 @@ if __name__ == '__main__':
         test_x = data.x[data.test_mask]
         test_y = data.y[data.test_mask]
 
+        print('org ', train_x.size(), test_x.size())
+
         nb_classes = np.unique(data.y.cpu().numpy()).shape[0]
 
         gate_val = 0.05
