@@ -31,6 +31,7 @@ from utils import imshow_grid, mse_loss, reparameterize, group_wise_reparameteri
     accumulate_group_rep, expand_group_rep
 
 from sklearn.linear_model import LogisticRegression
+from scipy import stats
 
 from arguments import arg_parse
 from numpy import savetxt
@@ -217,7 +218,7 @@ class GcnInfomax(nn.Module):
             node_mu, node_logvar, class_mu, class_logvar = self.encoder(x.double(), edge_index)
 
 
-            global_latent_all = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
+            global_latent_all = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
 
         train_targets = global_latent_all[data.train_mask].cpu().numpy()
         test_targets = global_latent_all[data.test_mask].cpu().numpy()
@@ -522,7 +523,7 @@ if __name__ == '__main__':
                 writer.writerow([item[0], item[1]])'''
 
 
-        from sklearn.ensemble import RandomForestRegressor
+        '''from sklearn.ensemble import RandomForestRegressor
         from sklearn.inspection import permutation_importance
 
         #regr = RandomForestRegressor(random_state=0)
@@ -547,7 +548,7 @@ if __name__ == '__main__':
         print('Coefficients:', coef.shape)
 
 
-        #savetxt('pubmed_coef1.csv', coef, delimiter=',')
+        #savetxt('pubmed_coef1.csv', coef, delimiter=',')'''
         '''K = 500
 
         index_array = np.argpartition(coef, kth=-K, axis=-1)[-K:]
@@ -575,7 +576,12 @@ if __name__ == '__main__':
                 writer.writerow([item[0], item[1]])'''
 
 
-        global_importance_dict = {}
+        n_rho, n_pval = stats.spearmanr(train_feat, train_targets, axis=0)
+
+        print('corre', n_rho.size())
+
+
+        '''global_importance_dict = {}
 
         for i in range(500):
             global_importance_dict[i] = coef[i]
@@ -584,12 +590,12 @@ if __name__ == '__main__':
 
         import csv
 
-        with open('word_freq_randomforestreg_permimpor_local3.csv','w') as f:
+        with open('word_freq_randomforestreg_permimpor_global4.csv','w') as f:
             writer = csv.writer(f)
             writer.writerow(['word_idx', 'importance'])
             for i in range(len(sorted_words)):
                 item = sorted_words[i]
-                writer.writerow([item[0], item[1]])
+                writer.writerow([item[0], item[1]])'''
 
 
 
