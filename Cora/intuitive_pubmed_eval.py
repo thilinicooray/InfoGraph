@@ -409,6 +409,7 @@ if __name__ == '__main__':
         model.load_state_dict(torch.load(f'pubmed_512.pkl'))
 
         model.eval()
+        import csv
 
         train_feat, train_targets, train_y, test_feat, test_targets, test_y  = model.get_embeddings(data, lamda)
 
@@ -424,27 +425,62 @@ if __name__ == '__main__':
         word_freq_dict_2 = {}
         word_freq_dict_3 = {}
 
-        '''for i in range(60):
-            if train_y[i]
-            for j in range(500):
-                val = train_feat[i][j]
+        for i in range(60):
+            if train_y[i] == 0:
+                for j in range(500):
+                    val = train_feat[i][j]
 
-                if val > 0 :
-                    if j not in word_freq_dict:
-                        word_freq_dict[j] = 1
-                    else:
-                        word_freq_dict[j] += 1
+                    if val > 0 :
+                        if j not in word_freq_dict_1:
+                            word_freq_dict_1[j] = 1
+                        else:
+                            word_freq_dict_1[j] += 1
+            elif train_y[i] == 1:
+                for j in range(500):
+                    val = train_feat[i][j]
 
-        sorted_words = sorted(word_freq_dict.items(), reverse=True, key=lambda kv: kv[1])
+                    if val > 0 :
+                        if j not in word_freq_dict_2:
+                            word_freq_dict_2[j] = 1
+                        else:
+                            word_freq_dict_2[j] += 1
 
-        import csv
+            elif train_y[i] == 2:
+                for j in range(500):
+                    val = train_feat[i][j]
 
-        with open('word_freq_input_train_new.csv','w') as f:
+                    if val > 0 :
+                        if j not in word_freq_dict_3:
+                            word_freq_dict_3[j] = 1
+                        else:
+                            word_freq_dict_3[j] += 1
+
+        sorted_words_1 = sorted(word_freq_dict_1.items(), reverse=True, key=lambda kv: kv[1])
+
+        with open('word_freq_input_train_new_1.csv','w') as f:
             writer = csv.writer(f)
             writer.writerow(['word_idx', 'freq'])
-            for i in range(len(sorted_words)):
-                item = sorted_words[i]
-                writer.writerow([item[0], item[1]])'''
+            for i in range(len(sorted_words_1)):
+                item = sorted_words_1[i]
+                writer.writerow([item[0], item[1]])
+
+        sorted_words_2 = sorted(word_freq_dict_2.items(), reverse=True, key=lambda kv: kv[1])
+
+        with open('word_freq_input_train_new_2.csv','w') as f:
+            writer = csv.writer(f)
+            writer.writerow(['word_idx', 'freq'])
+            for i in range(len(sorted_words_2)):
+                item = sorted_words_2[i]
+                writer.writerow([item[0], item[1]])
+
+        sorted_words_3 = sorted(word_freq_dict_3.items(), reverse=True, key=lambda kv: kv[1])
+
+        with open('word_freq_input_train_new_3.csv','w') as f:
+            writer = csv.writer(f)
+            writer.writerow(['word_idx', 'freq'])
+            for i in range(len(sorted_words_3)):
+                item = sorted_words_3[i]
+                writer.writerow([item[0], item[1]])
 
 
 
