@@ -493,10 +493,8 @@ if __name__ == '__main__':
         print('Coefficients:', coef.shape)
 
 
-        '''print('Coefficients:', coef.shape)
-
         #savetxt('pubmed_coef1.csv', coef, delimiter=',')
-        K = 20
+        K = 50
 
         index_array = np.argpartition(coef, kth=-K, axis=-1)[-K:]
         #index_array = (-coef).argsort(axis=-1)[:, :K]
@@ -504,7 +502,7 @@ if __name__ == '__main__':
         #savetxt('pubmed_topwordidx_1.csv', index_array, delimiter=',')
         word_freq_dict = {}
 
-        for j in range(20):
+        for j in range(50):
             idx = index_array[j]
             if idx not in word_freq_dict:
                 word_freq_dict[idx] = 1
@@ -515,12 +513,12 @@ if __name__ == '__main__':
 
         import csv
 
-        with open('word_freq_randomforestreg.csv','w') as f:
+        with open('word_freq_randomforestreg_permimpor.csv','w') as f:
             writer = csv.writer(f)
             writer.writerow(['word_idx', 'freq'])
             for i in range(len(sorted_words)):
                 item = sorted_words[i]
-                writer.writerow([item[0], item[1]])'''
+                writer.writerow([item[0], item[1]])
 
 
 
