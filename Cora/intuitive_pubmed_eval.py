@@ -525,7 +525,11 @@ if __name__ == '__main__':
         from sklearn.ensemble import RandomForestRegressor
         from sklearn.inspection import permutation_importance
 
-        regr = RandomForestRegressor(random_state=0)
+        #regr = RandomForestRegressor(random_state=0)
+        regr = RandomForestRegressor(n_estimators=500,
+                              criterion='mse',
+                              min_weight_fraction_leaf=0.001,
+                              min_impurity_decrease=0.01, random_state=123)
         regr.fit(train_feat, train_targets)
 
 
