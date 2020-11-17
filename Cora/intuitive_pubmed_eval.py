@@ -575,10 +575,10 @@ if __name__ == '__main__':
                 item = sorted_words[i]
                 writer.writerow([item[0], item[1]])'''
 
-
+        print('feat size ', train_feat.shape, train_targets.shape)
         n_rho, n_pval = stats.spearmanr(train_feat, train_targets, axis=0)
 
-        print('corre', n_rho.size())
+        print('corre', n_rho)
 
 
         '''global_importance_dict = {}
