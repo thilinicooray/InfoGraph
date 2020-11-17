@@ -241,7 +241,9 @@ class GcnInfomax(nn.Module):
         diff = val_article_correct-val_article_local
         mask = (val_x > 0).astype(int)
         masked_diff = diff * mask
-        print('val' , masked_diff[0, :10], diff[0, :10])
+        #print('val' , masked_diff[0, :10], diff[0, :10])
+
+        savetxt('difference_aeticle.csv', masked_diff, delimiter=',')
 
         '''savetxt('corrext_article.csv', val_x, delimiter=',')
         savetxt('regen_article.csv', val_article_correct, delimiter=',')
