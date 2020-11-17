@@ -234,18 +234,18 @@ class GcnInfomax(nn.Module):
             regen_article_2 = self.decoder(node_latent_wo_global)
 
 
-        val_x = x[data.val_mask]#.cpu().numpy()
-        val_article_correct = regen_article_1[data.val_mask]#.cpu().numpy()
-        val_article_local = regen_article_2[data.val_mask]#.cpu().numpy()
+        val_x = x[data.val_mask].cpu().numpy()
+        val_article_correct = regen_article_1[data.val_mask].cpu().numpy()
+        val_article_local = regen_article_2[data.val_mask].cpu().numpy()
 
         diff = np.power(val_article_correct-val_x,2)-np.power(val_article_local-val_x,2)
-        sg_diff = torch.sigmoid(diff)
+        sg_diff = (torch.sigmoid(torch.from_numpy(diff))).cpu().numpy()
         global_impact = 1 - sg_diff
         mask = (val_x > 0).astype(int)
         masked_diff = global_impact * mask
         #print('val' , masked_diff[0, :10], diff[0, :10])
 
-        savetxt('difference_article_1.csv', masked_diff.cpu().numpy(), delimiter=',')
+        savetxt('difference_article_1.csv', masked_diff, delimiter=',')
 
         '''savetxt('corrext_article.csv', val_x, delimiter=',')
         savetxt('regen_article.csv', val_article_correct, delimiter=',')
