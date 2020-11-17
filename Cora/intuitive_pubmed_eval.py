@@ -430,7 +430,7 @@ if __name__ == '__main__':
 
         for i in range(512):
             for j in range(20):
-                idx = word_freq_dict[i][j]
+                idx = index_array[i][j]
                 if idx not in word_freq_dict:
                     word_freq_dict[idx] = 1
                 else:
