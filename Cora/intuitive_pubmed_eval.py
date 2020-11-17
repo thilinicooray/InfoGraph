@@ -341,7 +341,7 @@ if __name__ == '__main__':
         EPS = 1e-15
 
         #lr = 0.000001
-        DS = 'PubMed'
+        DS = 'Cora'
         path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', DS)
         # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
 
@@ -377,7 +377,7 @@ if __name__ == '__main__':
         test_x = data.x[data.test_mask]
         test_y = data.y[data.test_mask]
 
-        print('org ', train_x.size(), test_x.size())
+        print('org ', train_x.size(), test_x.size(), val_x.size())
 
         nb_classes = np.unique(data.y.cpu().numpy()).shape[0]
 
