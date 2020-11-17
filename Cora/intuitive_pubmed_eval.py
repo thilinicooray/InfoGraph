@@ -341,7 +341,7 @@ if __name__ == '__main__':
         EPS = 1e-15
 
         #lr = 0.000001
-        DS = 'Cora'
+        DS = 'PubMed'
         path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', DS)
         # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
 
@@ -377,7 +377,6 @@ if __name__ == '__main__':
         test_x = data.x[data.test_mask]
         test_y = data.y[data.test_mask]
 
-        print('org ', train_x.size(), test_x.size(), val_x.size())
 
         nb_classes = np.unique(data.y.cpu().numpy()).shape[0]
 
@@ -411,7 +410,14 @@ if __name__ == '__main__':
 
         train_feat, train_targets,test_feat, test_targets  = model.get_embeddings(data, lamda)
 
-        print('sizes ', train_feat.shape, train_targets.shape, test_feat.shape, test_targets.shape)
+        from sklearn import linear_model
+
+        regr = linear_model.LinearRegression()
+        regr.fit(train_feat, train_targets)
+
+        print('Coefficients: \n', regr.coef_.shape)
+
+
 
 
 
