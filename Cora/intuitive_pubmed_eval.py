@@ -576,7 +576,10 @@ if __name__ == '__main__':
                 writer.writerow([item[0], item[1]])'''
 
         print('feat size ', train_feat.shape, train_targets.shape)
-        n_rho, n_pval = stats.spearmanr(train_feat, train_targets, axis=0)
+        #n_rho, n_pval = stats.spearmanr(train_feat, train_targets, axis=0)
+        #n_rho, n_pval = stats.spearmanr(torch.cat([node_latent_embeddings,indiclass_latent_embeddings],0) .cpu().numpy(), axis=1)
+
+        n_rho = np.matmul(train_feat.transpose(), train_targets)
 
         print('corre', n_rho.shape)
 
