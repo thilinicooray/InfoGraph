@@ -548,7 +548,7 @@ if __name__ == '__main__':
 
 
         #savetxt('pubmed_coef1.csv', coef, delimiter=',')
-        K = 50
+        K = 500
 
         index_array = np.argpartition(coef, kth=-K, axis=-1)[-K:]
         #index_array = (-coef).argsort(axis=-1)[:, :K]
@@ -556,7 +556,7 @@ if __name__ == '__main__':
         #savetxt('pubmed_topwordidx_1.csv', index_array, delimiter=',')
         word_freq_dict = {}
 
-        for j in range(50):
+        for j in range(K):
             idx = index_array[j]
             if idx not in word_freq_dict:
                 word_freq_dict[idx] = 1
