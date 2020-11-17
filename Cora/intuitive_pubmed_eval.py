@@ -536,7 +536,7 @@ if __name__ == '__main__':
         predic = regr.predict(test_feat)
         score = regr.score(test_feat, test_targets)
 
-        print('ored ', predic.shape, test_targets.shape)
+        print('ored ', score, predic.shape, test_targets.shape)
 
         savetxt('regression_pred.csv', predic, delimiter=',')
         savetxt('regression_true.csv', test_targets, delimiter=',')
