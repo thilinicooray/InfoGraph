@@ -419,7 +419,11 @@ if __name__ == '__main__':
 
         print('Coefficients:', coef.shape)
 
-        savetxt('pubmed_coef1.csv', coef, delimiter=',')
+        #savetxt('pubmed_coef1.csv', coef, delimiter=',')
+        K = 20
+
+        index_array = np.argpartition(coef, kth=K, axis=-1)[:,-K:]
+        print(index_array.shape)
 
 
 
