@@ -480,13 +480,20 @@ if __name__ == '__main__':
 
 
         from sklearn.ensemble import RandomForestRegressor
+        from sklearn.inspection import permutation_importance
 
         regr = RandomForestRegressor(random_state=0)
         regr.fit(train_feat, train_targets)
 
-        coef = regr.feature_importances_
+        #coef = regr.feature_importances_
 
+        result = permutation_importance(regr, train_feat, train_targets, n_repeats=10,random_state=0)
+
+        coef = result.importances_mean
         print('Coefficients:', coef.shape)
+
+
+        '''print('Coefficients:', coef.shape)
 
         #savetxt('pubmed_coef1.csv', coef, delimiter=',')
         K = 20
@@ -513,7 +520,7 @@ if __name__ == '__main__':
             writer.writerow(['word_idx', 'freq'])
             for i in range(len(sorted_words)):
                 item = sorted_words[i]
-                writer.writerow([item[0], item[1]])
+                writer.writerow([item[0], item[1]])'''
 
 
 
