@@ -424,6 +424,8 @@ if __name__ == '__main__':
 
         index_array = np.argpartition(coef, kth=K, axis=-1)[:,-K:]
         print(index_array.shape)
+        savetxt('pubmed_topwordidx.csv', index_array, delimiter=',')
+
 
 
 
