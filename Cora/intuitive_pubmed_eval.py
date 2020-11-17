@@ -412,32 +412,36 @@ if __name__ == '__main__':
 
         train_feat, train_targets, train_y, test_feat, test_targets, test_y  = model.get_embeddings(data, lamda)
 
-        '''K = 20
+        print('first train feat ', train_feat.shape, train_feat[0])
 
-        index_array = np.argpartition(test_feat, kth=-K, axis=-1)[:,-K:]
+        #K = 500
+
+        #index_array = np.argpartition(train_feat, kth=-K, axis=-1)[:,-K:]
         #index_array = (-coef).argsort(axis=-1)[:, :K]
-        print(index_array.shape)
+        #print(index_array.shape)
         #savetxt('pubmed_topwordidx_1.csv', index_array, delimiter=',')
         word_freq_dict = {}
 
         for i in range(60):
-            for j in range(20):
-                idx = index_array[i][j]
-                if idx not in word_freq_dict:
-                    word_freq_dict[idx] = 1
-                else:
-                    word_freq_dict[idx] += 1
+            for j in range(500):
+                val = train_feat[i][j]
+
+                if val > 0 :
+                    if j not in word_freq_dict:
+                        word_freq_dict[j] = 1
+                    else:
+                        word_freq_dict[j] += 1
 
         sorted_words = sorted(word_freq_dict.items(), reverse=True, key=lambda kv: kv[1])
 
         import csv
 
-        with open('word_freq_input_test.csv','w') as f:
+        with open('word_freq_input_train_new.csv','w') as f:
             writer = csv.writer(f)
             writer.writerow(['word_idx', 'freq'])
             for i in range(len(sorted_words)):
                 item = sorted_words[i]
-                writer.writerow([item[0], item[1]])'''
+                writer.writerow([item[0], item[1]])
 
 
 
@@ -479,7 +483,7 @@ if __name__ == '__main__':
                 writer.writerow([item[0], item[1]])'''
 
 
-        from sklearn.ensemble import RandomForestRegressor
+        '''from sklearn.ensemble import RandomForestRegressor
         from sklearn.inspection import permutation_importance
 
         regr = RandomForestRegressor(random_state=0)
@@ -518,7 +522,7 @@ if __name__ == '__main__':
             writer.writerow(['word_idx', 'freq'])
             for i in range(len(sorted_words)):
                 item = sorted_words[i]
-                writer.writerow([item[0], item[1]])
+                writer.writerow([item[0], item[1]])'''
 
 
 
