@@ -591,11 +591,11 @@ if __name__ == '__main__':
 
         corre_matrix = np.ndarray(shape=(word_rep.shape[0],global_rep.shape[0]))
 
-        from scipy.stats.stats import pearsonr
+        from scipy.stats.stats import pearsonr, spearmanr
 
         for i in range(word_rep.shape[0]):
             for j in range(global_rep.shape[0]):
-                corre_matrix[i][j] = pearsonr(word_rep[i],global_rep[j])[0]
+                corre_matrix[i][j] = spearmanr(word_rep[i],global_rep[j])[0]
 
 
         #savetxt('corre.csv', corre_matrix, delimiter=',')
@@ -618,7 +618,7 @@ if __name__ == '__main__':
 
         import csv
 
-        with open('word_freq_corre_input_global.csv','w') as f:
+        with open('word_freq_corre_input_global_spreaman.csv','w') as f:
             writer = csv.writer(f)
             writer.writerow(['word_idx', 'importance'])
             for i in range(len(sorted_words)):
