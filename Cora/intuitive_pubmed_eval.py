@@ -414,6 +414,30 @@ if __name__ == '__main__':
 
         train_feat, train_targets, train_y, test_feat, test_targets, test_y  = model.get_embeddings(data, lamda)
 
+        word_freq_dict = {}
+
+        for i in range(500):
+            for j in range(500):
+                val = train_feat[i][j]
+
+                if val > 0 :
+                    if j not in word_freq_dict:
+                        word_freq_dict[j] = 1
+                    else:
+                        word_freq_dict[j] += 1
+
+
+        sorted_words_1 = sorted(word_freq_dict.items(), reverse=True, key=lambda kv: kv[1])
+
+        with open('word_freq_input_val_new_1.csv','w') as f:
+            writer = csv.writer(f)
+            writer.writerow(['word_idx', 'freq'])
+            for i in range(len(sorted_words_1)):
+                item = sorted_words_1[i]
+                writer.writerow([item[0], item[1]])
+
+
+
         '''print('first train feat ', train_feat.shape, train_y)
 
         #K = 500
