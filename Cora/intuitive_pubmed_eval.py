@@ -220,18 +220,18 @@ class GcnInfomax(nn.Module):
 
             global_latent_all = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
 
-        train_targets = global_latent_all[data.train_mask].cpu().numpy()
+        val_targets = global_latent_all[data.val_mask].cpu().numpy()
         test_targets = global_latent_all[data.test_mask].cpu().numpy()
-        train_x = x[data.train_mask].cpu().numpy()
+        val_x = x[data.val_mask].cpu().numpy()
         test_x = x[data.test_mask].cpu().numpy()
-        train_y = data.y[data.train_mask].cpu().numpy()
+        val_y = data.y[data.val_mask].cpu().numpy()
         test_y = data.y[data.test_mask].cpu().numpy()
 
 
 
 
 
-        return train_x, train_targets, train_y, test_x, test_targets,test_y
+        return val_x, val_targets, val_y, test_x, test_targets,test_y
 
 def test(train_z, train_y, val_z, val_y,test_z, test_y,  solver='lbfgs',
          multi_class='ovr', *args, **kwargs):
@@ -584,6 +584,11 @@ if __name__ == '__main__':
         #print('corre', n_rho.shape)
         #a = np.sum(np.power(n_rho,2), axis=1)
         #print('corre', a.shape)
+
+        word_rep = train_feat.transpose()
+        global_rep = train_targets.transpose()
+        print('feat size new ', word_rep.shape, global_rep.shape)
+
 
 
 
