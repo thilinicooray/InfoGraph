@@ -589,6 +589,19 @@ if __name__ == '__main__':
         global_rep = train_targets.transpose()
         print('feat size new ', word_rep.shape, global_rep.shape)
 
+        corre_matrix = np.ndarray(shape=(word_rep.shape[0],global_rep.shape[0]))
+
+        from scipy.stats.stats import pearsonr
+
+        for i in range(word_rep.shape[0]):
+            for j in range(global_rep.shape[0]):
+                corre_matrix[i][j] = pearsonr(word_rep[i],global_rep[j])[0]
+
+
+        savetxt('corre.csv', corre_matrix, delimiter=',')
+
+        abs_corre = np.absolute(corre_matrix)
+        savetxt('abs_corre.csv', abs_corre, delimiter=',')
 
 
 
