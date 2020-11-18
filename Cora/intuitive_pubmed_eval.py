@@ -218,7 +218,7 @@ class GcnInfomax(nn.Module):
             node_mu, node_logvar, class_mu, class_logvar = self.encoder(x.double(), edge_index)
 
 
-            global_latent_all = F.relu(reparameterize(training=False, mu=class_mu, logvar=class_logvar))
+            global_latent_all = torch.sigmoid(reparameterize(training=False, mu=class_mu, logvar=class_logvar))
 
         val_targets = global_latent_all[data.val_mask].cpu().numpy()
         test_targets = global_latent_all[data.test_mask].cpu().numpy()
@@ -624,7 +624,7 @@ if __name__ == '__main__':
 
         import csv
 
-        with open('word_freq_corre_input_global_pearsonr_relu.csv','w') as f:
+        with open('word_freq_corre_input_global_pearsonr_sigmoid.csv','w') as f:
             writer = csv.writer(f)
             writer.writerow(['word_idx', 'importance'])
             for i in range(len(sorted_words)):
