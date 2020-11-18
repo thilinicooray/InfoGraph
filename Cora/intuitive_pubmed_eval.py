@@ -603,6 +603,8 @@ if __name__ == '__main__':
         abs_corre = np.absolute(corre_matrix)
         savetxt('abs_corre.csv', abs_corre, delimiter=',')
 
+        print('corre size ', corre_matrix.shape)
+
 
 
 
