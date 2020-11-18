@@ -245,6 +245,13 @@ class GcnInfomax(nn.Module):
         scaler = MinMaxScaler()
         scaler.fit(diff)
         scaled_diff = scaler.transform(diff)
+
+        diff_mask = (diff > 0).astype(int)
+        scaled_diff_mask = (diff > 0).astype(int)
+
+        savetxt('diff_mask.csv', diff_mask, delimiter=',')
+        savetxt('scaled_diff_mask.csv', scaled_diff_mask, delimiter=',')
+
         global_impact = 1 - scaled_diff
         mask = (val_x > 0).astype(int)
         masked_diff = global_impact * mask
@@ -264,12 +271,12 @@ class GcnInfomax(nn.Module):
 
 
 
-        with open('article_regen_global_importance.csv','w') as f:
+        '''with open('article_regen_global_importance.csv','w') as f:
             writer = csv.writer(f)
             writer.writerow(['word_idx', 'importance'])
             for i in range(len(sorted_words)):
                 item = sorted_words[i]
-                writer.writerow([item[0], item[1]])
+                writer.writerow([item[0], item[1]])'''
 
 
         #savetxt('difference_article_1.csv', masked_diff, delimiter=',')
