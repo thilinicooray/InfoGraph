@@ -605,9 +605,25 @@ if __name__ == '__main__':
 
         #print('corre size ', corre_matrix.shape)
 
-        word_wise_corr = np.sum(abs_corre, axis=0)
+        word_wise_corr = np.sum(abs_corre, axis=1)
         print('word_wise_corr size ', word_wise_corr.shape)
 
+
+        global_importance_dict = {}
+
+        for i in range(500):
+            global_importance_dict[i] = word_wise_corr[i]
+
+        sorted_words = sorted(global_importance_dict.items(), reverse=True, key=lambda kv: kv[1])
+
+        import csv
+
+        with open('word_freq_corre_input_global.csv','w') as f:
+            writer = csv.writer(f)
+            writer.writerow(['word_idx', 'importance'])
+            for i in range(len(sorted_words)):
+                item = sorted_words[i]
+                writer.writerow([item[0], item[1]])
 
 
 
