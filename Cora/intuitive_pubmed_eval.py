@@ -598,6 +598,7 @@ if __name__ == '__main__':
 
         for i in range(word_rep.shape[0]):
             for j in range(global_rep.shape[0]):
+                print('sizes ', word_rep[i].shape, global_rep[j].shape)
                 corre_matrix[i][j] = pearsonr(word_rep[i],global_rep[j])[0]#np.cov(word_rep[i], global_rep[j])[0][1]# spearmanr(word_rep[i],global_rep[j])[0]
 
         mask = (corre_matrix > 0).astype(int)
