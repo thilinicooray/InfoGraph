@@ -215,10 +215,10 @@ class GcnInfomax(nn.Module):
             x, edge_index = data.x, data.edge_index
 
 
-            node_mu, node_logvar, class_mu, class_logvar = F.relu(self.encoder(x.double(), edge_index))
+            node_mu, node_logvar, class_mu, class_logvar = self.encoder(x.double(), edge_index)
 
 
-            global_latent_all = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
+            global_latent_all = F.relu(reparameterize(training=False, mu=class_mu, logvar=class_logvar))
 
         val_targets = global_latent_all[data.val_mask].cpu().numpy()
         test_targets = global_latent_all[data.test_mask].cpu().numpy()
