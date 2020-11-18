@@ -612,7 +612,7 @@ if __name__ == '__main__':
 
         #print('corre size ', corre_matrix.shape)
 
-        word_wise_corr = np.max(pos_corr, axis=1)
+        word_wise_corr = np.sum(abs_corre, axis=1)
         print('word_wise_corr size ', word_wise_corr.shape)
 
 
