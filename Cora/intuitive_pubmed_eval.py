@@ -414,7 +414,7 @@ if __name__ == '__main__':
 
         train_feat, train_targets, train_y, test_feat, test_targets, test_y  = model.get_embeddings(data, lamda)
 
-        word_freq_dict = {}
+        '''word_freq_dict = {}
 
         for i in range(500):
             for j in range(500):
@@ -434,7 +434,7 @@ if __name__ == '__main__':
             writer.writerow(['word_idx', 'freq'])
             for i in range(len(sorted_words_1)):
                 item = sorted_words_1[i]
-                writer.writerow([item[0], item[1]])
+                writer.writerow([item[0], item[1]])'''
 
 
 
@@ -617,8 +617,8 @@ if __name__ == '__main__':
         print('feat size new ', word_rep.shape, global_rep.shape)
 
         #normalizing
-        word_rep = preprocessing.scale(word_rep)
-        global_rep = preprocessing.scale(global_rep)
+        word_rep = preprocessing.scale(word_rep.astype(float))
+        global_rep = preprocessing.scale(global_rep.astype(float))
 
         corre_matrix = np.ndarray(shape=(word_rep.shape[0],global_rep.shape[0]))
 
@@ -656,7 +656,7 @@ if __name__ == '__main__':
 
         import csv
 
-        with open('word_freq_corre_input_global_pearsonr_val_sum_again.csv','w') as f:
+        with open('word_freq_corre_input_global_pearsonr_val_sum_again1.csv','w') as f:
             writer = csv.writer(f)
             writer.writerow(['word_idx', 'importance'])
             for i in range(len(sorted_words)):
