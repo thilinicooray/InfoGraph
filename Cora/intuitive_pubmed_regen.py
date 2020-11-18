@@ -35,6 +35,7 @@ from scipy import stats
 
 from arguments import arg_parse
 from numpy import savetxt
+import csv
 
 class D_net_gauss(nn.Module):
     def __init__(self,N,z_dim):
@@ -253,7 +254,23 @@ class GcnInfomax(nn.Module):
         no_samples = mask.shape[0]
 
         normalized_val = (np.sum(masked_diff, axis=0)*word_occur)/no_samples
-        print('normalized_val', normalized_val.shape)
+
+        global_importance_dict = {}
+
+        for i in range(500):
+            global_importance_dict[i] = normalized_val[i]
+
+        sorted_words = sorted(global_importance_dict.items(), reverse=True, key=lambda kv: kv[1])
+
+
+
+        with open('article_regen_global_importance.csv','w') as f:
+            writer = csv.writer(f)
+            writer.writerow(['word_idx', 'importance'])
+            for i in range(len(sorted_words)):
+                item = sorted_words[i]
+                writer.writerow([item[0], item[1]])
+
 
         #savetxt('difference_article_1.csv', masked_diff, delimiter=',')
 
