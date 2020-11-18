@@ -576,6 +576,9 @@ if __name__ == '__main__':
                 writer.writerow([item[0], item[1]])'''
 
         print('feat size ', train_feat.shape, train_targets.shape)
+
+        print('values ', train_feat[0,:10], train_targets[0,:10])
+
         #n_rho, n_pval = stats.spearmanr(train_feat, train_targets, axis=0)
         #n_rho, n_pval = stats.spearmanr(torch.cat([node_latent_embeddings,indiclass_latent_embeddings],0) .cpu().numpy(), axis=1)
 
@@ -595,7 +598,7 @@ if __name__ == '__main__':
 
         for i in range(word_rep.shape[0]):
             for j in range(global_rep.shape[0]):
-                corre_matrix[i][j] = np.cov(word_rep[i], global_rep[j])[0][1]# spearmanr(word_rep[i],global_rep[j])[0]
+                corre_matrix[i][j] = pearsonr(word_rep[i],global_rep[j])[0]#np.cov(word_rep[i], global_rep[j])[0][1]# spearmanr(word_rep[i],global_rep[j])[0]
 
         mask = (corre_matrix > 0).astype(int)
         pos_corr = corre_matrix * mask
@@ -612,7 +615,7 @@ if __name__ == '__main__':
         print('word_wise_corr size ', word_wise_corr.shape)
 
 
-        global_importance_dict = {}
+        '''global_importance_dict = {}
 
         for i in range(500):
             global_importance_dict[i] = word_wise_corr[i]
@@ -626,7 +629,7 @@ if __name__ == '__main__':
             writer.writerow(['word_idx', 'importance'])
             for i in range(len(sorted_words)):
                 item = sorted_words[i]
-                writer.writerow([item[0], item[1]])
+                writer.writerow([item[0], item[1]])'''
 
 
 
