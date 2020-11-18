@@ -218,7 +218,7 @@ class GcnInfomax(nn.Module):
             node_mu, node_logvar, class_mu, class_logvar = self.encoder(x.double(), edge_index)
 
 
-            global_latent_all = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
+            global_latent_all = torch.sigmoid(reparameterize(training=False, mu=class_mu, logvar=class_logvar))
 
         val_targets = global_latent_all[data.val_mask].cpu().numpy()
         test_targets = global_latent_all[data.test_mask].cpu().numpy()
