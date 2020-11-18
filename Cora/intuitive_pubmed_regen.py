@@ -238,9 +238,13 @@ class GcnInfomax(nn.Module):
         val_article_correct = regen_article_1[data.val_mask].cpu().numpy()
         val_article_local = regen_article_2[data.val_mask].cpu().numpy()
 
+        from sklearn.preprocessing import MinMaxScaler
+
         diff = np.power(val_article_correct-val_x,2)-np.power(val_article_local-val_x,2)
-        sg_diff = (torch.sigmoid(torch.from_numpy(diff))).cpu().numpy()
-        global_impact = 1 - sg_diff
+        scaler = MinMaxScaler()
+        scaler.fit(diff)
+        scaled_diff = scaler.transform(diff)
+        global_impact = 1 - scaled_diff
         mask = (val_x > 0).astype(int)
         masked_diff = global_impact * mask
         #print('val' , masked_diff[0, :10], diff[0, :10])
