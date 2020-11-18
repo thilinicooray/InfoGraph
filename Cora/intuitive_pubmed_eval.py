@@ -595,7 +595,7 @@ if __name__ == '__main__':
 
         for i in range(word_rep.shape[0]):
             for j in range(global_rep.shape[0]):
-                corre_matrix[i][j] = pearsonr(word_rep[i],global_rep[j])[0]
+                corre_matrix[i][j] = spearmanr(word_rep[i],global_rep[j])[0]
 
         mask = (corre_matrix > 0).astype(int)
         pos_corr = corre_matrix * mask
@@ -621,7 +621,7 @@ if __name__ == '__main__':
 
         import csv
 
-        with open('word_freq_corre_input_global_pearson_pos.csv','w') as f:
+        with open('word_freq_corre_input_global_spearmanr_pos.csv','w') as f:
             writer = csv.writer(f)
             writer.writerow(['word_idx', 'importance'])
             for i in range(len(sorted_words)):
