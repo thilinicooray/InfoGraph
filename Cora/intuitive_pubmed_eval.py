@@ -627,7 +627,7 @@ if __name__ == '__main__':
         for i in range(word_rep.shape[0]):
             for j in range(global_rep.shape[0]):
                 #print('sizes ', word_rep[i].shape, global_rep[j].shape)
-                corre_matrix[i][j] = spearmanr(word_rep[i],global_rep[j])[0]#np.cov(word_rep[i], global_rep[j])[0][1]# spearmanr(word_rep[i],global_rep[j])[0]
+                corre_matrix[i][j] = pearsonr(word_rep[i],global_rep[j])[0]#np.cov(word_rep[i], global_rep[j])[0][1]# spearmanr(word_rep[i],global_rep[j])[0]
 
         #print('cor matrix ',corre_matrix )
 
@@ -643,7 +643,7 @@ if __name__ == '__main__':
 
         #print('corre size ', corre_matrix.shape)
 
-        word_wise_corr = np.sum(abs_corre, axis=1)
+        word_wise_corr = np.max(corre_matrix, axis=1)
         print('word_wise_corr size ', word_wise_corr.shape)
 
 
@@ -656,7 +656,7 @@ if __name__ == '__main__':
 
         import csv
 
-        with open('word_freq_corre_input_global_pearsonr_val_sum_again1.csv','w') as f:
+        with open('word_freq_corre_input_global_pearsonr_val_sum_again1_max.csv','w') as f:
             writer = csv.writer(f)
             writer.writerow(['word_idx', 'importance'])
             for i in range(len(sorted_words)):
