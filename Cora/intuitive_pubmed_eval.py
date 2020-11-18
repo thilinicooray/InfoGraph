@@ -215,7 +215,7 @@ class GcnInfomax(nn.Module):
             x, edge_index = data.x, data.edge_index
 
 
-            node_mu, node_logvar, class_mu, class_logvar = self.encoder(x.double(), edge_index)
+            node_mu, node_logvar, class_mu, class_logvar = F.relu(self.encoder(x.double(), edge_index))
 
 
             global_latent_all = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
@@ -624,7 +624,7 @@ if __name__ == '__main__':
 
         import csv
 
-        with open('word_freq_corre_input_global_pearsonr_max.csv','w') as f:
+        with open('word_freq_corre_input_global_pearsonr_max_relu.csv','w') as f:
             writer = csv.writer(f)
             writer.writerow(['word_idx', 'importance'])
             for i in range(len(sorted_words)):
