@@ -250,7 +250,10 @@ class GcnInfomax(nn.Module):
         #print('val' , masked_diff[0, :10], diff[0, :10])
 
         word_occur = np.sum(mask, axis=0)
-        print('word occur', word_occur.shape, mask.shape)
+        no_samples = mask.shape[0]
+
+        normalized_val = (np.sum(masked_diff, axis=0)*word_occur)/no_samples
+        print('normalized_val', normalized_val.shape)
 
         #savetxt('difference_article_1.csv', masked_diff, delimiter=',')
 
