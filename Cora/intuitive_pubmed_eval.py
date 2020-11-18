@@ -218,7 +218,7 @@ class GcnInfomax(nn.Module):
             node_mu, node_logvar, class_mu, class_logvar = self.encoder(x.double(), edge_index)
 
 
-            global_latent_all = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
+            global_latent_all = F.relu(reparameterize(training=False, mu=class_mu, logvar=class_logvar))
 
         val_targets = global_latent_all[data.train_mask].cpu().numpy()
         test_targets = global_latent_all[data.test_mask].cpu().numpy()
@@ -598,7 +598,7 @@ if __name__ == '__main__':
 
         for i in range(word_rep.shape[0]):
             for j in range(global_rep.shape[0]):
-                print('sizes ', word_rep[i].shape, global_rep[j].shape)
+                #print('sizes ', word_rep[i].shape, global_rep[j].shape)
                 corre_matrix[i][j] = pearsonr(word_rep[i],global_rep[j])[0]#np.cov(word_rep[i], global_rep[j])[0][1]# spearmanr(word_rep[i],global_rep[j])[0]
 
         mask = (corre_matrix > 0).astype(int)
@@ -625,7 +625,7 @@ if __name__ == '__main__':
 
         import csv
 
-        with open('word_freq_corre_input_global_pearsonr_train_sum.csv','w') as f:
+        with open('word_freq_corre_input_global_pearsonr_train_relu_sum.csv','w') as f:
             writer = csv.writer(f)
             writer.writerow(['word_idx', 'importance'])
             for i in range(len(sorted_words)):
