@@ -579,16 +579,16 @@ if __name__ == '__main__':
         #n_rho, n_pval = stats.spearmanr(train_feat, train_targets, axis=0)
         #n_rho, n_pval = stats.spearmanr(torch.cat([node_latent_embeddings,indiclass_latent_embeddings],0) .cpu().numpy(), axis=1)
 
-        n_rho = np.matmul(train_feat.transpose(), train_targets)
+        #n_rho = np.matmul(train_feat.transpose(), train_targets)
 
         #print('corre', n_rho.shape)
-        a = np.sum(np.power(n_rho,2), axis=1)
-        print('corre', a.shape)
+        #a = np.sum(np.power(n_rho,2), axis=1)
+        #print('corre', a.shape)
 
 
 
 
-        global_importance_dict = {}
+        '''global_importance_dict = {}
 
         for i in range(500):
             global_importance_dict[i] = a[i]
@@ -602,7 +602,7 @@ if __name__ == '__main__':
             writer.writerow(['word_idx', 'importance'])
             for i in range(len(sorted_words)):
                 item = sorted_words[i]
-                writer.writerow([item[0], item[1]])
+                writer.writerow([item[0], item[1]])'''
 
 
 
