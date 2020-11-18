@@ -220,11 +220,11 @@ class GcnInfomax(nn.Module):
 
             global_latent_all = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
 
-        val_targets = global_latent_all[data.train_mask].cpu().numpy()
+        val_targets = global_latent_all[data.val_mask].cpu().numpy()
         test_targets = global_latent_all[data.test_mask].cpu().numpy()
-        val_x = x[data.train_mask].cpu().numpy()
+        val_x = x[data.val_mask].cpu().numpy()
         test_x = x[data.test_mask].cpu().numpy()
-        val_y = data.y[data.train_mask].cpu().numpy()
+        val_y = data.y[data.val_mask].cpu().numpy()
         test_y = data.y[data.test_mask].cpu().numpy()
 
 
@@ -592,6 +592,10 @@ if __name__ == '__main__':
         global_rep = train_targets.transpose()
         print('feat size new ', word_rep.shape, global_rep.shape)
 
+        #normalizing
+        word_rep = preprocessing.scale(word_rep)
+        global_rep = preprocessing.scale(global_rep)
+
         corre_matrix = np.ndarray(shape=(word_rep.shape[0],global_rep.shape[0]))
 
         from scipy.stats.stats import pearsonr, spearmanr
@@ -601,13 +605,16 @@ if __name__ == '__main__':
                 #print('sizes ', word_rep[i].shape, global_rep[j].shape)
                 corre_matrix[i][j] = pearsonr(word_rep[i],global_rep[j])[0]#np.cov(word_rep[i], global_rep[j])[0][1]# spearmanr(word_rep[i],global_rep[j])[0]
 
+        print('cor matrix ',corre_matrix )
+
         mask = (corre_matrix > 0).astype(int)
         pos_corr = corre_matrix * mask
 
 
         #savetxt('corre.csv', corre_matrix, delimiter=',')
 
-        abs_corre = np.absolute(corre_matrix)
+        #abs_corre = np.absolute(corre_matrix)
+        abs_corre = np.power(corre_matrix, 2)
         #savetxt('abs_corre.csv', abs_corre, delimiter=',')
 
         #print('corre size ', corre_matrix.shape)
@@ -625,7 +632,7 @@ if __name__ == '__main__':
 
         import csv
 
-        with open('word_freq_corre_input_global_pearsonr_train_sum_again.csv','w') as f:
+        with open('word_freq_corre_input_global_pearsonr_val_sum_again.csv','w') as f:
             writer = csv.writer(f)
             writer.writerow(['word_idx', 'importance'])
             for i in range(len(sorted_words)):
