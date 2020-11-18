@@ -598,12 +598,16 @@ if __name__ == '__main__':
                 corre_matrix[i][j] = pearsonr(word_rep[i],global_rep[j])[0]
 
 
-        savetxt('corre.csv', corre_matrix, delimiter=',')
+        #savetxt('corre.csv', corre_matrix, delimiter=',')
 
         abs_corre = np.absolute(corre_matrix)
-        savetxt('abs_corre.csv', abs_corre, delimiter=',')
+        #savetxt('abs_corre.csv', abs_corre, delimiter=',')
 
-        print('corre size ', corre_matrix.shape)
+        #print('corre size ', corre_matrix.shape)
+
+        word_wise_corr = np.sum(abs_corre, axis=0)
+        print('word_wise_corr size ', word_wise_corr.shape)
+
 
 
 
