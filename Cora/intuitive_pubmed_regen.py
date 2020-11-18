@@ -250,7 +250,7 @@ class GcnInfomax(nn.Module):
         #print('val' , masked_diff[0, :10], diff[0, :10])
 
         word_occur = np.sum(mask, axis=0)
-        print('word occur', word_occur.shape)
+        print('word occur', word_occur.shape, mask.shape)
 
         #savetxt('difference_article_1.csv', masked_diff, delimiter=',')
 
