@@ -249,7 +249,10 @@ class GcnInfomax(nn.Module):
         masked_diff = global_impact * mask
         #print('val' , masked_diff[0, :10], diff[0, :10])
 
-        savetxt('difference_article_1.csv', masked_diff, delimiter=',')
+        word_occur = np.sum(mask, axis=0)
+        print('word occur', word_occur.shape)
+
+        #savetxt('difference_article_1.csv', masked_diff, delimiter=',')
 
         '''savetxt('corrext_article.csv', val_x, delimiter=',')
         savetxt('regen_article.csv', val_article_correct, delimiter=',')
