@@ -340,7 +340,7 @@ if __name__ == '__main__':
     res = evaluate_embedding_split(train_emb, train_y, test_emb, test_y)
     accuracies['svc'].append(res)
     print(accuracies)
-    torch.save(model.state_dict(), f'syner_n_model_correct2_big_ep30_all3000_unshuf.pkl')
+    torch.save(model.state_dict(), f'syner_n_model_correct2_big_ep30_all30000.pkl')
 
 
     #model.eval()
