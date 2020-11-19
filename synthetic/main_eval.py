@@ -132,7 +132,7 @@ class GLDisen(nn.Module):
 
                 indiclass_latent_embeddings_org = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
 
-                label = data.y.item
+                label = data.y.item()
                 print('label', label)
                 pr = prob[label]
 
