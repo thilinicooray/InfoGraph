@@ -138,7 +138,7 @@ class GLDisen(nn.Module):
                 ret.append(class_emb.cpu().numpy())
 
                 grouped_mu_n, grouped_logvar_n = accumulate_group_evidence(
-                    node_mu.data[:,0], node_mu.data[:,0], batch, True
+                    node_mu.data, node_logvar.data, batch, True
                 )
 
 
@@ -146,7 +146,7 @@ class GLDisen(nn.Module):
                     training=False, mu=grouped_mu_n, logvar=grouped_logvar_n, labels_batch=batch, cuda=True
                 )
 
-                class_emb_n1 = torch.tanh(global_mean_pool(accumulated_class_latent_embeddings_g, batch))
+                class_emb_n1 = torch.tanh(global_mean_pool(accumulated_class_latent_embeddings_g[:,0], batch))
                 ret_node1.append(class_emb_n1.cpu().numpy())
                 #class_emb_n2 = torch.tanh(global_mean_pool(accumulated_class_latent_embeddings_g[:,1], batch))
                 #ret_node2.append(class_emb_n2.cpu().numpy())
