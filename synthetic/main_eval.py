@@ -133,7 +133,7 @@ class GLDisen(nn.Module):
                     training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
                 )
 
-                class_emb = global_mean_pool(accumulated_class_latent_embeddings, batch)
+                class_emb = global_mean_pool(torch.tanh(accumulated_class_latent_embeddings), batch)
                 ret.append(class_emb.cpu().numpy())
 
                 grouped_mu_n, grouped_logvar_n = accumulate_group_evidence(
@@ -145,7 +145,7 @@ class GLDisen(nn.Module):
                     training=False, mu=grouped_mu_n, logvar=grouped_logvar_n, labels_batch=batch, cuda=True
                 )
 
-                class_emb_n = global_mean_pool(torch.sum(accumulated_class_latent_embeddings_g,-1), batch)
+                class_emb_n = global_mean_pool(torch.tanh(torch.sum(accumulated_class_latent_embeddings_g,-1)), batch)
                 ret_node.append(class_emb_n.cpu().numpy())
 
 
@@ -157,9 +157,9 @@ class GLDisen(nn.Module):
         ret_node = np.concatenate(ret_node, 0)
         y = np.concatenate(y, 0)
 
-        savetxt('synthe_graph_emb.csv', ret, delimiter=',')
-        savetxt('synthe_node_emb.csv', ret_node, delimiter=',')
-        savetxt('synthe_graph_y.csv', y, delimiter=',')
+        savetxt('synthe_graph_emb_1.csv', ret, delimiter=',')
+        savetxt('synthe_node_emb_1.csv', ret_node, delimiter=',')
+        savetxt('synthe_graph_y_1.csv', y, delimiter=',')
 
 
 
