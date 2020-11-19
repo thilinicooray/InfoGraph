@@ -293,7 +293,7 @@ if __name__ == '__main__':
     epochs = 30
     dataset_num_features = 1
 
-    model = GLDisen(8, 2, 8, 8).to(device)
+    model = GLDisen(2, 2, 2, 1).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     #scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
     accuracies = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
@@ -339,7 +339,7 @@ if __name__ == '__main__':
     res = evaluate_embedding_split(train_emb, train_y, test_emb, test_y)
     accuracies['svc'].append(res)
     print(accuracies)
-    torch.save(model.state_dict(), f'syner_model_correct1.pkl')
+    torch.save(model.state_dict(), f'syner_model_correct2.pkl')
 
 
     #model.eval()
