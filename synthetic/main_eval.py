@@ -108,8 +108,16 @@ class GLDisen(nn.Module):
         ret = []
         ret_node1 = []
         ret_node2 = []
+
+        global_rep = []
+        local1 = []
+        local2 = []
+        probability = []
+
         y = []
         i = 0
+        prob = [0.0, 0.1,0.3, 0.5, 0.7, 0.9, 1.0]
+        labels = [0,1,2,3,4,5,6]
         with torch.no_grad():
             for data in loader:
                 data.to(device)
@@ -124,8 +132,19 @@ class GLDisen(nn.Module):
 
                 indiclass_latent_embeddings_org = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
 
+                label = data.y.data
+                pr = prob[label]
 
-                grouped_mu, grouped_logvar = accumulate_group_evidence(
+                exp = np.array([10])
+                exp.fill(pr)
+
+                global_rep.append(indiclass_latent_embeddings_org)
+                local1.append(node_latent_embeddings_org[:,0])
+                local2.append(node_latent_embeddings_org[:,1])
+                probability.append(exp)
+
+
+                '''grouped_mu, grouped_logvar = accumulate_group_evidence(
                     class_mu.data, class_logvar.data, batch, True
                 )
 
@@ -149,14 +168,21 @@ class GLDisen(nn.Module):
                 class_emb_n1 = torch.tanh(global_mean_pool(accumulated_class_latent_embeddings_g[:,0], batch))
                 ret_node1.append(class_emb_n1.cpu().numpy())
                 #class_emb_n2 = torch.tanh(global_mean_pool(accumulated_class_latent_embeddings_g[:,1], batch))
-                #ret_node2.append(class_emb_n2.cpu().numpy())
+                #ret_node2.append(class_emb_n2.cpu().numpy())'''
 
 
+        global_rep = np.concatenate(global_rep, 0)
+        local1 = np.concatenate(local1, 0)
+        local2 = np.concatenate(local2, 0)
+        probability = np.concatenate(probability, 0)
+
+        savetxt('global_rep.csv', global_rep, delimiter=',')
+        savetxt('local1.csv', local1, delimiter=',')
+        savetxt('local2.csv', local2, delimiter=',')
+        savetxt('probability.csv', probability, delimiter=',')
 
 
-
-                y.append(data.y.cpu().numpy())
-        ret = np.concatenate(ret, 0)
+        '''ret = np.concatenate(ret, 0)
         ret_node1 = np.concatenate(ret_node1, 0)
         #ret_node2 = np.concatenate(ret_node2, 0)
         y = np.concatenate(y, 0)
@@ -164,7 +190,7 @@ class GLDisen(nn.Module):
         savetxt('synthe_graph_emb_1.csv', ret, delimiter=',')
         savetxt('synthe_node_emb_1_1.csv', ret_node1, delimiter=',')
         #savetxt('synthe_node_emb_1_2.csv', ret_node2, delimiter=',')
-        savetxt('synthe_graph_y_1.csv', y, delimiter=',')
+        savetxt('synthe_graph_y_1.csv', y, delimiter=',')'''
 
 
 
@@ -194,7 +220,7 @@ if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     train_loader = DataLoader(train_dataset, batch_size=512)
-    test_loader = DataLoader(test_dataset, batch_size=512)
+    test_loader = DataLoader(test_dataset, batch_size=1)
 
     lr = args.lr
     epochs = 50
