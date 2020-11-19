@@ -138,9 +138,9 @@ class GLDisen(nn.Module):
                 exp = np.array([10])
                 exp.fill(pr)
 
-                global_rep.append(indiclass_latent_embeddings_org)
-                local1.append(node_latent_embeddings_org[:,0])
-                local2.append(node_latent_embeddings_org[:,1])
+                global_rep.append(indiclass_latent_embeddings_org.cpu().numpy())
+                local1.append(node_latent_embeddings_org[:,0].cpu().numpy())
+                local2.append(node_latent_embeddings_org[:,1].cpu().numpy())
                 probability.append(exp)
 
 
