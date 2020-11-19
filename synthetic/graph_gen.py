@@ -30,7 +30,7 @@ class SyntheticERDataset(InMemoryDataset):
         prob = [0.0, 0.1,0.3, 0.5, 0.7, 0.9, 1.0]
         labels = [0,1,2,3,4,5,6]
 
-        for i in range(5):
+        for i in range(4000):
 
             idx = np.random.randint(0,len(prob)-1)
 
@@ -51,7 +51,7 @@ class SyntheticERDataset(InMemoryDataset):
             #x = torch.cat([node_feat1,g,f_1,f_2], -1)
             x = torch.ones((n, 1))
 
-            print('data p', p)
+            #print('data p', p)
 
             data = Data(x=x, edge_index=edge_index, y=labels[idx])
             data_list.append(data)
@@ -83,7 +83,7 @@ if __name__ == '__main__':
 
     for data in train_loader:
         data = data.to(device)
-        print('data ', data.batch, data.x, data.y)
+        #print('data ', data.batch, data.x, data.y)
         break
 
 
