@@ -110,11 +110,22 @@ class GcnInfomax(nn.Module):
                 latent_embeddings = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
                 print('latent size', latent_embeddings.size())
 
-                node_latent_embeddings = latent_embeddings[:,:128]
-                indiclass_latent_embeddings = latent_embeddings[:,128:]
+                node_latent_embeddings = latent_embeddings[:,:128].cpu().numpy()
+                indiclass_latent_embeddings = latent_embeddings[:,128:].cpu().numpy()
 
-                n_rho, n_pval = stats.spearmanr(torch.cat([node_latent_embeddings,indiclass_latent_embeddings],0) .cpu().numpy(), axis=1)
-                savetxt('mutag_gvae_graph_rho_{}.csv'.format(k), n_rho, delimiter=',')
+
+                corre_matrix = np.ndarray(shape=(indiclass_latent_embeddings.shape[0],node_latent_embeddings.shape[0]))
+
+                from scipy.stats.stats import pearsonr, spearmanr
+
+                for i in range(indiclass_latent_embeddings.shape[0]):
+                    for j in range(node_latent_embeddings.shape[0]):
+                        #print('sizes ', word_rep[i].shape, global_rep[j].shape)
+                        corre_matrix[i][j] = pearsonr(indiclass_latent_embeddings[i],node_latent_embeddings[j])[0]
+
+
+                #n_rho, n_pval = stats.spearmanr(torch.cat([node_latent_embeddings,indiclass_latent_embeddings],0) .cpu().numpy(), axis=1)
+                savetxt('mutag_gvae_graph_rho_{}.csv'.format(k), corre_matrix, delimiter=',')
 
                 k+=1
 
