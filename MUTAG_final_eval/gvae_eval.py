@@ -111,7 +111,7 @@ class GcnInfomax(nn.Module):
                 print('latent size', latent_embeddings.size())
 
                 node_latent_embeddings = latent_embeddings[:,:32].cpu().numpy()
-                indiclass_latent_embeddings = latent_embeddings[:,32:64].cpu().numpy()
+                indiclass_latent_embeddings = latent_embeddings[:,64:96].cpu().numpy()
 
 
                 corre_matrix = np.ndarray(shape=(indiclass_latent_embeddings.shape[0],node_latent_embeddings.shape[0]))
