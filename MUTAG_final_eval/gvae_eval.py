@@ -121,7 +121,7 @@ class GcnInfomax(nn.Module):
                 for i in range(indiclass_latent_embeddings.shape[0]):
                     for j in range(node_latent_embeddings.shape[0]):
                         #print('sizes ', word_rep[i].shape, global_rep[j].shape)
-                        corre_matrix[i][j] = spearmanr(indiclass_latent_embeddings[i],node_latent_embeddings[j])[0]
+                        corre_matrix[i][j] = spearmanr(node_latent_embeddings[j],indiclass_latent_embeddings[i])[0]
 
 
                 #n_rho, n_pval = stats.spearmanr(torch.cat([node_latent_embeddings,indiclass_latent_embeddings],0) .cpu().numpy(), axis=1)
