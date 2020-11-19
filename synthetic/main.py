@@ -23,7 +23,7 @@ from torch_geometric.utils import negative_sampling, remove_self_loops, add_self
 
 from arguments import arg_parse
 from graph_gen import SyntheticERDataset
-from graph_gen_random_node_eval import SyntheticER_N_Dataset
+from graph_gen_random_nodeval import SyntheticER_N_Dataset
 
 class GLDisen(nn.Module):
     def __init__(self, hidden_dim, num_gc_layers, node_dim, class_dim):
