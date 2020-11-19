@@ -290,7 +290,7 @@ if __name__ == '__main__':
     test_loader = DataLoader(test_dataset, batch_size=512)
 
     lr = args.lr
-    epochs = 30
+    epochs = 50
     dataset_num_features = 1
 
     model = GLDisen(2, 2, 2, 1).to(device)
@@ -339,7 +339,7 @@ if __name__ == '__main__':
     res = evaluate_embedding_split(train_emb, train_y, test_emb, test_y)
     accuracies['svc'].append(res)
     print(accuracies)
-    torch.save(model.state_dict(), f'syner_model_correct2.pkl')
+    torch.save(model.state_dict(), f'syner_model_correct2_50.pkl')
 
 
     #model.eval()
