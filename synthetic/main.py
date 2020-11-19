@@ -281,7 +281,7 @@ if __name__ == '__main__':
 
     path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'SyntheticER_N')
 
-    dataset = SyntheticER_N_Dataset(path).shuffle()
+    dataset = SyntheticER_N_Dataset(path)#.shuffle()
 
     train_dataset = dataset[:3000]
     test_dataset = dataset[3000:]
@@ -340,7 +340,7 @@ if __name__ == '__main__':
     res = evaluate_embedding_split(train_emb, train_y, test_emb, test_y)
     accuracies['svc'].append(res)
     print(accuracies)
-    torch.save(model.state_dict(), f'syner_n_model_correct2_big_ep30_all3000.pkl')
+    torch.save(model.state_dict(), f'syner_n_model_correct2_big_ep30_all3000_unshuf.pkl')
 
 
     #model.eval()
