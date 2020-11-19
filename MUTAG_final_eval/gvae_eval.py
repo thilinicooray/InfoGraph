@@ -125,7 +125,7 @@ class GcnInfomax(nn.Module):
 
 
                 n_rho, n_pval = stats.spearmanr(torch.cat([node_latent_embeddings,indiclass_latent_embeddings],0) .cpu().numpy(), axis=1)
-                savetxt('mutag_gvae_graph_rho_again1{}.csv'.format(k), n_rho, delimiter=',')
+                savetxt('mutag_gvae_graph_rho_again1_{}.csv'.format(k), n_rho, delimiter=',')
 
                 k+=1
 
