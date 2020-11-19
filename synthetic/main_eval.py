@@ -128,23 +128,45 @@ class GLDisen(nn.Module):
                 node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index, batch)
 
 
-                node_latent_embeddings_org = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
+                #node_latent_embeddings_org = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
 
-                indiclass_latent_embeddings_org = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
+                #indiclass_latent_embeddings_org = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
+                grouped_mu, grouped_logvar = accumulate_group_evidence(
+                    class_mu.data, class_logvar.data, batch, True
+                )
+
+
+                accumulated_class_latent_embeddings = group_wise_reparameterize(
+                    training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
+                )
+
+                class_emb = global_mean_pool(accumulated_class_latent_embeddings, batch)
+
+                grouped_mu_n, grouped_logvar_n = accumulate_group_evidence(
+                    node_mu.data, node_logvar.data, batch, True
+                )
+
+
+                accumulated_class_latent_embeddings_g = group_wise_reparameterize(
+                    training=False, mu=grouped_mu_n, logvar=grouped_logvar_n, labels_batch=batch, cuda=True
+                )
+
+                class_emb_n = global_mean_pool(accumulated_class_latent_embeddings_g, batch)
+
 
                 label = data.y.item()
                 print('label', label)
                 pr = prob[label]
                 print('pr', pr)
 
-                exp = np.empty(10)
+                '''exp = np.empty(10)
                 exp.fill(pr)
-                print('exp', exp)
+                print('exp', exp)'''
 
-                global_rep.append(indiclass_latent_embeddings_org.cpu().numpy())
-                local1.append(node_latent_embeddings_org[:,0].cpu().numpy())
-                local2.append(node_latent_embeddings_org[:,1].cpu().numpy())
-                probability.append(exp)
+                global_rep.append(class_emb.cpu().numpy())
+                local1.append(class_emb_n[:,0].cpu().numpy())
+                local2.append(class_emb_n[:,1].cpu().numpy())
+                probability.append(pr)
 
 
                 '''grouped_mu, grouped_logvar = accumulate_group_evidence(
@@ -179,10 +201,10 @@ class GLDisen(nn.Module):
         local2 = np.concatenate(local2, 0)
         probability = np.concatenate(probability, 0)
 
-        savetxt('global_rep.csv', global_rep, delimiter=',')
-        savetxt('local1.csv', local1, delimiter=',')
-        savetxt('local2.csv', local2, delimiter=',')
-        savetxt('probability.csv', probability, delimiter=',')
+        savetxt('global_rep_tot.csv', global_rep, delimiter=',')
+        savetxt('local1_tot.csv', local1, delimiter=',')
+        savetxt('local2_tot.csv', local2, delimiter=',')
+        savetxt('probability_tot.csv', probability, delimiter=',')
 
 
         '''ret = np.concatenate(ret, 0)
