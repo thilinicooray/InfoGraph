@@ -106,6 +106,7 @@ class GLDisen(nn.Module):
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         ret = []
+        ret_node = []
         y = []
         i = 0
         with torch.no_grad():
@@ -127,17 +128,37 @@ class GLDisen(nn.Module):
                     class_mu.data, class_logvar.data, batch, True
                 )
 
+
                 accumulated_class_latent_embeddings = group_wise_reparameterize(
                     training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
                 )
 
                 class_emb = global_mean_pool(accumulated_class_latent_embeddings, batch)
                 ret.append(class_emb.cpu().numpy())
+
+                grouped_mu_n, grouped_logvar_n = accumulate_group_evidence(
+                    node_mu.data, node_mu.data, batch, True
+                )
+
+
+                accumulated_class_latent_embeddings_g = group_wise_reparameterize(
+                    training=False, mu=grouped_mu_n, logvar=grouped_logvar_n, labels_batch=batch, cuda=True
+                )
+
+                class_emb_n = global_mean_pool(torch.sum(accumulated_class_latent_embeddings_g,-1), batch)
+                ret_node.append(class_emb_n.cpu().numpy())
+
+
+
+
+
                 y.append(data.y.cpu().numpy())
         ret = np.concatenate(ret, 0)
+        ret_node = np.concatenate(ret_node, 0)
         y = np.concatenate(y, 0)
 
         savetxt('synthe_graph_emb.csv', ret, delimiter=',')
+        savetxt('synthe_node_emb.csv', ret_node, delimiter=',')
         savetxt('synthe_graph_y.csv', y, delimiter=',')
 
 
@@ -168,7 +189,7 @@ if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     train_loader = DataLoader(train_dataset, batch_size=512)
-    test_loader = DataLoader(test_dataset, batch_size=1)
+    test_loader = DataLoader(test_dataset, batch_size=512)
 
     lr = args.lr
     epochs = 50
