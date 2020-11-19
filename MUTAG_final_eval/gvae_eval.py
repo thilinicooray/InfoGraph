@@ -184,7 +184,7 @@ if __name__ == '__main__':
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     #scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
 
-    model.load_state_dict(torch.load(f'mutag_gvae_model_1.pkl'))
+    model.load_state_dict(torch.load(f'mutag_gvae_model_2.pkl'))
 
     #print('model ', model.encoder.convs[2].nn[0].weight.size())
 
