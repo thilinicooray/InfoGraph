@@ -17,7 +17,7 @@ import json
 from torch import optim
 
 from gin import *
-from evaluate_embedding import evaluate_embedding
+from evaluate_embedding import evaluate_embedding, evaluate_embedding_split
 from utils import imshow_grid, mse_loss, reparameterize, group_wise_reparameterize, accumulate_group_evidence
 from torch_geometric.utils import negative_sampling, remove_self_loops, add_self_loops, to_dense_adj, to_dense_batch
 
@@ -50,30 +50,44 @@ class GLDisen(nn.Module):
 
     def forward(self, x, edge_index, batch, num_graphs):
 
-        # batch_size = data.num_graphs
-        if x is None:
-            x = torch.ones(batch.shape[0]).to(device)
+        n_nodes = x.size(0)
 
         node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index, batch)
+
+
+
+
+
         grouped_mu, grouped_logvar = accumulate_group_evidence(
             class_mu.data, class_logvar.data, batch, True
         )
 
+
+
+
         # kl-divergence error for style latent space
-        node_kl_divergence_loss = torch.mean(
+        '''node_kl_divergence_loss = torch.mean(
             - 0.5 * torch.sum(1 + node_logvar - node_mu.pow(2) - node_logvar.exp())
-        )
-        #node_kl_divergence_loss = 0.0000001 * node_kl_divergence_loss *num_graphs
+        )'''
+
+        node_kl_divergence_loss = -0.5 / n_nodes * torch.mean(torch.sum(
+            1 + 2 * node_logvar - node_mu.pow(2) - node_logvar.exp().pow(2), 1))
+
+
         node_kl_divergence_loss = node_kl_divergence_loss
-        node_kl_divergence_loss.backward(retain_graph=True)
+
 
         # kl-divergence error for class latent space
-        class_kl_divergence_loss = torch.mean(
+        '''class_kl_divergence_loss = torch.mean(
             - 0.5 * torch.sum(1 + grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp())
-        )
-        #class_kl_divergence_loss = 0.0000001 * class_kl_divergence_loss * num_graphs
-        class_kl_divergence_loss =  class_kl_divergence_loss
-        class_kl_divergence_loss.backward(retain_graph=True)
+        )'''
+        class_kl_divergence_loss = -0.5 / n_nodes * torch.mean(torch.sum(
+            1 + 2 * grouped_logvar - grouped_mu.pow(2) - grouped_logvar.exp().pow(2), 1))
+
+        #print('class kl unwei ', class_kl_divergence_loss)
+        class_kl_divergence_loss = class_kl_divergence_loss
+        #print('class kl wei ', class_kl_divergence_loss)
+
 
         # reconstruct samples
         """
@@ -85,18 +99,20 @@ class GLDisen(nn.Module):
             training=True, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
         )
 
-        #need to reduce ml between node and class latents
-        '''measure='JSD'
-        mi_loss = local_global_loss_disen(node_latent_embeddings, class_latent_embeddings, edge_index, batch, measure)
-        mi_loss.backward(retain_graph=True)'''
 
-        #reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
-        #check input feat first
-        #print('recon ', x[0],reconstructed_node[0])
-        #reconstruction_error =  0.1*mse_loss(reconstructed_node, x)
-        #reconstruction_error =  mse_loss(reconstructed_node, x)
-        reconstruction_error = self.recon_loss1(node_latent_embeddings, edge_index, batch)+ mse_loss(class_latent_embeddings, x[:,1])+ mse_loss(node_latent_embeddings, x[:,0])
-        reconstruction_error.backward()
+        reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings, edge_index)
+
+        #reconstruction_error =  mse_loss(reconstructed_node, x) * num_graphs
+        reconstruction_error = self.recon_loss(reconstructed_node, edge_index, batch)
+
+
+        #class_kl_divergence_loss.backward(retain_graph=True)
+        #node_kl_divergence_loss.backward(retain_graph=True)
+        #reconstruction_error.backward()
+
+        loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error
+
+        loss.backward()
 
 
         return reconstruction_error.item() , class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
@@ -243,7 +259,7 @@ class GLDisen(nn.Module):
 
                 class_emb = global_mean_pool(accumulated_class_latent_embeddings, batch)
                 ret.append(class_emb.cpu().numpy())
-                #y.append(data.y.cpu().numpy())
+                y.append(data.y.cpu().numpy())
         ret = np.concatenate(ret, 0)
         y = np.concatenate(y, 0)
         return ret, y
@@ -264,7 +280,7 @@ if __name__ == '__main__':
 
     path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'SyntheticER')
 
-    dataset = SyntheticERDataset(path)#.shuffle()
+    dataset = SyntheticERDataset(path).shuffle()
 
     train_dataset = dataset[:3000]
     test_dataset = dataset[3000:]
@@ -275,11 +291,12 @@ if __name__ == '__main__':
 
     lr = args.lr
     epochs = 30
-    dataset_num_features = 2
+    dataset_num_features = 1
 
-    model = GLDisen(2, 2, 1, 1).to(device)
+    model = GLDisen(2, 2, 2, 1).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     #scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
+    accuracies = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
 
 
 
@@ -302,7 +319,7 @@ if __name__ == '__main__':
         for data in train_loader:
             data = data.to(device)
             optimizer.zero_grad()
-            recon_loss, kl_class, kl_node = model(data.x[:,:2], data.edge_index, data.batch, data.num_graphs)
+            recon_loss, kl_class, kl_node = model(data.x, data.edge_index, data.batch, data.num_graphs)
             recon_loss_all += recon_loss
             kl_class_loss_all += kl_class
             kl_node_loss_all += kl_node
@@ -315,7 +332,14 @@ if __name__ == '__main__':
                                                                                 kl_class_loss_all / len(train_loader), kl_node_loss_all / len(train_loader)))
 
 
-    torch.save(model.state_dict(), f'syner_model14.pkl')
+    model.eval()
+
+    train_emb, train_y = model.get_embeddings_split(train_loader)
+    test_emb, test_y = model.get_embeddings_split(test_loader)
+    res = evaluate_embedding_split(train_emb, train_y, test_emb, test_y)
+    accuracies['svc'].append(res)
+    print(accuracies)
+    torch.save(model.state_dict(), f'syner_model_correct1.pkl')
 
 
     #model.eval()

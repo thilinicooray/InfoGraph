@@ -120,6 +120,33 @@ def svc_classify(x, y, search):
 
     return np.mean(tot_acc)
 
+def svc_classify_split(x_train, y_train, x_test, y_test, search):
+
+
+    c_val_list = [0.001, 0.01,0.1,1,10,100,1000, 10000]
+
+    for c_val in c_val_list:
+
+        tot_acc = []
+
+        for _ in range(5):
+            accuracies = []
+            classifier = SVC(C=c_val)
+
+            classifier.fit(x_train, y_train)
+            accuracies.append(accuracy_score(y_test, classifier.predict(x_test)))
+
+            mean = np.mean(accuracies)
+            std = np.std(accuracies)
+
+            tot_acc.append(mean)
+
+            print('mean libsvm ', mean, 'std ', std)
+
+        print('mean of 5 runs for c', c_val,  np.mean(tot_acc), np.std(tot_acc))
+
+    return np.mean(tot_acc)
+
 def svc_classify_single(x, y, search):
     tot_acc = []
 
@@ -187,6 +214,35 @@ def evaluate_embedding(embeddings, labels, search=False):
     #print('LogReg', np.mean(logreg_accuracies))
 
     svc_accuracies = [svc_classify(x,y, search) for _ in range(1)]
+    # print(svc_accuracies)
+    print('svc', np.mean(svc_accuracies))
+
+    #linearsvc_accuracies = [linearsvc_classify(x, y, search) for _ in range(1)]
+    # print(linearsvc_accuracies)
+    #print('LinearSvc', 0.0)
+
+    #randomforest_accuracies = [randomforest_classify(x, y, search) for _ in range(1)]
+    # print(randomforest_accuracies)
+    #print('randomforest', np.mean(randomforest_accuracies))
+
+    return np.mean(svc_accuracies)
+
+def evaluate_embedding_split(train_emb, train_y, test_emb, test_y, search=False):
+
+    label_encoder = preprocessing.LabelEncoder()
+    label_encoder.fit(train_y)
+    label_train = label_encoder.transform(train_y)
+    label_test = label_encoder.transform(test_y)
+
+    x_train, y_train = np.array(train_emb), np.array(label_train)
+    x_test, y_test = np.array(test_emb), np.array(label_test)
+    print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
+
+    #logreg_accuracies = [logistic_classify(x, y) for _ in range(1)]
+    # print(logreg_accuracies)
+    #print('LogReg', np.mean(logreg_accuracies))
+
+    svc_accuracies = [svc_classify_split(x_train, y_train, x_test, y_test, search) for _ in range(1)]
     # print(svc_accuracies)
     print('svc', np.mean(svc_accuracies))
 
