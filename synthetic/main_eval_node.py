@@ -241,7 +241,7 @@ if __name__ == '__main__':
 
     path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'SyntheticER_N')
 
-    dataset = SyntheticER_N_Dataset(path)
+    dataset = SyntheticER_N_Dataset(path).shuffle()
 
     train_dataset = dataset[:3000]
     test_dataset = dataset[3000:]
@@ -267,7 +267,7 @@ if __name__ == '__main__':
     print('num_gc_layers: {}'.format(args.num_gc_layers))
     print('================')
 
-    model.load_state_dict(torch.load(f'syner_n_model_correct2_big_ep30_all3000_unshuf.pkl'))
+    model.load_state_dict(torch.load(f'syner_n_model_correct2_big_ep30_all3000.pkl'))
 
 
     '''model.train()
