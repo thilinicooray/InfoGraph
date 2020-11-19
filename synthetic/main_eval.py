@@ -158,12 +158,12 @@ class GLDisen(nn.Module):
                 y.append(data.y.cpu().numpy())
         ret = np.concatenate(ret, 0)
         ret_node1 = np.concatenate(ret_node1, 0)
-        ret_node2 = np.concatenate(ret_node2, 0)
+        #ret_node2 = np.concatenate(ret_node2, 0)
         y = np.concatenate(y, 0)
 
         savetxt('synthe_graph_emb_1.csv', ret, delimiter=',')
         savetxt('synthe_node_emb_1_1.csv', ret_node1, delimiter=',')
-        savetxt('synthe_node_emb_1_2.csv', ret_node2, delimiter=',')
+        #savetxt('synthe_node_emb_1_2.csv', ret_node2, delimiter=',')
         savetxt('synthe_graph_y_1.csv', y, delimiter=',')
 
 
