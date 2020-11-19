@@ -334,8 +334,8 @@ if __name__ == '__main__':
 
     model.eval()
 
-    train_emb, train_y = model.get_embeddings_split(train_loader)
-    test_emb, test_y = model.get_embeddings_split(test_loader)
+    train_emb, train_y = model.get_embeddings(train_loader)
+    test_emb, test_y = model.get_embeddings(test_loader)
     res = evaluate_embedding_split(train_emb, train_y, test_emb, test_y)
     accuracies['svc'].append(res)
     print(accuracies)
