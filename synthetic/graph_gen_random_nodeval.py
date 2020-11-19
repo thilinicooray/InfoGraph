@@ -34,7 +34,7 @@ class SyntheticER_N_Dataset(InMemoryDataset):
                 0.9000, 0.9500, 1.0000]
         labels = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
 
-        for i in range(4000):
+        for i in range(40000):
 
             #idx = np.random.randint(0,len(prob)-1)
             idx = i% len(prob)
