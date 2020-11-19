@@ -50,7 +50,7 @@ class SyntheticER_N_Dataset(InMemoryDataset):
 
             #x = torch.cat([node_feat1,g,f_1,f_2], -1)
             #x = torch.ones((n, 1))
-            x = torch.normal(0, 1, (n,1))
+            x = torch.randn(n, 1)
 
             #print('data p', p)
 
@@ -72,7 +72,7 @@ if __name__ == '__main__':
     torch.backends.cudnn.benchmark = False
     os.environ['PYTHONHASHSEED'] = str(seed)
 
-    path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'SyntheticER')
+    path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'SyntheticER_N')
 
     dataset = SyntheticER_N_Dataset(path)#.shuffle()
 
