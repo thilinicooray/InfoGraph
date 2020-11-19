@@ -25,6 +25,7 @@ from numpy import savetxt
 
 from arguments import arg_parse
 from graph_gen import SyntheticERDataset
+from graph_gen_random_nodeval import SyntheticER_N_Dataset
 
 class GLDisen(nn.Module):
     def __init__(self, hidden_dim, num_gc_layers, node_dim, class_dim):
@@ -236,9 +237,9 @@ if __name__ == '__main__':
     torch.backends.cudnn.benchmark = False
     os.environ['PYTHONHASHSEED'] = str(seed)
 
-    path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'SyntheticER')
+    path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'SyntheticER_N')
 
-    dataset = SyntheticERDataset(path)
+    dataset = SyntheticER_N_Dataset(path)
 
     train_dataset = dataset[:3000]
     test_dataset = dataset[3000:]
@@ -264,7 +265,7 @@ if __name__ == '__main__':
     print('num_gc_layers: {}'.format(args.num_gc_layers))
     print('================')
 
-    model.load_state_dict(torch.load(f'syner_n_model_correct2.pkl'))
+    model.load_state_dict(torch.load(f'syner_n_model_correct2_ep30_all3000.pkl'))
 
 
     '''model.train()
