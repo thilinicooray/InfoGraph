@@ -122,64 +122,28 @@ class GLDisen(nn.Module):
 
                 indiclass_latent_embeddings_org = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
 
-                #reconstructed_node = self.decoder(node_latent_embeddings_org, indiclass_latent_embeddings_org)
 
-                #print('recon node ', reconstructed_node)
+                grouped_mu, grouped_logvar = accumulate_group_evidence(
+                    class_mu.data, class_logvar.data, batch, True
+                )
 
-                # global change, local fix
-                input_g = None
-                input_l = None
-                z_g = None
-                z_l= None
-                fractions_list = torch.arange(0, 1.2, 0.2)
-                print('fraction ', fractions_list)
-                for frac in fractions_list:
+                accumulated_class_latent_embeddings = group_wise_reparameterize(
+                    training=False, mu=grouped_mu, logvar=grouped_logvar, labels_batch=batch, cuda=True
+                )
 
-                    x_new = torch.cat([(x[:,0]).unsqueeze(-1),(x[:,1]*frac).unsqueeze(-1)],-1)
-                    print('x ', x.size(), x_new.size())
+                class_emb = global_mean_pool(accumulated_class_latent_embeddings, batch)
+                ret.append(class_emb.cpu().numpy())
+                y.append(data.y.cpu().numpy())
+        ret = np.concatenate(ret, 0)
+        y = np.concatenate(y, 0)
 
-                    print('data', x, x_new)
-
-                    if input_g is None:
-                        input_g = x_new[:,1]
-                    else:
-                        input_g = torch.cat((input_g.clone(), x_new[:,1]), 0)
-
-                    if input_l is None:
-                        input_l = x_new[:,0]
-                    else:
-                        input_l = torch.cat((input_l.clone(), x_new[:,0]), 0)
-
-                    node_mu, node_logvar, class_mu, class_logvar = self.encoder(x_new, edge_index, batch)
+        savetxt('synthe_graph_emb.csv', ret, delimiter=',')
+        savetxt('synthe_graph_y.csv', y, delimiter=',')
 
 
-                    node_latent_embeddings = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
-
-                    indiclass_latent_embeddings = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
-
-                    if z_g is None:
-                        z_g = indiclass_latent_embeddings
-                    else:
-                        z_g = torch.cat((z_g.clone(), (indiclass_latent_embeddings)), 0)
-
-                    if z_l is None:
-                        z_l = node_latent_embeddings[:,0]
-                    else:
-                        z_l = torch.cat((z_l.clone(), (node_latent_embeddings[:,0])), 0)
-
-
-                savetxt('synth_inputg_{}.csv'.format('gfix'), input_g.cpu().numpy(), delimiter=',')
-                savetxt('synth_inputl_{}.csv'.format('gfix'), input_l.cpu().numpy(), delimiter=',')
-                savetxt('synth_zg_{}.csv'.format('gfix'), z_g.cpu().numpy(), delimiter=',')
-                savetxt('synth_zl_{}.csv'.format('gfix'), z_l.cpu().numpy(), delimiter=',')
-
-                i += 1
-
-                '''if i == 6:
-                    break'''
-                break
 
         return None
+
 
 if __name__ == '__main__':
 
@@ -208,7 +172,7 @@ if __name__ == '__main__':
 
     lr = args.lr
     epochs = 50
-    dataset_num_features = 2
+    dataset_num_features = 1
 
     model = GLDisen(2, 2, 1, 1).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
@@ -223,7 +187,7 @@ if __name__ == '__main__':
     print('num_gc_layers: {}'.format(args.num_gc_layers))
     print('================')
 
-    model.load_state_dict(torch.load(f'syner_model14.pkl'))
+    model.load_state_dict(torch.load(f'syner_model_correct1.pkl'))
 
 
     '''model.train()
