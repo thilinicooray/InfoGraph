@@ -135,9 +135,11 @@ class GLDisen(nn.Module):
                 label = data.y.item()
                 print('label', label)
                 pr = prob[label]
+                print('pr', pr)
 
                 exp = np.array([10])
                 exp.fill(pr)
+                print('exp', exp)
 
                 global_rep.append(indiclass_latent_embeddings_org.cpu().numpy())
                 local1.append(node_latent_embeddings_org[:,0].cpu().numpy())
