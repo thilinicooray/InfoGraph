@@ -151,7 +151,7 @@ if __name__ == '__main__':
     accuracies = {'logreg':[], 'svc':[], 'linearsvc':[], 'randomforest':[]}
 
     log_interval = 1
-    batch_size = 128
+    batch_size = 1
     lr = args.lr
     DS = args.DS
     path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', DS)
