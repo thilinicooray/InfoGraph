@@ -125,7 +125,7 @@ class GLDisen(nn.Module):
                 if x is None:
                     x = torch.ones((batch.shape[0],1)).to(device)
 
-                node_mu, node_logvar, class_mu, class_logvar = self.encoder(x[:,:2], edge_index, batch)
+                node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index, batch)
 
 
                 node_latent_embeddings_org = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
@@ -229,7 +229,7 @@ if __name__ == '__main__':
     epochs = 50
     dataset_num_features = 1
 
-    model = GLDisen(8, 2, 8, 8).to(device)
+    model = GLDisen(2, 2, 2, 1).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     #scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
 
@@ -242,7 +242,7 @@ if __name__ == '__main__':
     print('num_gc_layers: {}'.format(args.num_gc_layers))
     print('================')
 
-    model.load_state_dict(torch.load(f'syner_model_correct1.pkl'))
+    model.load_state_dict(torch.load(f'syner_model_correct2_50_all3000.pkl'))
 
 
     '''model.train()
