@@ -23,6 +23,7 @@ from torch_geometric.utils import negative_sampling, remove_self_loops, add_self
 
 from arguments import arg_parse
 from graph_gen import SyntheticERDataset
+from graph_gen_random_node_eval import SyntheticER_N_Dataset
 
 class GLDisen(nn.Module):
     def __init__(self, hidden_dim, num_gc_layers, node_dim, class_dim):
@@ -278,9 +279,9 @@ if __name__ == '__main__':
     torch.backends.cudnn.benchmark = False
     os.environ['PYTHONHASHSEED'] = str(seed)
 
-    path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'SyntheticER')
+    path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', 'SyntheticER_N')
 
-    dataset = SyntheticERDataset(path).shuffle()
+    dataset = SyntheticER_N_Dataset(path).shuffle()
 
     train_dataset = dataset[:3000]
     test_dataset = dataset[3000:]
@@ -290,7 +291,7 @@ if __name__ == '__main__':
     test_loader = DataLoader(test_dataset, batch_size=512)
 
     lr = args.lr
-    epochs = 50
+    epochs = 30
     dataset_num_features = 1
 
     model = GLDisen(2, 2, 2, 1).to(device)
@@ -339,7 +340,7 @@ if __name__ == '__main__':
     res = evaluate_embedding_split(train_emb, train_y, test_emb, test_y)
     accuracies['svc'].append(res)
     print(accuracies)
-    torch.save(model.state_dict(), f'syner_model_correct2_50_all3000.pkl')
+    torch.save(model.state_dict(), f'syner_n_model_correct2_ep30_all3000.pkl')
 
 
     #model.eval()
