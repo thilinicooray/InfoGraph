@@ -137,7 +137,7 @@ class GLDisen(nn.Module):
                 pr = prob[label]
                 print('pr', pr)
 
-                exp = np.array([10])
+                exp = np.empty(10)
                 exp.fill(pr)
                 print('exp', exp)
 
