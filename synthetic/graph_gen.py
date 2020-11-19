@@ -27,10 +27,15 @@ class SyntheticERDataset(InMemoryDataset):
 
         data_list = []
         n = 10
+        prob = [0.0, 0.1,0.3, 0.5, 0.7, 0.9, 1.0]
+        labels = [0,1,2,3,4,5,6]
 
-        for i in range(4000):
-            p = np.random.uniform(0,1)
-            g_val = np.array([np.random.randint(2,9)])
+        for i in range(5):
+
+            idx = np.random.randint(0,len(prob)-1)
+
+            p = prob[idx]
+            '''g_val = np.array([np.random.randint(2,9)])
             mean_1 = np.random.randint(2,9)
             mean_2 = np.random.randint(2,9)
             g_id = torch.from_numpy(g_val).unsqueeze(0).float()
@@ -40,14 +45,15 @@ class SyntheticERDataset(InMemoryDataset):
             f_id_2 = torch.from_numpy(np.array([mean_2])).unsqueeze(0).float()
             f_2 = f_id_2.expand(n,1)
             node_feat1 = torch.normal(mean_1, 1, (n,1))
-            node_feat2 = torch.normal(mean_2, 1, (n,1))
+            node_feat2 = torch.normal(mean_2, 1, (n,1))'''
             edge_index = erdos_renyi_graph(n,p)
 
-            x = torch.cat([node_feat1,g,f_1,f_2], -1)
+            #x = torch.cat([node_feat1,g,f_1,f_2], -1)
+            x = torch.ones((n, 1))
 
-            print('data x', x)
+            print('data p', p)
 
-            data = Data(x=x, edge_index=edge_index)
+            data = Data(x=x, edge_index=edge_index, y=labels[idx])
             data_list.append(data)
 
         data, slices = self.collate(data_list)
@@ -77,8 +83,8 @@ if __name__ == '__main__':
 
     for data in train_loader:
         data = data.to(device)
-        #print('data ', data.batch, data.x)
-        #break
+        print('data ', data.batch, data.x, data.y)
+        break
 
 
 
