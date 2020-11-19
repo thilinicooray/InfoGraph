@@ -155,9 +155,9 @@ class GLDisen(nn.Module):
 
 
                 label = data.y.item()
-                print('label', label)
+                #print('label', label)
                 pr = prob[label]
-                print('pr', pr)
+                #print('pr', pr)
 
                 '''exp = np.empty(10)
                 exp.fill(pr)
@@ -199,6 +199,7 @@ class GLDisen(nn.Module):
         global_rep = np.concatenate(global_rep, 0)
         local1 = np.concatenate(local1, 0)
         local2 = np.concatenate(local2, 0)
+        print('pro', probability)
         probability = np.concatenate(probability, 0)
 
         savetxt('global_rep_tot.csv', global_rep, delimiter=',')
