@@ -174,7 +174,7 @@ if __name__ == '__main__':
     epochs = 50
     dataset_num_features = 1
 
-    model = GLDisen(2, 2, 1, 1).to(device)
+    model = GLDisen(2, 2, 2, 1).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     #scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
 
