@@ -159,14 +159,14 @@ class GLDisen(nn.Module):
                 pr = prob[label]
                 #print('pr', pr)
 
-                '''exp = np.empty(10)
+                exp = np.empty(1)
                 exp.fill(pr)
-                print('exp', exp)'''
+                #print('exp', exp)
 
                 global_rep.append(class_emb.cpu().numpy())
                 local1.append(class_emb_n[:,0].cpu().numpy())
                 local2.append(class_emb_n[:,1].cpu().numpy())
-                probability.append(pr)
+                probability.append(exp)
 
 
                 '''grouped_mu, grouped_logvar = accumulate_group_evidence(
@@ -199,7 +199,6 @@ class GLDisen(nn.Module):
         global_rep = np.concatenate(global_rep, 0)
         local1 = np.concatenate(local1, 0)
         local2 = np.concatenate(local2, 0)
-        print('pro', probability)
         probability = np.concatenate(probability, 0)
 
         savetxt('global_rep_tot.csv', global_rep, delimiter=',')
