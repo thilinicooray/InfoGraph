@@ -133,7 +133,7 @@ if __name__ == '__main__':
     seed = 42
     #epochs = 20
 
-    epochs_list = [10]
+    epochs_list = [30]
 
     for epochs in epochs_list:
 
@@ -210,6 +210,6 @@ if __name__ == '__main__':
         accuracies['randomforest'].append(res[3])
         print(accuracies)
 
-        torch.save(model.state_dict(), f'mutag_gvae_model_1.pkl')
+        torch.save(model.state_dict(), f'mutag_gvae_model_2.pkl')
 
 
