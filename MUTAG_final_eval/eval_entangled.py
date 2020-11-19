@@ -120,12 +120,12 @@ class GcnInfomax(nn.Module):
 
                 #print('class mu ', torch.softmax(class_mu, dim=-1)[:5,:5])
 
-                node_latent_embeddings = entangled[:,:32]
+                node_latent_embeddings = entangled[:,:16]
 
                 #print('node latent ', node_latent_embeddings[:,:6])
 
 
-                indiclass_latent_embeddings = entangled[:,32:]
+                indiclass_latent_embeddings = entangled[:,16:]
 
                 #savetxt('mutag_node_emb32_{}.csv'.format(k), node_latent_embeddings.cpu().numpy(), delimiter=',')
                 #savetxt('mutag_graph_emb32_{}.csv'.format(k), indiclass_latent_embeddings.cpu().numpy(), delimiter=',')
