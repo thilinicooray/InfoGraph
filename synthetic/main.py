@@ -282,7 +282,7 @@ if __name__ == '__main__':
 
     dataset = SyntheticERDataset(path).shuffle()
 
-    train_dataset = dataset[:1000]
+    train_dataset = dataset[:3000]
     test_dataset = dataset[3000:]
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -339,7 +339,7 @@ if __name__ == '__main__':
     res = evaluate_embedding_split(train_emb, train_y, test_emb, test_y)
     accuracies['svc'].append(res)
     print(accuracies)
-    torch.save(model.state_dict(), f'syner_model_correct2_50.pkl')
+    torch.save(model.state_dict(), f'syner_model_correct2_50_all3000.pkl')
 
 
     #model.eval()
