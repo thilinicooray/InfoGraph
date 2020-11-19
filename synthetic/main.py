@@ -283,8 +283,8 @@ if __name__ == '__main__':
 
     dataset = SyntheticER_N_Dataset(path).shuffle()
 
-    train_dataset = dataset[:3000]
-    test_dataset = dataset[3000:]
+    train_dataset = dataset[:35000]
+    test_dataset = dataset[35000:]
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     train_loader = DataLoader(train_dataset, batch_size=512)
