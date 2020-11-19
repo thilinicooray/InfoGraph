@@ -125,7 +125,12 @@ class GLDisen(nn.Module):
                 indiclass_latent_embeddings_org = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
 
 
-                grouped_mu, grouped_logvar = accumulate_group_evidence(
+
+                print('node', node_latent_embeddings_org)
+
+                print('graph', data.y, indiclass_latent_embeddings_org)
+
+                '''grouped_mu, grouped_logvar = accumulate_group_evidence(
                     class_mu.data, class_logvar.data, batch, True
                 )
 
@@ -157,12 +162,12 @@ class GLDisen(nn.Module):
                 class_emb_n1 = torch.tanh(global_mean_pool(accumulated_class_latent_embeddings_g[:,0], batch))
                 ret_node1.append(class_emb_n1.cpu().numpy())
                 #class_emb_n2 = torch.tanh(global_mean_pool(accumulated_class_latent_embeddings_g[:,1], batch))
-                #ret_node2.append(class_emb_n2.cpu().numpy())
+                #ret_node2.append(class_emb_n2.cpu().numpy())'''
+
+                break
 
 
-
-
-
+        '''
                 y.append(data.y.cpu().numpy())
         ret = np.concatenate(ret, 0)
         ret_node1 = np.concatenate(ret_node1, 0)
@@ -172,7 +177,7 @@ class GLDisen(nn.Module):
         savetxt('synthe_graph_emb_1.csv', ret, delimiter=',')
         savetxt('synthe_node_emb_1_1.csv', ret_node1, delimiter=',')
         #savetxt('synthe_node_emb_1_2.csv', ret_node2, delimiter=',')
-        savetxt('synthe_graph_y_1.csv', y, delimiter=',')
+        savetxt('synthe_graph_y_1.csv', y, delimiter=',')'''
 
 
 
@@ -202,7 +207,7 @@ if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     train_loader = DataLoader(train_dataset, batch_size=512)
-    test_loader = DataLoader(test_dataset, batch_size=512)
+    test_loader = DataLoader(test_dataset, batch_size=1)
 
     lr = args.lr
     epochs = 50
