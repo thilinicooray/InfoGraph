@@ -164,7 +164,10 @@ class GLDisen(nn.Module):
                 #class_emb_n2 = torch.tanh(global_mean_pool(accumulated_class_latent_embeddings_g[:,1], batch))
                 #ret_node2.append(class_emb_n2.cpu().numpy())'''
 
-                break
+                i+=1
+
+                if i==8:
+                    break
 
 
         '''
