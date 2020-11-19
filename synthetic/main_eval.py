@@ -229,7 +229,7 @@ if __name__ == '__main__':
     epochs = 50
     dataset_num_features = 1
 
-    model = GLDisen(2, 2, 2, 1).to(device)
+    model = GLDisen(8, 2, 8, 8).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     #scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
 
@@ -242,7 +242,7 @@ if __name__ == '__main__':
     print('num_gc_layers: {}'.format(args.num_gc_layers))
     print('================')
 
-    model.load_state_dict(torch.load(f'syner_model_correct2.pkl'))
+    model.load_state_dict(torch.load(f'syner_model_correct1.pkl'))
 
 
     '''model.train()
