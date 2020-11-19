@@ -242,7 +242,7 @@ if __name__ == '__main__':
     print('num_gc_layers: {}'.format(args.num_gc_layers))
     print('================')
 
-    model.load_state_dict(torch.load(f'syner_model_correct2_50_all3000.pkl'))
+    model.load_state_dict(torch.load(f'syner_n_model_correct2_ep30_all3000.pkl'))
 
 
     '''model.train()
