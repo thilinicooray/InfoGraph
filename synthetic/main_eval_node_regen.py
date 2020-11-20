@@ -122,7 +122,7 @@ class GLDisen(nn.Module):
 
         prob = [0.0, 0.1,0.3, 0.5, 0.7, 0.9, 1.0]
         labels = [0,1,2,3,4,5,6]
-        n = 10
+        n = 50
         tot_edges = (n* (n-1))//2
 
         global_rep = []
