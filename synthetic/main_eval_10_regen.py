@@ -233,11 +233,11 @@ class GLDisen(nn.Module):
                 '''with open('sample_genp.json', 'w') as fout:
                     json.dump(cut_values, fout)'''
 
-                '''G = nx.from_numpy_matrix(our_adj)
+                G = nx.from_numpy_matrix(our_adj)
                 nx.draw_circular(G)
                 plt.axis('equal')
                 #nx.draw(G)
-                plt.savefig('graph_{}_{}.pdf'.format(i, label), bbox_inches='tight')'''
+                plt.savefig('graph_{}_{}{}.pdf'.format(i, str(pr*10), np.sum(our_adj)), bbox_inches='tight')
 
                 i+=1
 
