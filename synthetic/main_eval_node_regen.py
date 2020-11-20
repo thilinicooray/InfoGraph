@@ -168,6 +168,14 @@ class GLDisen(nn.Module):
                 best_cut_off ={}
                 best_prob = 0
 
+                label = data.y.item()
+                #print('label', label)
+                pr = prob[label]
+
+                cut_best = 0
+                dif_best = 1000
+                p_best = 0
+
                 cut_values = []
 
                 for k in range(50):
@@ -177,23 +185,29 @@ class GLDisen(nn.Module):
 
                         p_gen = np.sum(mask)/2500
 
-                        cut_values.append({'cut':str(current_cut), 'p':str(p_gen)})
+                        err = np.power(pr - p_gen,2)
+
+                        if err < dif_best:
+                            dif_best = err
+                            cut_best = current_cut
+                            p_best = p_gen
+
+
+                        #cut_values.append({'cut':str(current_cut), 'p':str(p_gen)})
                         #mse =
 
-                print('recon adj matrix' , rec_adj)
+                #print('recon adj matrix' , rec_adj)
 
-                print('scaled recon adj matrix' , scaled_adj)
+                #print('scaled recon adj matrix' , scaled_adj)
 
-                print('org matrix' , org_adj)
-
-                label = data.y.item()
-                #print('label', label)
-                pr = prob[label]
-                print('probability ', pr)
+                #print('org matrix' , org_adj)
 
 
-                with open('sample_genp.json', 'w') as fout:
-                    json.dump(cut_values, fout)
+                print('probability ', pr, cut_best, p_best)
+
+
+                '''with open('sample_genp.json', 'w') as fout:
+                    json.dump(cut_values, fout)'''
 
                 i+=1
 
