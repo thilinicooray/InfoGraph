@@ -177,7 +177,7 @@ class GLDisen(nn.Module):
 
                         p_gen = np.sum(mask)/2500
 
-                        cut_values.append({'cut':current_cut, 'p':p_gen})
+                        cut_values.append({'cut':str(current_cut), 'p':str(p_gen)})
                         #mse =
 
                 print('recon adj matrix' , rec_adj)
