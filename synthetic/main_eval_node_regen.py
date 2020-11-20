@@ -151,28 +151,30 @@ class GLDisen(nn.Module):
                 a, idx_tensor = to_dense_batch(reconstructed_node, batch)
                 a_t = a.permute(0, 2, 1)
                 rec_adj = torch.bmm(a, a_t)
-
                 np_rec_adj = rec_adj.cpu().numpy()
-                np_rec_adj_lin = np_rec_adj.reshape((-1,1))
 
-                print('shapes ', np_rec_adj.shape, np_rec_adj_lin.shape)
 
-                from sklearn.preprocessing import MinMaxScaler
-                scaler = MinMaxScaler()
-                scaler.fit(np_rec_adj)
-                long_adj = scaler.transform(np_rec_adj_lin)
+                for j in range(5):
 
-                print('long scale ', long_adj.shape, long_adj)
 
-                scaled_adj = long_adj.reshape((50,50))
+                    np_rec_adj_lin = np_rec_adj.reshape((-1,1))
 
-                org_adj = to_dense_adj(edge_index, batch)
+                    from sklearn.preprocessing import MinMaxScaler
+                    scaler = MinMaxScaler()
+                    scaler.fit(np_rec_adj_lin)
+                    long_adj = scaler.transform(np_rec_adj_lin)
 
-                print('recon adj matrix' , rec_adj)
+                    scaled_adj = long_adj.reshape((50,50))
 
-                print('scaled recon adj matrix' , scaled_adj)
+                    org_adj = to_dense_adj(edge_index, batch)
 
-                print('org matrix' , org_adj)
+                    print('recon adj matrix' , rec_adj)
+
+                    print('scaled recon adj matrix' , scaled_adj)
+
+                    print('org matrix' , org_adj)
+
+                    np_rec_adj = scaled_adj
 
                 label = data.y.item()
                 #print('label', label)
@@ -181,7 +183,7 @@ class GLDisen(nn.Module):
 
                 i+=1
 
-                if i == 20:
+                if i == 1:
                     break
 
 
