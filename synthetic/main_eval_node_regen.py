@@ -175,7 +175,7 @@ class GLDisen(nn.Module):
                         current_cut = scaled_adj[k][m]
                         mask = (scaled_adj > current_cut).astype(int)
 
-                        p_gen = torch.sum(mask)/2500
+                        p_gen = np.sum(mask)/2500
 
                         cut_values.append({'cut':current_cut, 'p':p_gen})
                         #mse =
