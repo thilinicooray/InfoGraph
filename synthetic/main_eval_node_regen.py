@@ -152,7 +152,7 @@ class GLDisen(nn.Module):
                 a_t = a.permute(0, 2, 1)
                 rec_adj = torch.bmm(a, a_t)
 
-                np_rec_adj = rec_adj.cpu().numpy()
+                np_rec_adj = np.squeeze(rec_adj.cpu().numpy())
                 np_rec_adj_lin = np_rec_adj.reshape((-1,1))
 
                 from sklearn.preprocessing import MinMaxScaler
