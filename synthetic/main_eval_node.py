@@ -117,10 +117,14 @@ class GLDisen(nn.Module):
 
         y = []
         i = 0
-        prob = [0.0000, 0.0500, 0.1000, 0.1500, 0.2000, 0.2500, 0.3000, 0.3500, 0.4000,
+        '''prob = [0.0000, 0.0500, 0.1000, 0.1500, 0.2000, 0.2500, 0.3000, 0.3500, 0.4000,
                 0.4500, 0.5000, 0.5500, 0.6000, 0.6500, 0.7000, 0.7500, 0.8000, 0.8500,
                 0.9000, 0.9500, 1.0000]
+        labels = [0,1,2,3,4,5,6]'''
+
+        prob = [0.0, 0.1,0.3, 0.5, 0.7, 0.9, 1.0]
         labels = [0,1,2,3,4,5,6]
+
         with torch.no_grad():
             for data in loader:
                 data.to(device)
@@ -292,7 +296,7 @@ if __name__ == '__main__':
 
     model.eval()
 
-    _ = model.get_embeddings(train_loader)
+    _ = model.get_embeddings(test_loader)
 
 
 
