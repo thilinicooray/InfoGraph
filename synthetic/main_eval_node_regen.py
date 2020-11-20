@@ -164,7 +164,10 @@ class GLDisen(nn.Module):
                 pr = prob[label]
                 print('probability ', pr)
 
-                break
+                i+=1
+
+                if i == 20:
+                    break
 
 
 
