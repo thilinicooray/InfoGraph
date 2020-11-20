@@ -292,7 +292,7 @@ if __name__ == '__main__':
 
     model.eval()
 
-    _ = model.get_embeddings(test_loader)
+    _ = model.get_embeddings(train_loader)
 
 
 
