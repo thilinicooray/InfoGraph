@@ -109,14 +109,7 @@ class GLDisen(nn.Module):
     def get_embeddings(self, loader):
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        ret = []
-        ret_node1 = []
-        ret_node2 = []
 
-        global_rep = []
-        local1 = []
-        local2 = []
-        probability = []
 
         y = []
         i = 0
@@ -127,6 +120,11 @@ class GLDisen(nn.Module):
 
         prob = [0.0, 0.1,0.3, 0.5, 0.7, 0.9, 1.0]
         labels = [0,1,2,3,4,5,6]
+
+        global_rep = []
+        regen_p = []
+        regen_adj = []
+        org_p = []
 
         with torch.no_grad():
             for data in loader:
@@ -175,6 +173,7 @@ class GLDisen(nn.Module):
                 cut_best = 0
                 dif_best = 1000
                 p_best = 0
+                our_adj = 0
 
                 cut_values = []
 
@@ -191,6 +190,7 @@ class GLDisen(nn.Module):
                             dif_best = err
                             cut_best = current_cut
                             p_best = p_gen
+                            our_adj = mask
 
 
                         #cut_values.append({'cut':str(current_cut), 'p':str(p_gen)})
@@ -203,7 +203,22 @@ class GLDisen(nn.Module):
                 #print('org matrix' , org_adj)
 
 
-                print('probability ', pr, cut_best, p_best)
+                print('ours ', pr, cut_best, p_best)
+
+
+                exp = np.empty(1)
+                exp.fill(pr)
+
+
+                exp2 = np.empty(1)
+                exp2.fill(p_best)
+
+
+
+                global_rep.append(class_latent_embeddings.cpu().numpy())
+                regen_p.append(exp2)
+                regen_adj.append(our_adj)
+                org_p.append(exp)
 
 
                 '''with open('sample_genp.json', 'w') as fout:
@@ -211,8 +226,19 @@ class GLDisen(nn.Module):
 
                 i+=1
 
-                if i == 1:
-                    break
+                '''if i == 1:
+                    break'''
+
+
+        global_rep = np.concatenate(global_rep, 0)
+        regen = np.concatenate(regen_p, 0)
+        org = np.concatenate(org_p, 0)
+        regen_adj = np.concatenate(regen_adj, 0)
+
+        savetxt('global_rep_tot_50_regen.csv', global_rep, delimiter=',')
+        savetxt('regen_p.csv', regen, delimiter=',')
+        savetxt('org_p.csv', org, delimiter=',')
+        savetxt('regen_adj.csv', regen_adj, delimiter=',')
 
 
 
