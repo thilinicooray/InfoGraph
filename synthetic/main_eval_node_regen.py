@@ -162,7 +162,7 @@ class GLDisen(nn.Module):
                 scaler.fit(np_rec_adj_lin)
                 long_adj = scaler.transform(np_rec_adj_lin)
 
-                print('long scale ', long_adj.shape)
+                print('long scale ', long_adj.shape, long_adj)
 
                 scaled_adj = long_adj.reshape((50,50))
 
