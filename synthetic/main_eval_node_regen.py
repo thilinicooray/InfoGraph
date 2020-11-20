@@ -159,6 +159,11 @@ class GLDisen(nn.Module):
 
                 print('org matrix' , org_adj)
 
+                label = data.y.item()
+                #print('label', label)
+                pr = prob[label]
+                print('probability ', pr)
+
                 break
 
 
