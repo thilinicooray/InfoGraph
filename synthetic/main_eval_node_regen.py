@@ -237,13 +237,13 @@ class GLDisen(nn.Module):
                 nx.draw_circular(G)
                 plt.axis('equal')
                 #nx.draw(G)
-                plt.savefig('graph_{}.pdf'.format(i), bbox_inches='tight')
+                plt.savefig('graph_{}_{}.pdf'.format(i, label), bbox_inches='tight')
 
                 i+=1
 
 
 
-                if i == 5:
+                if i == 10:
                     break
 
 
