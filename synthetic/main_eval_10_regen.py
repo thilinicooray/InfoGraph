@@ -233,11 +233,11 @@ class GLDisen(nn.Module):
                 '''with open('sample_genp.json', 'w') as fout:
                     json.dump(cut_values, fout)'''
 
-                G = nx.from_numpy_matrix(our_adj)
+                '''G = nx.from_numpy_matrix(our_adj)
                 nx.draw_circular(G)
                 plt.axis('equal')
                 #nx.draw(G)
-                plt.savefig('graph_{}_{}.pdf'.format(i, label), bbox_inches='tight')
+                plt.savefig('graph_{}_{}.pdf'.format(i, label), bbox_inches='tight')'''
 
                 i+=1
 
@@ -247,15 +247,15 @@ class GLDisen(nn.Module):
                     break
 
 
-        '''global_rep = np.concatenate(global_rep, 0)
+        global_rep = np.concatenate(global_rep, 0)
         regen = np.concatenate(regen_p, 0)
         org = np.concatenate(org_p, 0)
         regen_adj = np.concatenate(regen_adj, 0)
 
-        savetxt('global_rep_tot_50_regen1.csv', global_rep, delimiter=',')
-        savetxt('regen_p1.csv', regen, delimiter=',')
-        savetxt('org_p1.csv', org, delimiter=',')
-        savetxt('regen1_adj.csv', regen_adj, delimiter=',')'''
+        savetxt('global_rep_tot_50_regen1_small.csv', global_rep, delimiter=',')
+        savetxt('regen_p1_small.csv', regen, delimiter=',')
+        savetxt('org_p1_small.csv', org, delimiter=',')
+        savetxt('regen1_adj_small.csv', regen_adj, delimiter=',')
 
 
 
