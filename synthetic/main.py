@@ -283,15 +283,15 @@ if __name__ == '__main__':
 
     dataset = SyntheticER_N_Dataset(path).shuffle()
 
-    train_dataset = dataset[:35000]
-    test_dataset = dataset[35000:]
+    train_dataset = dataset[:3000]
+    test_dataset = dataset[3000:]
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     train_loader = DataLoader(train_dataset, batch_size=512)
     test_loader = DataLoader(test_dataset, batch_size=512)
 
     lr = args.lr
-    epochs = 30
+    epochs = 50
     dataset_num_features = 1
 
     model = GLDisen(2, 2, 2, 1).to(device)
