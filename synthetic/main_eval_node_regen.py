@@ -179,8 +179,8 @@ class GLDisen(nn.Module):
 
                 for k in range(50):
                     for m in range(50):
-                        current_cut = scaled_adj[k][m]
-                        mask = (scaled_adj > current_cut).astype(int)
+                        current_cut = np_rec_adj[k][m]
+                        mask = (np_rec_adj > current_cut).astype(int)
 
                         p_gen = np.sum(mask)/2500
 
@@ -235,10 +235,10 @@ class GLDisen(nn.Module):
         org = np.concatenate(org_p, 0)
         regen_adj = np.concatenate(regen_adj, 0)
 
-        savetxt('global_rep_tot_50_regen.csv', global_rep, delimiter=',')
-        savetxt('regen_p.csv', regen, delimiter=',')
-        savetxt('org_p.csv', org, delimiter=',')
-        savetxt('regen_adj.csv', regen_adj, delimiter=',')
+        savetxt('global_rep_tot_50_regen1.csv', global_rep, delimiter=',')
+        savetxt('regen_p1.csv', regen, delimiter=',')
+        savetxt('org_p1.csv', org, delimiter=',')
+        savetxt('regen1_adj.csv', regen_adj, delimiter=',')
 
 
 
