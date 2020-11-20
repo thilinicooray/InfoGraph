@@ -190,7 +190,7 @@ class GLDisen(nn.Module):
                             current_cut = np_rec_adj[k][m]
                             mask = (np_rec_adj > current_cut).astype(int)
 
-                            p_gen = np.sum(mask)/100
+                            p_gen = np.sum(mask)/tot_edges
 
                             err = np.power(pr - p_gen,2)
 
