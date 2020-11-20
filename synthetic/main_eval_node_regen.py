@@ -181,7 +181,7 @@ class GLDisen(nn.Module):
 
                 i+=1
 
-                if i == 1:
+                if i == 20:
                     break
 
 
