@@ -234,7 +234,9 @@ class GLDisen(nn.Module):
                     json.dump(cut_values, fout)'''
 
                 G = nx.from_numpy_matrix(our_adj)
-                nx.draw(G)
+                nx.draw_circular(G)
+                plt.axis('equal')
+                #nx.draw(G)
                 plt.savefig('graph_{}.pdf'.format(i), bbox_inches='tight')
 
                 i+=1
