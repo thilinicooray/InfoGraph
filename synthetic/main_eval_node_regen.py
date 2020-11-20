@@ -153,7 +153,7 @@ class GLDisen(nn.Module):
                 rec_adj = torch.bmm(a, a_t)
 
                 np_rec_adj = rec_adj.cpu().numpy()
-                np_rec_adj_lin = np_rec_adj.reshape((1,-1))
+                np_rec_adj_lin = np_rec_adj.reshape((-1,1))
 
                 print('shapes ', np_rec_adj.shape, np_rec_adj_lin.shape)
 
