@@ -222,7 +222,7 @@ class GLDisen(nn.Module):
 
 
 
-                global_rep.append(class_latent_embeddings.cpu().numpy())
+                global_rep.append(global_mean_pool(class_latent_embeddings, batch).cpu().numpy())
                 regen_p.append(exp2)
                 regen_adj.append(our_adj)
                 org_p.append(exp)
