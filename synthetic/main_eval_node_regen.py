@@ -159,8 +159,8 @@ class GLDisen(nn.Module):
 
                 from sklearn.preprocessing import MinMaxScaler
                 scaler = MinMaxScaler()
-                scaler.fit(np_rec_adj_lin)
-                long_adj = scaler.transform(np_rec_adj_lin)
+                scaler.fit(np_rec_adj)
+                long_adj = scaler.transform(np_rec_adj)
 
                 print('long scale ', long_adj.shape, long_adj)
 
