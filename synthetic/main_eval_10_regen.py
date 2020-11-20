@@ -212,7 +212,7 @@ class GLDisen(nn.Module):
                 #print('org matrix' , org_adj)
 
 
-                print('ours ', pr, cut_best, p_best)
+                print('ours ', pr, cut_best, p_best, np.sum(our_adj))
 
 
                 exp = np.empty(1)
