@@ -28,6 +28,8 @@ from arguments import arg_parse
 from graph_gen import SyntheticERDataset
 from graph_gen_random_nodeval import SyntheticER_N_Dataset
 
+import json
+
 class GLDisen(nn.Module):
     def __init__(self, hidden_dim, num_gc_layers, node_dim, class_dim):
         super(GLDisen, self).__init__()
@@ -151,35 +153,47 @@ class GLDisen(nn.Module):
                 a, idx_tensor = to_dense_batch(reconstructed_node, batch)
                 a_t = a.permute(0, 2, 1)
                 rec_adj = torch.bmm(a, a_t)
+
                 np_rec_adj = rec_adj.cpu().numpy()
+                np_rec_adj_lin = np_rec_adj.reshape((-1,1))
 
+                from sklearn.preprocessing import MinMaxScaler
+                scaler = MinMaxScaler()
+                scaler.fit(np_rec_adj_lin)
+                long_adj = scaler.transform(np_rec_adj_lin)
 
-                for j in range(5):
+                scaled_adj = long_adj.reshape((50,50))
+                org_adj = to_dense_adj(edge_index, batch)
 
+                best_cut_off ={}
+                best_prob = 0
 
-                    np_rec_adj_lin = np_rec_adj.reshape((-1,1))
+                cut_values = []
 
-                    from sklearn.preprocessing import MinMaxScaler
-                    scaler = MinMaxScaler()
-                    scaler.fit(np_rec_adj_lin)
-                    long_adj = scaler.transform(np_rec_adj_lin)
+                for k in range(50):
+                    for m in range(50):
+                        current_cut = scaled_adj[k][m]
+                        mask = (scaled_adj > current_cut).astype(int)
 
-                    scaled_adj = long_adj.reshape((50,50))
+                        p_gen = torch.sum(mask)/2500
 
-                    org_adj = to_dense_adj(edge_index, batch)
+                        cut_values.append({'cut':current_cut, 'p':p_gen})
+                        #mse =
 
-                    print('recon adj matrix' , rec_adj)
+                print('recon adj matrix' , rec_adj)
 
-                    print('scaled recon adj matrix' , scaled_adj)
+                print('scaled recon adj matrix' , scaled_adj)
 
-                    print('org matrix' , org_adj)
-
-                    np_rec_adj = scaled_adj
+                print('org matrix' , org_adj)
 
                 label = data.y.item()
                 #print('label', label)
                 pr = prob[label]
                 print('probability ', pr)
+
+
+                with open('sample_genp.json', 'w') as fout:
+                    json.dump(cut_values, fout)
 
                 i+=1
 
