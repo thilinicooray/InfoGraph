@@ -204,10 +204,10 @@ class GLDisen(nn.Module):
         local2 = np.concatenate(local2, 0)
         probability = np.concatenate(probability, 0)
 
-        savetxt('global_rep_tot_big.csv', global_rep, delimiter=',')
-        savetxt('local1_tot_big.csv', local1, delimiter=',')
-        savetxt('local2_tot_big.csv', local2, delimiter=',')
-        savetxt('probability_tot_big.csv', probability, delimiter=',')
+        savetxt('global_rep_tot_50.csv', global_rep, delimiter=',')
+        savetxt('local1_tot_50.csv', local1, delimiter=',')
+        savetxt('local2_tot_50.csv', local2, delimiter=',')
+        savetxt('probability_tot_50.csv', probability, delimiter=',')
 
 
         '''ret = np.concatenate(ret, 0)
@@ -267,7 +267,7 @@ if __name__ == '__main__':
     print('num_gc_layers: {}'.format(args.num_gc_layers))
     print('================')
 
-    model.load_state_dict(torch.load(f'syner_n_model_correct2_big_ep30_all3000.pkl'))
+    model.load_state_dict(torch.load(f'syner_n_model_correct2_50node_random.pkl'))
 
 
     '''model.train()
