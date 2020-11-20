@@ -159,15 +159,16 @@ class GLDisen(nn.Module):
 
                 from sklearn.preprocessing import MinMaxScaler
                 scaler = MinMaxScaler()
-                scaler.fit(data)
-                long_adj = scaler.transform(data)
+                scaler.fit(np_rec_adj_lin)
+                long_adj = scaler.transform(np_rec_adj_lin)
 
-
-
+                scaled_adj = long_adj.reshape((50,50))
 
                 org_adj = to_dense_adj(edge_index, batch)
 
-                print('adj matrix' , rec_adj)
+                print('recon adj matrix' , rec_adj)
+
+                print('scaled recon adj matrix' , scaled_adj)
 
                 print('org matrix' , org_adj)
 
