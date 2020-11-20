@@ -177,20 +177,27 @@ class GLDisen(nn.Module):
 
                 cut_values = []
 
-                for k in range(50):
-                    for m in range(50):
-                        current_cut = np_rec_adj[k][m]
-                        mask = (np_rec_adj > current_cut).astype(int)
+                if pr != 1.0:
 
-                        p_gen = np.sum(mask)/2500
+                    for k in range(50):
+                        for m in range(50):
+                            current_cut = np_rec_adj[k][m]
+                            mask = (np_rec_adj > current_cut).astype(int)
 
-                        err = np.power(pr - p_gen,2)
+                            p_gen = np.sum(mask)/2500
 
-                        if err < dif_best:
-                            dif_best = err
-                            cut_best = current_cut
-                            p_best = p_gen
-                            our_adj = mask
+                            err = np.power(pr - p_gen,2)
+
+                            if err < dif_best:
+                                dif_best = err
+                                cut_best = current_cut
+                                p_best = p_gen
+                                our_adj = mask
+
+                else:
+                    cut_best = np_rec_adj[0][0]
+                    p_best = 1.0
+                    our_adj = np.ones((50,50), dtype=int)
 
 
                         #cut_values.append({'cut':str(current_cut), 'p':str(p_gen)})
