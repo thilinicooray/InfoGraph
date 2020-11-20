@@ -27,6 +27,8 @@ from numpy import savetxt
 from arguments import arg_parse
 from graph_gen import SyntheticERDataset
 from graph_gen_random_nodeval import SyntheticER_N_Dataset
+import networkx as nx
+import matplotlib.pyplot as plt
 
 import json
 
@@ -231,13 +233,19 @@ class GLDisen(nn.Module):
                 '''with open('sample_genp.json', 'w') as fout:
                     json.dump(cut_values, fout)'''
 
+                G = nx.from_numpy_matrix(our_adj)
+                nx.draw(G)
+                plt.savefig('graph_{}.pdf'.format(i), bbox_inches='tight')
+
                 i+=1
 
-                '''if i == 1:
-                    break'''
 
 
-        global_rep = np.concatenate(global_rep, 0)
+                if i == 5:
+                    break
+
+
+        '''global_rep = np.concatenate(global_rep, 0)
         regen = np.concatenate(regen_p, 0)
         org = np.concatenate(org_p, 0)
         regen_adj = np.concatenate(regen_adj, 0)
@@ -245,7 +253,7 @@ class GLDisen(nn.Module):
         savetxt('global_rep_tot_50_regen1.csv', global_rep, delimiter=',')
         savetxt('regen_p1.csv', regen, delimiter=',')
         savetxt('org_p1.csv', org, delimiter=',')
-        savetxt('regen1_adj.csv', regen_adj, delimiter=',')
+        savetxt('regen1_adj.csv', regen_adj, delimiter=',')'''
 
 
 
