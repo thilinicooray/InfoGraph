@@ -152,6 +152,18 @@ class GLDisen(nn.Module):
                 a_t = a.permute(0, 2, 1)
                 rec_adj = torch.bmm(a, a_t)
 
+                np_rec_adj = rec_adj.cpu().numpy()
+                np_rec_adj_lin = np_rec_adj.reshape((-1))
+
+                print('shapes ', np_rec_adj.shape, np_rec_adj_lin.shape)
+
+                from sklearn.preprocessing import MinMaxScaler
+                scaler = MinMaxScaler()
+                scaler.fit(data)
+                long_adj = scaler.transform(data)
+
+
+
 
                 org_adj = to_dense_adj(edge_index, batch)
 
@@ -166,7 +178,7 @@ class GLDisen(nn.Module):
 
                 i+=1
 
-                if i == 20:
+                if i == 1:
                     break
 
 
