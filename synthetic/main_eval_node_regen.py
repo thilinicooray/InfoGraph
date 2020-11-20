@@ -152,7 +152,12 @@ class GLDisen(nn.Module):
                 a_t = a.permute(0, 2, 1)
                 rec_adj = torch.bmm(a, a_t)
 
+
+                org_adj = to_dense_adj(edge_index, batch)
+
                 print('adj matrix' , rec_adj)
+
+                print('org matrix' , org_adj)
 
                 break
 
