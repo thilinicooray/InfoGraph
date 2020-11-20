@@ -122,6 +122,8 @@ class GLDisen(nn.Module):
 
         prob = [0.0, 0.1,0.3, 0.5, 0.7, 0.9, 1.0]
         labels = [0,1,2,3,4,5,6]
+        n = 10
+        tot_edges = (n* (n-1))//2
 
         global_rep = []
         regen_p = []
@@ -162,9 +164,6 @@ class GLDisen(nn.Module):
                 scaler.fit(np_rec_adj_lin)
                 long_adj = scaler.transform(np_rec_adj_lin)
 
-                scaled_adj = long_adj.reshape((50,50))
-                org_adj = to_dense_adj(edge_index, batch)
-
                 best_cut_off ={}
                 best_prob = 0
 
@@ -181,12 +180,12 @@ class GLDisen(nn.Module):
 
                 if pr != 1.0:
 
-                    for k in range(50):
-                        for m in range(50):
+                    for k in range(n):
+                        for m in range(n):
                             current_cut = np_rec_adj[k][m]
                             mask = (np_rec_adj > current_cut).astype(int)
 
-                            p_gen = np.sum(mask)/2500
+                            p_gen = np.sum(mask)/tot_edges
 
                             err = np.power(pr - p_gen,2)
 
@@ -199,7 +198,7 @@ class GLDisen(nn.Module):
                 else:
                     cut_best = np_rec_adj[0][0]
                     p_best = 1.0
-                    our_adj = np.ones((50,50), dtype=int)
+                    our_adj = np.ones((n,n), dtype=int)
 
 
                         #cut_values.append({'cut':str(current_cut), 'p':str(p_gen)})
@@ -212,7 +211,7 @@ class GLDisen(nn.Module):
                 #print('org matrix' , org_adj)
 
 
-                print('ours ', pr, cut_best, p_best)
+                print('ours ', pr, p_best, cut_best, global_mean_pool(class_latent_embeddings, batch) )
 
 
                 exp = np.empty(1)
@@ -233,21 +232,21 @@ class GLDisen(nn.Module):
                 '''with open('sample_genp.json', 'w') as fout:
                     json.dump(cut_values, fout)'''
 
-                G = nx.from_numpy_matrix(our_adj)
+                '''G = nx.from_numpy_matrix(our_adj)
                 nx.draw_circular(G)
                 plt.axis('equal')
                 #nx.draw(G)
-                plt.savefig('graph_{}_{}.pdf'.format(i, label), bbox_inches='tight')
+                plt.savefig('graph_{}_{}.pdf'.format(i, label), bbox_inches='tight')'''
 
                 i+=1
 
 
 
-                if i == 10:
-                    break
+                '''if i == 10:
+                    break'''
 
 
-        '''global_rep = np.concatenate(global_rep, 0)
+        global_rep = np.concatenate(global_rep, 0)
         regen = np.concatenate(regen_p, 0)
         org = np.concatenate(org_p, 0)
         regen_adj = np.concatenate(regen_adj, 0)
@@ -255,7 +254,7 @@ class GLDisen(nn.Module):
         savetxt('global_rep_tot_50_regen1.csv', global_rep, delimiter=',')
         savetxt('regen_p1.csv', regen, delimiter=',')
         savetxt('org_p1.csv', org, delimiter=',')
-        savetxt('regen1_adj.csv', regen_adj, delimiter=',')'''
+        #savetxt('regen1_adj.csv', regen_adj, delimiter=',')
 
 
 
