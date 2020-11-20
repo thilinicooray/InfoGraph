@@ -162,7 +162,7 @@ class GLDisen(nn.Module):
                 scaler.fit(np_rec_adj_lin)
                 long_adj = scaler.transform(np_rec_adj_lin)
 
-                scaled_adj = long_adj.reshape((50,50))
+                scaled_adj = long_adj.reshape((10,10))
                 org_adj = to_dense_adj(edge_index, batch)
 
                 best_cut_off ={}
