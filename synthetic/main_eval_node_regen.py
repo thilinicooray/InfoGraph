@@ -162,6 +162,8 @@ class GLDisen(nn.Module):
                 scaler.fit(np_rec_adj_lin)
                 long_adj = scaler.transform(np_rec_adj_lin)
 
+                print('long scale ', long_adj.shape)
+
                 scaled_adj = long_adj.reshape((50,50))
 
                 org_adj = to_dense_adj(edge_index, batch)
