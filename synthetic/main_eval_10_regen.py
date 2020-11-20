@@ -123,6 +123,10 @@ class GLDisen(nn.Module):
         prob = [0.0, 0.1,0.3, 0.5, 0.7, 0.9, 1.0]
         labels = [0,1,2,3,4,5,6]
 
+        n = 10
+        tot_edges = (n* (n-1))//2
+        print('tot edges ', tot_edges)
+
         global_rep = []
         regen_p = []
         regen_adj = []
