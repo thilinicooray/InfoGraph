@@ -213,7 +213,7 @@ class GLDisen(nn.Module):
                     exp2.fill(p_best)
 
                     exp3 = np.empty(1)
-                    exp3.fill(global_latent)
+                    exp3.fill(global_latent.cpu().numpy())
 
 
 
