@@ -234,7 +234,7 @@ class GLDisen(nn.Module):
 
 
 
-                    if count == 100:
+                    if count == 500:
                         break
 
 
