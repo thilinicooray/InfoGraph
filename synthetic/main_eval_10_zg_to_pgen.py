@@ -202,7 +202,8 @@ class GLDisen(nn.Module):
                         p_best = 1.0
                         our_adj = np.ones((n,n), dtype=int)
 
-                    if p_best != 0 and np.abs(p_best-pr)<= 0.15:
+                    #if p_best != 0 and np.abs(p_best-pr)<= 0.15:
+                    if p_best != 0:
                         count += 1
                     else:
                         continue
