@@ -120,9 +120,9 @@ class GLDisen(nn.Module):
                 0.9000, 0.9500, 1.0000]
         labels = [0,1,2,3,4,5,6]'''
 
-        prob = [ 0.244,0.022,0.356,0.533,0.711, 0.0889, 0.267]
+        prob = [ 0.022,0.533,0.711, 0.0889, 0.267]
         labels = [0,1,2,3,4,5,6]
-        zg = torch.tensor([-1.25,-0.715,-1.10,-1.27,-1.29,-0.88,-1.14 ]).to(device)
+        zg = torch.tensor([-0.715,-1.27,-1.29,-0.88,-1.14 ]).to(device)
         n = 10
         tot_edges = (n* (n-1))//2
 
@@ -202,7 +202,7 @@ class GLDisen(nn.Module):
                         p_best = 1.0
                         our_adj = np.ones((n,n), dtype=int)
 
-                    if p_best != 0:
+                    if p_best != 0 and np.abs(p_best-pr)<= 0.15:
                         count += 1
                     else:
                         continue
