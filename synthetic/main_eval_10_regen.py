@@ -197,6 +197,9 @@ class GLDisen(nn.Module):
 
                             err = np.power(pr - p_gen,2)
 
+                            if p_gen > 1.0 or p_gen==0.0:
+                                continue
+
                             if err < dif_best:
                                 dif_best = err
                                 cut_best = current_cut
