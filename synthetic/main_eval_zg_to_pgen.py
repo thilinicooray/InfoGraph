@@ -120,9 +120,9 @@ class GLDisen(nn.Module):
                 0.9000, 0.9500, 1.0000]
         labels = [0,1,2,3,4,5,6]'''
 
-        prob = [0.0, 0.1,0.3, 0.5, 0.7, 0.9, 1.0]
+        prob = [0.0, 0.1,0.3, 0.5, 0.7, 0.9]
         labels = [0,1,2,3,4,5,6]
-        zg = torch.tensor([1.5607, 1.1329, -0.5245, -0.5887, -0.5887, -0.5887, -0.5887]).to(device)
+        zg = torch.tensor([1.5607, 1.1329, -0.5245, -0.5887, -0.6245, -0.6901]).to(device)
         n = 50
         tot_edges = (n* (n-1))//2
 
@@ -232,11 +232,11 @@ class GLDisen(nn.Module):
 
         global_rep = np.concatenate(global_rep, 0)
         regen = np.concatenate(regen_p, 0)
-        org = np.concatenate(org_p, 0)
-        regen_adj = np.concatenate(regen_adj, 0)
+        #org = np.concatenate(org_p, 0)
+        #regen_adj = np.concatenate(regen_adj, 0)
 
-        savetxt('global_rep_change.csv',global_rep, delimiter=',')
-        savetxt('regen_p_change.csv', regen, delimiter=',')
+        savetxt('global_rep_change_my.csv',global_rep, delimiter=',')
+        savetxt('regen_p_change_my.csv', regen, delimiter=',')
         #savetxt('org_p1_{}.csv', org, delimiter=',')
         #savetxt('regen1_adj_{}.csv'.format(i), regen_adj, delimiter=',')
 
