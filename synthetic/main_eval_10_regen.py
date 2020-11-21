@@ -247,19 +247,19 @@ class GLDisen(nn.Module):
 
 
 
-                if i == 10:
-                    break
+                '''if i == 10:
+                    break'''
 
 
         global_rep = np.concatenate(global_rep, 0)
         regen = np.concatenate(regen_p, 0)
         org = np.concatenate(org_p, 0)
-        regen_adj = np.concatenate(regen_adj, 0)
+        #regen_adj = np.concatenate(regen_adj, 0)
 
         savetxt('global_rep_tot_50_regen1_small.csv', global_rep, delimiter=',')
         savetxt('regen_p1_small.csv', regen, delimiter=',')
         savetxt('org_p1_small.csv', org, delimiter=',')
-        savetxt('regen1_adj_small.csv', regen_adj, delimiter=',')
+        #savetxt('regen1_adj_small.csv', regen_adj, delimiter=',')
 
 
 
