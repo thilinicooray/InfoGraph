@@ -176,6 +176,9 @@ class GLDisen(nn.Module):
                 #print('label', label)
                 pr = prob[label]
 
+                if pr ==0 or pr == 1.0:
+                    continue
+
                 cut_best = 0
                 dif_best = 1000
                 p_best = 0
