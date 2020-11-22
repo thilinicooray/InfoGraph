@@ -191,9 +191,11 @@ class GLDisen(nn.Module):
 
                             p_gen1 = np.sum(mask)/tot_edges
 
-                            print('both p gen', pr, p_gen, p_gen1)
-
                             err = np.power(pr - p_gen,2)
+
+                            err1 = np.power(pr - p_gen1,2)
+
+                            print('both p gen', pr, p_gen, p_gen1, err, err1)
 
                             if err < dif_best:
                                 dif_best = err
