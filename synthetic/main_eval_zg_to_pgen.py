@@ -185,7 +185,9 @@ class GLDisen(nn.Module):
                                 current_cut = np_rec_adj[k][m]
                                 mask = (np_rec_adj > current_cut).astype(int)
 
-                                p_gen = np.sum(mask)/tot_edges
+                                mask1 = np.tril((mask),k=-1)
+
+                                p_gen = np.sum(mask1)/tot_edges
 
                                 err = np.power(pr - p_gen,2)
 
@@ -235,8 +237,8 @@ class GLDisen(nn.Module):
         #org = np.concatenate(org_p, 0)
         #regen_adj = np.concatenate(regen_adj, 0)
 
-        savetxt('global_rep_change_my.csv',global_rep, delimiter=',')
-        savetxt('regen_p_change_my.csv', regen, delimiter=',')
+        savetxt('global_rep_change_my_correct.csv',global_rep, delimiter=',')
+        savetxt('regen_p_change_my_correct.csv', regen, delimiter=',')
         #savetxt('org_p1_{}.csv', org, delimiter=',')
         #savetxt('regen1_adj_{}.csv'.format(i), regen_adj, delimiter=',')
 
