@@ -126,7 +126,7 @@ class GLDisen(nn.Module):
 
         prob = [ 0.333,0.533,0.711, 0.267]
         labels = [0,1,2,3,4,5,6]
-        zg = torch.tensor([-1.21,-1.27,-1.29,-1.14 ]).to(device)
+        zg = torch.tensor([-1.2100000381469727,-1.27,-1.29,-1.14 ]).to(device)
 
         n = 10
         tot_edges = (n* (n-1))//2
