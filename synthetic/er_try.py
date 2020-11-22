@@ -44,6 +44,6 @@ for i in range(10):
 
         org_adj = to_dense_adj(edge_index)
 
-        p = (torch.sum(org_adj).item()/2)/idx.size(0)
+        p = torch.sum(org_adj).item()/2
 
         print('adj ',i, edge_prob, p)
