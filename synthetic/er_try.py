@@ -9,10 +9,10 @@ edge_prob = 0.1
 
 idx = torch.combinations(torch.arange(num_nodes))
 
-print('idx ', idx.size())
+print('idx ', idx.size(), idx)
 
 mask = torch.rand(idx.size(0)) < edge_prob
 
-print('mask', mask.size())
+print('mask', mask.size(), torch.sum(mask), mask)
 
 idx = idx[mask]
