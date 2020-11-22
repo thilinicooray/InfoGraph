@@ -54,7 +54,9 @@ for i in range(1):
 
         gamma = np.random.rand(3,3)
 
-        print(gamma, np.triu(gamma,k=0))
+        print(gamma)
+
+        print(np.triu(gamma,k=0))
 
         print('adj ',i, edge_prob, torch.sum(mask).item())
 
