@@ -55,6 +55,6 @@ for i in range(1):
         adj = np.tril((org_adj.cpu().numpy()),k=-1)
 
 
-        print('adj ',i, edge_prob, torch.sum(mask).item(), np.sum(adj),np.sum(adj), np.sum(adj)/size)
+        print('adj ',i, edge_prob, np.sum(adj)/size)
 
-        break
+        #break
