@@ -27,7 +27,7 @@ for i in range(1):
 
         idx = torch.combinations(torch.arange(num_nodes))
 
-        size = idx.size(0).item()
+        size = idx.size(0)
 
 
         a = torch.rand(idx.size(0))
