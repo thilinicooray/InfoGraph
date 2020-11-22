@@ -52,6 +52,8 @@ for i in range(1):
 
         adj = np.triu((org_adj.cpu().numpy()),k=0)
 
+        print(adj)
+
         print('adj ',i, edge_prob, torch.sum(mask).item())
 
         break
