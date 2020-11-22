@@ -18,7 +18,7 @@ os.environ['PYTHONHASHSEED'] = str(seed)
 
 
 
-num_nodes = 5
+num_nodes = 50
 edge_prob_list = [0.1, 0.3, 0.5, 0.7, 0.9]
 
 for i in range(1):
@@ -50,14 +50,9 @@ for i in range(1):
         #p = torch.sum(org_adj).item()/2
 
 
-        adj = np.triu((org_adj.cpu().numpy()),k=0)
+        adj = np.tril((org_adj.cpu().numpy()),k=-1)
 
-        gamma = np.random.rand(3,3)
 
-        print(gamma)
-
-        print(np.tril(gamma,k=-1))
-
-        print('adj ',i, edge_prob, torch.sum(mask).item())
+        print('adj ',i, edge_prob, torch.sum(mask).item(), np.sum(adj))
 
         break
