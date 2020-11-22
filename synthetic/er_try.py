@@ -10,23 +10,19 @@ edge_prob = 0.1
 
 idx = torch.combinations(torch.arange(num_nodes))
 
-print('idx ', idx.size(), idx)
 
 a = torch.rand(idx.size(0))
 
-print('a', a)
 
 mask = a  < edge_prob
 
-print('mask', mask.size(), torch.sum(mask), torch.sum(mask)/1125, mask)
+print('mask', mask.size(),torch.sum(mask), torch.sum(mask)/1125)
 
 idx = idx[mask]
-
-print('after ', idx)
 
 
 edge_index = to_undirected(idx.t(), num_nodes)
 
 org_adj = to_dense_adj(edge_index)
 
-print('adj ', org_adj, torch.sum(org_adj))
+print('adj ', torch.sum(org_adj))
