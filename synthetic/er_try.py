@@ -27,6 +27,8 @@ for i in range(1):
 
         idx = torch.combinations(torch.arange(num_nodes))
 
+        size = idx.size(0).item()
+
 
         a = torch.rand(idx.size(0))
 
@@ -53,6 +55,6 @@ for i in range(1):
         adj = np.tril((org_adj.cpu().numpy()),k=-1)
 
 
-        print('adj ',i, edge_prob, torch.sum(mask).item(), np.sum(adj))
+        print('adj ',i, edge_prob, torch.sum(mask).item(), np.sum(adj),np.sum(adj), np.sum(adj)/size)
 
         break
