@@ -189,6 +189,10 @@ class GLDisen(nn.Module):
 
                             p_gen = np.sum(mask1)/tot_edges
 
+                            p_gen1 = np.sum(mask)/tot_edges
+
+                            print('both p gen', pr, p_gen, p_gen1)
+
                             err = np.power(pr - p_gen,2)
 
                             if err < dif_best:
@@ -253,9 +257,9 @@ class GLDisen(nn.Module):
         org = np.concatenate(org_p, 0)
         regen_adj = np.concatenate(regen_adj, 0)
 
-        savetxt('global_rep_tot_50_regen1_correct.csv', global_rep, delimiter=',')
-        savetxt('regen_p1_correct.csv', regen, delimiter=',')
-        savetxt('org_p1_correct.csv', org, delimiter=',')
+        #savetxt('global_rep_tot_50_regen1_correct.csv', global_rep, delimiter=',')
+        #savetxt('regen_p1_correct.csv', regen, delimiter=',')
+        #savetxt('org_p1_correct.csv', org, delimiter=',')
         #savetxt('regen1_adj.csv', regen_adj, delimiter=',')
 
 
