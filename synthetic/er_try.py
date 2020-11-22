@@ -48,7 +48,7 @@ for i in range(1):
 
         edge_index = to_undirected(idx.t(), num_nodes)
 
-        org_adj = to_dense_adj(edge_index).cpu().numpy()
+        org_adj = to_dense_adj(edge_index).squeeze().cpu().numpy()
 
 
 
