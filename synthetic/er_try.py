@@ -18,10 +18,10 @@ os.environ['PYTHONHASHSEED'] = str(seed)
 
 
 
-num_nodes = 50
+num_nodes = 5
 edge_prob_list = [0.1, 0.3, 0.5, 0.7, 0.9]
 
-for i in range(10):
+for i in range(1):
 
     for edge_prob in edge_prob_list:
 
@@ -44,6 +44,14 @@ for i in range(10):
 
         org_adj = to_dense_adj(edge_index)
 
-        p = torch.sum(org_adj).item()/2
 
-        print('adj ',i, edge_prob, p)
+
+
+        #p = torch.sum(org_adj).item()/2
+
+
+        adj = np.triu((org_adj.cpu().numpy()),k=0)
+
+        print('adj ',i, edge_prob, torch.sum(mask).item())
+
+        break
