@@ -11,8 +11,12 @@ idx = torch.combinations(torch.arange(num_nodes))
 
 print('idx ', idx.size(), idx)
 
-mask = torch.rand(idx.size(0)) < edge_prob
+a = torch.rand(idx.size(0))
 
-print('mask', mask.size(), torch.sum(mask), mask)
+print('a', a)
+
+mask = a  < edge_prob
+
+print('mask', mask.size(), torch.sum(mask), torch.sum(mask)/1125, mask)
 
 idx = idx[mask]
