@@ -21,7 +21,7 @@ os.environ['PYTHONHASHSEED'] = str(seed)
 num_nodes = 50
 edge_prob_list = [0.1, 0.3, 0.5, 0.7, 0.9]
 
-for i in range(1):
+for i in range(5):
 
     for edge_prob in edge_prob_list:
 
