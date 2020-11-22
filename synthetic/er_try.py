@@ -33,7 +33,7 @@ for i in range(10):
 
         mask = a  < edge_prob
 
-        int_mask = mask.astype(int)
+        #int_mask = mask.astype(int)
 
         #print('mask', mask.size(),torch.sum(mask).item(), (torch.sum(mask)/1125).item())
 
