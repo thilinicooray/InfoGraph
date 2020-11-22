@@ -33,7 +33,7 @@ for i in range(10):
 
         mask = a  < edge_prob
 
-        print('mask', mask.size(),torch.sum(mask), torch.sum(mask)/1125)
+        print('mask', mask.size(),torch.sum(mask).item(), (torch.sum(mask)/1125).item())
 
         idx = idx[mask]
 
@@ -42,4 +42,4 @@ for i in range(10):
 
         org_adj = to_dense_adj(edge_index)
 
-        print('adj ',i, torch.sum(org_adj),torch.sum(org_adj)/idx.size(0) , edge_prob)
+        print('adj ',i, torch.sum(org_adj).item(),(torch.sum(org_adj)/idx.size(0)).item() , edge_prob)
