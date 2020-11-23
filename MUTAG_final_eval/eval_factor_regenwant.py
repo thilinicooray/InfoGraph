@@ -284,7 +284,7 @@ if __name__ == '__main__':
     model = GcnInfomax(args.hidden_dim, args.num_gc_layers, node_dim, class_dim).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
-    model.load_state_dict(torch.load(f'mutag_best_model_128_new.pkl'))
+    model.load_state_dict(torch.load(f'mutag_best_model_128_new1.pkl'))
 
     #print('model ', model.encoder.convs[2].nn[0].weight.size())
 
