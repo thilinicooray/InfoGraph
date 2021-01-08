@@ -58,12 +58,15 @@ class Encoder(torch.nn.Module):
 
     def attention(self, query, key, value, mask=None, dropout=None):
         "Compute 'Scaled Dot Product Attention'"
+        print('in to att ', query.size(), key.size())
         d_k = query.size(-1)
         scores = torch.matmul(query, key.transpose(-2, -1)) \
                  / math.sqrt(d_k)
+        print('score size ', scores.size())
         if mask is not None:
             scores = scores.masked_fill(mask == 0, -1e9)
         p_attn = F.sigmoid(scores)
+        print('p_attn size ', p_attn.size())
         if dropout is not None:
             p_attn = dropout(p_attn)
         return torch.matmul(p_attn, value), p_attn
