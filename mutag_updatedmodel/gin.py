@@ -63,7 +63,7 @@ class Encoder(torch.nn.Module):
                  / math.sqrt(d_k)
         if mask is not None:
             scores = scores.masked_fill(mask == 0, -1e9)
-        p_attn = F.sigmoid(scores, dim = -1)
+        p_attn = F.sigmoid(scores)
         if dropout is not None:
             p_attn = dropout(p_attn)
         return torch.matmul(p_attn, value), p_attn
