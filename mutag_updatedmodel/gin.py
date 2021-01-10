@@ -19,6 +19,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn import preprocessing
 from sklearn.metrics import accuracy_score
 from torch_geometric.nn import global_mean_pool, global_add_pool, global_max_pool
+from torch.nn.utils.weight_norm import weight_norm
 import sys
 import math
 
@@ -53,6 +54,8 @@ class Encoder(torch.nn.Module):
             self.convs.append(conv)
             self.bns.append(bn)
 
+        self.att = weight_norm(nn.Linear(dim, 1), dim=None)
+
         self.cls_mu = Sequential(Linear(dim, dim), ReLU(), Linear(dim, class_dim))
         self.cls_logv = Sequential(Linear(dim, dim), ReLU(), Linear(dim, class_dim))
 
@@ -72,7 +75,9 @@ class Encoder(torch.nn.Module):
             xs.append(x)
             # if i == 2:
                 # feature_map = x2
-        global_n = global_add_pool(x, batch)
+        global_weights = torch.sigmoid(self.att(x))
+        print('global weights', global_weights.size(), global_weights)
+        global_n = global_add_pool(global_weights*x, batch)
 
         j = self.num_gc_layers
         node_latent_space_mu = self.bns[j](F.relu(self.convs[j](x, edge_index)))
