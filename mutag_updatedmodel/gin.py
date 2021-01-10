@@ -73,6 +73,7 @@ class Encoder(torch.nn.Module):
             # if i == 2:
                 # feature_map = x2
         global_n = global_mean_pool(x, batch)
+        print('global size', global_n.size())
         j = self.num_gc_layers
         node_latent_space_mu = self.bns[j](F.relu(self.convs[j](x, edge_index)))
         node_latent_space_logvar = self.bns[j+1](F.relu(self.convs[j+1](x, edge_index)))
