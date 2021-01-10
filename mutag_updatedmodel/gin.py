@@ -76,7 +76,6 @@ class Encoder(torch.nn.Module):
             # if i == 2:
                 # feature_map = x2
         global_weights = torch.sigmoid(self.att(x))
-        print('global weights', global_weights.size(), global_weights)
         global_n = global_add_pool(global_weights*x, batch)
 
         j = self.num_gc_layers
