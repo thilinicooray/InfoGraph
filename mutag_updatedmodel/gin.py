@@ -56,20 +56,7 @@ class Encoder(torch.nn.Module):
         self.cls_mu = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim))
         self.cls_logv = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim))
 
-    def attention(self, query, key, value, mask=None, dropout=None):
-        "Compute 'Scaled Dot Product Attention'"
-        print('in to att ', query.size(), key.size())
-        d_k = query.size(-1)
-        scores = torch.matmul(query, key.transpose(-2, -1)) \
-                 / math.sqrt(d_k)
-        print('score size ', scores.size())
-        if mask is not None:
-            scores = scores.masked_fill(mask == 0, -1e9)
-        p_attn = F.sigmoid(scores)
-        print('p_attn size ', p_attn.size())
-        if dropout is not None:
-            p_attn = dropout(p_attn)
-        return torch.matmul(p_attn, value), p_attn
+
 
     def forward(self, x, edge_index, batch):
         global_n = None
@@ -82,18 +69,10 @@ class Encoder(torch.nn.Module):
             x = F.relu(self.convs[i](x, edge_index))
             x = self.bns[i](x)
 
-            if i==0:
-                global_n = global_mean_pool(x, batch)
-
-            else:
-                global_n_new, att_weights = self.attention(global_n, x,x)
-                global_n = global_n_new * global_n
-                x = (1-att_weights)*x
-
-
             xs.append(x)
             # if i == 2:
                 # feature_map = x2
+        global_n = global_mean_pool(x, batch)
         j = self.num_gc_layers
         node_latent_space_mu = self.bns[j](F.relu(self.convs[j](x, edge_index)))
         node_latent_space_logvar = self.bns[j+1](F.relu(self.convs[j+1](x, edge_index)))
