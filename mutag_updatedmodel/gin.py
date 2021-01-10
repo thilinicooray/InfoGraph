@@ -53,8 +53,8 @@ class Encoder(torch.nn.Module):
             self.convs.append(conv)
             self.bns.append(bn)
 
-        self.cls_mu = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim))
-        self.cls_logv = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim))
+        self.cls_mu = Sequential(Linear(dim, dim), ReLU(), Linear(dim, class_dim))
+        self.cls_logv = Sequential(Linear(dim, dim), ReLU(), Linear(dim, class_dim))
 
 
 
@@ -78,8 +78,8 @@ class Encoder(torch.nn.Module):
         node_latent_space_mu = self.bns[j](F.relu(self.convs[j](x, edge_index)))
         node_latent_space_logvar = self.bns[j+1](F.relu(self.convs[j+1](x, edge_index)))
 
-        class_latent_space_mu = F.relu(self.cls_mu(global_n))
-        class_latent_space_logvar = F.relu(self.cls_logv(global_n))
+        class_latent_space_mu = self.bns[j+2](F.relu(self.cls_mu(global_n)))
+        class_latent_space_logvar = self.bns[j+3](F.relu(self.cls_logv(global_n)))
 
         return node_latent_space_mu, node_latent_space_logvar, class_latent_space_mu, class_latent_space_logvar
 
@@ -98,8 +98,6 @@ class Decoder(torch.nn.Module):
 
     def forward(self, node_latent_space, class_latent_space):
         x = torch.cat((node_latent_space, class_latent_space), dim=1)
-
-        print('dec sizes ', node_latent_space.size(), class_latent_space.size(), x.size())
 
         x = torch.softmax(self.linear_model(x), dim=-1)
 
