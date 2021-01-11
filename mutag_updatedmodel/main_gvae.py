@@ -184,7 +184,7 @@ if __name__ == '__main__':
     #seeds = [32,42,52,62,72]
 
     seeds = [123,132,213,231,312,321] #this set also give similar results
-    epochs_list =[20,30,40,50, 100, 200, 300]
+    epochs_list =[50, 100, 150, 250, 200, 300]
     node_ratio = [0.5]
     for seed in seeds:
         for epochs in epochs_list:
