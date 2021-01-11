@@ -158,7 +158,7 @@ class GLDisen(nn.Module):
                 x, edge_index, batch = data.x, data.edge_index, data.batch
                 if x is None:
                     x = torch.ones((batch.shape[0],1)).to(device)
-                __, _, class_mu, class_logvar = self.encoder(x, edge_index, batch)
+                __, _, class_mu, class_logvar,_ = self.encoder(x, edge_index, batch)
                 class_emb = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
 
                 ret.append(class_emb.cpu().numpy())
