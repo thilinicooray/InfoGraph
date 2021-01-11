@@ -23,7 +23,7 @@ from utils import imshow_grid, mse_loss, reparameterize, group_wise_reparameteri
 from arguments import arg_parse
 
 class GLDisen(nn.Module):
-    def __init__(self, hidden_dim, num_gc_layers, node_dim, class_dim):
+    def __init__(self, hidden_dim, num_gc_layers, node_dim):
         super(GLDisen, self).__init__()
 
 
@@ -181,19 +181,18 @@ if __name__ == '__main__':
 
     #enable entire sets of hyperparameters for the full experiment
 
-    #seeds = [32,42,52,62,72]
+    seeds = [32,42,52,62,72]
 
-    seeds = [123,132,213,231,312,321] #this set also give similar results
-    epochs_list =[50, 100, 150, 250, 200, 300]
+    #seeds = [123,132,213,231,312,321] #this set also give similar results
+    epochs_list =[50, 100]
     node_ratio = [0.5]
     for seed in seeds:
         for epochs in epochs_list:
             for rat in node_ratio:
 
                 node_dim = int(args.hidden_dim*2*rat)
-                class_dim = int(args.hidden_dim*2 - node_dim)
 
-                print('seed ', seed, 'epochs ', epochs, 'node dim ', node_dim, 'class dim ', class_dim)
+                print('seed ', seed, 'epochs ', epochs, 'node dim ', node_dim)
 
                 random.seed(seed)
                 np.random.seed(seed)
@@ -225,7 +224,7 @@ if __name__ == '__main__':
                 dataloader = DataLoader(dataset, batch_size=batch_size)
 
                 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-                model = GLDisen(args.hidden_dim, args.num_gc_layers, node_dim, class_dim).to(device)
+                model = GLDisen(args.hidden_dim, args.num_gc_layers, node_dim).to(device)
                 optimizer = torch.optim.Adam(model.parameters(), lr=lr)
                 #scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
 
