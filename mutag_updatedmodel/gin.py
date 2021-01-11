@@ -85,7 +85,7 @@ class Encoder(torch.nn.Module):
         class_latent_space_mu = self.bns[j+2](F.relu(self.cls_mu(global_n)))
         class_latent_space_logvar = self.bns[j+3](F.relu(self.cls_logv(global_n)))
 
-        return node_latent_space_mu, node_latent_space_logvar, class_latent_space_mu, class_latent_space_logvar, global_weights
+        return node_latent_space_mu, node_latent_space_logvar, class_latent_space_mu, class_latent_space_logvar
 
 
 class Decoder(torch.nn.Module):

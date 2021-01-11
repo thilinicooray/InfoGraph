@@ -52,7 +52,7 @@ class GLDisen(nn.Module):
         if x is None:
             x = torch.ones(batch.shape[0]).to(device)
 
-        node_mu, node_logvar, class_mu, class_logvar, global_weights = self.encoder(x, edge_index, batch)
+        node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index, batch)
 
 
         # kl-divergence error for style latent space
@@ -88,7 +88,7 @@ class GLDisen(nn.Module):
         mi_loss = local_global_loss_disen(node_latent_embeddings, class_latent_embeddings, edge_index, batch, measure)
         mi_loss.backward(retain_graph=True)'''
 
-        reconstructed_node = self.decoder(node_latent_embeddings, global_weights*class_latent_embeddings)
+        reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
         #check input feat first
         #print('recon ', x[0],reconstructed_node[0])
         #reconstruction_error =  0.1*mse_loss(reconstructed_node, x) * num_graphs
@@ -96,7 +96,7 @@ class GLDisen(nn.Module):
         reconstruction_error.backward()
 
 
-        return reconstruction_error.item() + class_kl_divergence_loss.item() + node_kl_divergence_loss.item()
+        return reconstruction_error.item() , class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
 
     def edge_recon(self, z, edge_index, sigmoid=True):
         r"""Decodes the latent variables :obj:`z` into edge probabilities for
@@ -158,7 +158,7 @@ class GLDisen(nn.Module):
                 x, edge_index, batch = data.x, data.edge_index, data.batch
                 if x is None:
                     x = torch.ones((batch.shape[0],1)).to(device)
-                __, _, class_mu, class_logvar,_ = self.encoder(x, edge_index, batch)
+                __, _, class_mu, class_logvar = self.encoder(x, edge_index, batch)
                 class_emb = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
 
                 ret.append(class_emb.cpu().numpy())
@@ -196,6 +196,7 @@ if __name__ == '__main__':
 
                 accuracies = {'svc':[]}
                 losses = {'tot':[]}
+                losses = {'recon':[], 'node_kl':[], 'class_kl': []}
 
                 log_interval = 1
                 batch_size = 128
@@ -231,19 +232,33 @@ if __name__ == '__main__':
                 model.train()
                 for epoch in range(1, epochs+1):
                     loss_all = 0
+                    recon_loss_all = 0
+                    kl_class_loss_all = 0
+                    kl_node_loss_all = 0
 
                     #model.train()
                     for data in dataloader:
                         data = data.to(device)
                         optimizer.zero_grad()
-                        loss = model(data.x, data.edge_index, data.batch, data.num_graphs)
-                        loss_all += loss
+                        recon_loss, kl_class, kl_node = model(data.x, data.edge_index, data.batch, data.num_graphs)
+                        recon_loss_all += recon_loss
+                        kl_class_loss_all += kl_class
+                        kl_node_loss_all += kl_node
                         optimizer.step()
 
                         #losses['tot'].append(loss_all/ len(dataloader))
 
 
                         #print('Epoch {}, Total Loss {} '.format(epoch, loss_all/ len(dataloader)))
+
+                    losses['recon'].append(recon_loss_all/ len(dataloader))
+                    losses['node_kl'].append(kl_node_loss_all/ len(dataloader))
+                    losses['class_kl'].append(kl_class_loss_all/ len(dataloader))
+
+
+
+                    print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(dataloader),
+                                                                                        kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
 
 
                 model.eval()
