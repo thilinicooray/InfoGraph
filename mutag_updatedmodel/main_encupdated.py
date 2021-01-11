@@ -27,18 +27,18 @@ class GLDisen(nn.Module):
         super(GLDisen, self).__init__()
 
 
-        self.embedding_dim = mi_units = hidden_dim * num_gc_layers
+        #self.embedding_dim = mi_units = hidden_dim * num_gc_layers
         self.encoder = Encoder(dataset_num_features, hidden_dim, num_gc_layers, node_dim, class_dim)
         self.decoder = Decoder(hidden_dim, hidden_dim, dataset_num_features)
 
-        self.proj1 = FF(self.embedding_dim)
-        self.proj2 = FF(self.embedding_dim)
+        #self.proj1 = FF(self.embedding_dim)
+        #self.proj2 = FF(self.embedding_dim)
 
 
         self.init_emb()
 
     def init_emb(self):
-        initrange = -1.5 / self.embedding_dim
+        #initrange = -1.5 / self.embedding_dim
         for m in self.modules():
             if isinstance(m, nn.Linear):
                 torch.nn.init.xavier_uniform_(m.weight.data)
