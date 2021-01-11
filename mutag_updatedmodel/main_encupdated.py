@@ -187,7 +187,7 @@ if __name__ == '__main__':
     seeds = [32,42,52,62,72]
 
     #seeds = [123,132,213,231,312,321] this set also give similar results
-    epochs_list = [20,30,40,50, 100]
+    epochs_list =[100] #[20,30,40,50, 100]
     node_ratio = [0.25,0.5,0.75]
     for seed in seeds:
         for epochs in epochs_list:
@@ -241,6 +241,10 @@ if __name__ == '__main__':
 
 
                 model.train()
+
+                best_recon_loss = 10e40
+                best_model = None
+
                 for epoch in range(1, epochs+1):
                     loss_all = 0
                     recon_loss_all = 0
@@ -266,11 +270,20 @@ if __name__ == '__main__':
                     losses['node_kl'].append(kl_node_loss_all/ len(dataloader))
                     losses['class_kl'].append(kl_class_loss_all/ len(dataloader))
 
+                    recon_current = recon_loss_all/ len(dataloader)
+
+                    if recon_current < best_recon_loss:
+                        best_recon_loss = recon_current
+                        torch.save(model.state_dict(), 'model.pkl')
+                        print('current best model saved!')
+
 
 
                     print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(dataloader),
                                                                                         kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
 
+                print('loading best model...')
+                model.load_state_dict(torch.load('model.pkl'))
 
                 model.eval()
 
