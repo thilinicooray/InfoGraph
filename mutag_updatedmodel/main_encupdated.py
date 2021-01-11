@@ -111,7 +111,7 @@ class GLDisen(nn.Module):
         value = (z[edge_index[0]] * z[edge_index[1]]).sum(dim=1)
         return torch.sigmoid(value) if sigmoid else value
 
-    def recon_loss1(self, z, edge_index, batch):
+    def recon_loss1(self, z, edge_index):
 
         EPS = 1e-15
         MAX_LOGSTD = 10
