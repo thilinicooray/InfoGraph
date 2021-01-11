@@ -52,7 +52,7 @@ class GLDisen(nn.Module):
         if x is None:
             x = torch.ones(batch.shape[0]).to(device)
 
-        node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index, batch)
+        node_mu, node_logvar, class_mu, class_logvar, global_weights = self.encoder(x, edge_index, batch)
 
 
         # kl-divergence error for style latent space
@@ -88,8 +88,7 @@ class GLDisen(nn.Module):
         mi_loss = local_global_loss_disen(node_latent_embeddings, class_latent_embeddings, edge_index, batch, measure)
         mi_loss.backward(retain_graph=True)'''
 
-        #reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
-        reconstructed_node = node_latent_embeddings + class_latent_embeddings
+        reconstructed_node = self.decoder(node_latent_embeddings, global_weights*class_latent_embeddings)
         #check input feat first
         #print('recon ', x[0],reconstructed_node[0])
         #reconstruction_error =  0.1*mse_loss(reconstructed_node, x) * num_graphs
@@ -178,7 +177,7 @@ if __name__ == '__main__':
 
     #seeds = [123,132,213,231,312,321] this set also give similar results
     epochs_list = [20,30,40,50]
-    node_ratio = [0.5]
+    node_ratio = [0.25,0.5,0.75]
     for seed in seeds:
         for epochs in epochs_list:
             for rat in node_ratio:
