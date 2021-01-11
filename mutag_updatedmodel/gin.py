@@ -4,7 +4,7 @@ from collections import OrderedDict
 
 import torch
 import torch.nn.functional as F
-from torch.nn import Sequential, Linear, ReLU, Tanh
+from torch.nn import Sequential, Linear, ReLU
 import torch.nn as nn
 from torch_geometric.datasets import TUDataset
 from torch_geometric.data import DataLoader
@@ -79,11 +79,11 @@ class Encoder(torch.nn.Module):
         global_n = global_add_pool(global_weights*x, batch)
 
         j = self.num_gc_layers
-        node_latent_space_mu = self.bns[j](torch.tanh(self.convs[j]((1-global_weights)*x, edge_index)))
-        node_latent_space_logvar = self.bns[j+1](torch.tanh(self.convs[j+1]((1-global_weights)*x, edge_index)))
+        node_latent_space_mu = self.bns[j](F.relu(self.convs[j]((1-global_weights)*x, edge_index)))
+        node_latent_space_logvar = self.bns[j+1](F.relu(self.convs[j+1]((1-global_weights)*x, edge_index)))
 
-        class_latent_space_mu = self.bns[j+2](torch.tanh(self.cls_mu(global_n)))
-        class_latent_space_logvar = self.bns[j+3](torch.tanh(self.cls_logv(global_n)))
+        class_latent_space_mu = self.bns[j+2](F.relu(self.cls_mu(global_n)))
+        class_latent_space_logvar = self.bns[j+3](F.relu(self.cls_logv(global_n)))
 
         return node_latent_space_mu, node_latent_space_logvar, class_latent_space_mu, class_latent_space_logvar
 
@@ -97,7 +97,7 @@ class Decoder(torch.nn.Module):
             ('relu_1', ReLU()),
 
             ('linear_2', torch.nn.Linear(in_features=node_dim, out_features=feat_size, bias=True)),
-            ('relu_final', Tanh()),
+            ('relu_final', ReLU()),
         ]))
 
     def forward(self, node_latent_space, class_latent_space):
