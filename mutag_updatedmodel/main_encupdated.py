@@ -88,11 +88,12 @@ class GLDisen(nn.Module):
         mi_loss = local_global_loss_disen(node_latent_embeddings, class_latent_embeddings, edge_index, batch, measure)
         mi_loss.backward(retain_graph=True)'''
 
-        reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
+        #reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
+        reconstructed_node = node_latent_embeddings + class_latent_embeddings
         #check input feat first
         #print('recon ', x[0],reconstructed_node[0])
         #reconstruction_error =  0.1*mse_loss(reconstructed_node, x) * num_graphs
-        reconstruction_error =  mse_loss(reconstructed_node, x) + self.recon_loss1(reconstructed_node, edge_index)
+        reconstruction_error =  self.recon_loss1(reconstructed_node, edge_index) #mse_loss(reconstructed_node, x) + self.recon_loss1(reconstructed_node, edge_index)
         reconstruction_error.backward()
 
 
