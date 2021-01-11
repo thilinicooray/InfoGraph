@@ -187,7 +187,7 @@ if __name__ == '__main__':
     seeds = [32,42,52,62,72]
 
     #seeds = [123,132,213,231,312,321] this set also give similar results
-    epochs_list =[100] #[20,30,40,50, 100]
+    epochs_list =[20,30,40,50,100]
     node_ratio = [0.25,0.5,0.75]
     for seed in seeds:
         for epochs in epochs_list:
@@ -272,24 +272,24 @@ if __name__ == '__main__':
 
                     recon_current = recon_loss_all/ len(dataloader)
 
-                    if recon_current < best_recon_loss:
+                    '''if recon_current < best_recon_loss:
                         best_recon_loss = recon_current
                         torch.save(model.state_dict(), 'model.pkl')
-                        print('current best model saved!')
+                        print('current best model saved!')'''
 
 
 
                     print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(dataloader),
                                                                                         kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
 
-                print('loading best model...')
-                model.load_state_dict(torch.load('model.pkl'))
+                #print('loading best model...')
+                #model.load_state_dict(torch.load('model.pkl'))
+                    if epoch in epochs_list:
+                        model.eval()
 
-                model.eval()
+                        emb, y = model.get_embeddings(dataloader)
 
-                emb, y = model.get_embeddings(dataloader)
-
-                res = evaluate_embedding(emb, y)
-                accuracies['svc'].append(res)
-                print(accuracies)
+                        res = evaluate_embedding(emb, y)
+                        accuracies['svc'].append(res)
+                        print(accuracies)
 
