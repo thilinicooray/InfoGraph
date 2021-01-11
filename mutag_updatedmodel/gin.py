@@ -54,7 +54,7 @@ class Encoder(torch.nn.Module):
             self.convs.append(conv)
             self.bns.append(bn)
 
-        self.att = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim))
+        self.att = Sequential(Linear(dim, dim), ReLU(), Linear(dim, 1))
 
         self.cls_mu = Sequential(Linear(dim, dim), ReLU(), Linear(dim, class_dim))
         self.cls_logv = Sequential(Linear(dim, dim), ReLU(), Linear(dim, class_dim))
