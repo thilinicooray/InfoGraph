@@ -24,7 +24,7 @@ import sys
 import math
 
 class Encoder(torch.nn.Module):
-    def __init__(self, num_features, dim, num_gc_layers, node_dim, class_dim):
+    def __init__(self, num_features, dim, num_gc_layers, node_dim):
         super(Encoder, self).__init__()
 
         # num_features = dataset.num_features
@@ -35,17 +35,14 @@ class Encoder(torch.nn.Module):
         self.convs = torch.nn.ModuleList()
         self.bns = torch.nn.ModuleList()
 
-        for i in range(num_gc_layers+4):
+        for i in range(num_gc_layers+2):
 
             if i == 0:
                 nn = Sequential(Linear(num_features, dim), ReLU(), Linear(dim, dim))
                 bn = torch.nn.BatchNorm1d(dim)
             elif i >= num_gc_layers and i < num_gc_layers +2:
                 nn = Sequential(Linear(dim, dim), ReLU(), Linear(dim, node_dim*2))
-                bn = torch.nn.BatchNorm1d(node_dim)
-            elif i >= num_gc_layers and i >= num_gc_layers +2:
-                nn = Sequential(Linear(dim, dim), ReLU(), Linear(dim, class_dim))
-                bn = torch.nn.BatchNorm1d(class_dim)
+                bn = torch.nn.BatchNorm1d(node_dim*2)
             else:
                 nn = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim))
                 bn = torch.nn.BatchNorm1d(dim)
@@ -53,11 +50,6 @@ class Encoder(torch.nn.Module):
 
             self.convs.append(conv)
             self.bns.append(bn)
-
-        self.att = Sequential(Linear(dim, dim), ReLU(), Linear(dim, 1))
-
-        self.cls_mu = Sequential(Linear(dim, dim), ReLU(), Linear(dim, class_dim))
-        self.cls_logv = Sequential(Linear(dim, dim), ReLU(), Linear(dim, class_dim))
 
 
 
@@ -85,7 +77,7 @@ class Encoder(torch.nn.Module):
 
 
 class Decoder(torch.nn.Module):
-    def __init__(self, node_dim, class_dim, feat_size):
+    def __init__(self, node_dim, feat_size):
         super(Decoder, self).__init__()
 
         self.linear_model = torch.nn.Sequential(OrderedDict([
