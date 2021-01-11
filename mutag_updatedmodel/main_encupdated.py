@@ -61,7 +61,7 @@ class GLDisen(nn.Module):
         )
         #node_kl_divergence_loss = 0.0000001 * node_kl_divergence_loss *num_graphs
         node_kl_divergence_loss = 1e-9 * node_kl_divergence_loss
-        node_kl_divergence_loss.backward(retain_graph=True)
+        #node_kl_divergence_loss.backward(retain_graph=True)
 
         # kl-divergence error for class latent space
         class_kl_divergence_loss = torch.mean(
@@ -69,7 +69,7 @@ class GLDisen(nn.Module):
         )
         #class_kl_divergence_loss = 0.0000001 * class_kl_divergence_loss * num_graphs
         class_kl_divergence_loss = 1e-4*class_kl_divergence_loss
-        class_kl_divergence_loss.backward(retain_graph=True)
+        #class_kl_divergence_loss.backward(retain_graph=True)
 
         # reconstruct samples
         """
@@ -93,7 +93,11 @@ class GLDisen(nn.Module):
         #print('recon ', x[0],reconstructed_node[0])
         #reconstruction_error =  0.1*mse_loss(reconstructed_node, x) * num_graphs
         reconstruction_error =  self.recon_loss1(reconstructed_node, edge_index) #mse_loss(reconstructed_node, x) + self.recon_loss1(reconstructed_node, edge_index)
-        reconstruction_error.backward()
+        #reconstruction_error.backward()
+
+        loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error
+
+        loss.backward()
 
 
         return reconstruction_error.item() , class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
