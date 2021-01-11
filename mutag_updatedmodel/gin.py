@@ -54,7 +54,7 @@ class Encoder(torch.nn.Module):
             self.convs.append(conv)
             self.bns.append(bn)
 
-        self.att = Sequential(weight_norm(Linear(dim, dim), dim=None), ReLU(), weight_norm(Linear(dim, 1), dim=None))
+        self.att = Sequential(Linear(dim, dim), ReLU(), Linear(dim, 1))
 
         self.cls_mu = Sequential(Linear(dim, dim), ReLU(), Linear(dim, class_dim))
         self.cls_logv = Sequential(Linear(dim, dim), ReLU(), Linear(dim, class_dim))
@@ -79,8 +79,8 @@ class Encoder(torch.nn.Module):
         global_n = global_add_pool(global_weights*x, batch)
 
         j = self.num_gc_layers
-        node_latent_space_mu = self.bns[j](F.relu(self.convs[j]((1-global_weights)*x, edge_index)))
-        node_latent_space_logvar = self.bns[j+1](F.relu(self.convs[j+1]((1-global_weights)*x, edge_index)))
+        node_latent_space_mu = self.bns[j](F.relu(self.convs[j](x, edge_index)))
+        node_latent_space_logvar = self.bns[j+1](F.relu(self.convs[j+1](x, edge_index)))
 
         class_latent_space_mu = self.bns[j+2](F.relu(self.cls_mu(global_n)))
         class_latent_space_logvar = self.bns[j+3](F.relu(self.cls_logv(global_n)))
