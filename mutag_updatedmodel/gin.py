@@ -79,11 +79,11 @@ class Encoder(torch.nn.Module):
         global_n = global_add_pool(global_weights*x, batch)
 
         j = self.num_gc_layers
-        node_latent_space_mu = self.bns[j](torch.tanh(self.convs[j]((1-global_weights)*x, edge_index)))
-        node_latent_space_logvar = self.bns[j+1](torch.tanh(self.convs[j+1]((1-global_weights)*x, edge_index)))
+        node_latent_space_mu = self.bns[j](F.relu(self.convs[j]((1-global_weights)*x, edge_index)))
+        node_latent_space_logvar = self.bns[j+1](F.relu(self.convs[j+1]((1-global_weights)*x, edge_index)))
 
-        class_latent_space_mu = self.bns[j+2](torch.tanh(self.cls_mu(global_n)))
-        class_latent_space_logvar = self.bns[j+3](torch.tanh(self.cls_logv(global_n)))
+        class_latent_space_mu = self.bns[j+2](F.relu(self.cls_mu(global_n)))
+        class_latent_space_logvar = self.bns[j+3](F.relu(self.cls_logv(global_n)))
 
         return node_latent_space_mu, node_latent_space_logvar, class_latent_space_mu, class_latent_space_logvar
 
