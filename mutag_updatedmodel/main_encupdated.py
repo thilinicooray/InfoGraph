@@ -185,112 +185,111 @@ if __name__ == '__main__':
     #enable entire sets of hyperparameters for the full experiment
 
     seeds = [32,42,52,62,72]
-    epochs = 100
 
     #seeds = [123,132,213,231,312,321] this set also give similar results
-    epochs_list =[20,30,40,50,100]
+    epochs_list =[20,30,40,50, 100]
     node_ratio = [0.25,0.5,0.75]
     for seed in seeds:
-        #for epochs in epochs_list:
-        for rat in node_ratio:
+        for epochs in epochs_list:
+            for rat in node_ratio:
 
-            node_dim = int(args.hidden_dim*2*rat)
-            class_dim = int(args.hidden_dim*2 - node_dim)
+                node_dim = int(args.hidden_dim*2*rat)
+                class_dim = int(args.hidden_dim*2 - node_dim)
 
-            print('seed ', seed, 'epochs ', epochs, 'node dim ', node_dim, 'class dim ', class_dim)
+                print('seed ', seed, 'epochs ', epochs, 'node dim ', node_dim, 'class dim ', class_dim)
 
-            random.seed(seed)
-            np.random.seed(seed)
-            torch.manual_seed(seed)
-            torch.cuda.manual_seed(seed)
+                random.seed(seed)
+                np.random.seed(seed)
+                torch.manual_seed(seed)
+                torch.cuda.manual_seed(seed)
 
-            print('init seed, seed ', torch.initial_seed(), seed)
+                print('init seed, seed ', torch.initial_seed(), seed)
 
-            accuracies = {'svc':[]}
-            losses = {'tot':[]}
-            losses = {'recon':[], 'node_kl':[], 'class_kl': []}
+                accuracies = {'svc':[]}
+                losses = {'tot':[]}
+                losses = {'recon':[], 'node_kl':[], 'class_kl': []}
 
-            log_interval = 1
-            batch_size = 128
-            lr = args.lr
-            DS = args.DS
-            path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', DS)
-            # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
+                log_interval = 1
+                batch_size = 128
+                lr = args.lr
+                DS = args.DS
+                path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data', DS)
+                # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
 
-            dataset = TUDataset(path, name=DS).shuffle()
-            try:
-                dataset_num_features = dataset.num_features
-            except:
-                dataset_num_features = 1
+                dataset = TUDataset(path, name=DS).shuffle()
+                try:
+                    dataset_num_features = dataset.num_features
+                except:
+                    dataset_num_features = 1
 
-            if not dataset_num_features:
-                dataset_num_features = 1
+                if not dataset_num_features:
+                    dataset_num_features = 1
 
-            dataloader = DataLoader(dataset, batch_size=batch_size)
+                dataloader = DataLoader(dataset, batch_size=batch_size)
 
-            device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-            model = GLDisen(args.hidden_dim, args.num_gc_layers, node_dim, class_dim).to(device)
-            optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-            #scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
+                device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+                model = GLDisen(args.hidden_dim, args.num_gc_layers, node_dim, class_dim).to(device)
+                optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+                #scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
 
-            print('================')
-            print('lr: {}'.format(lr))
-            print('num_features: {}'.format(dataset_num_features))
-            print('hidden_dim: {}'.format(args.hidden_dim))
-            print('num_gc_layers: {}'.format(args.num_gc_layers))
-            print('================')
-
-
-            model.train()
-
-            best_recon_loss = 10e40
-            best_model = None
-
-            for epoch in range(1, epochs+1):
-                loss_all = 0
-                recon_loss_all = 0
-                kl_class_loss_all = 0
-                kl_node_loss_all = 0
-
-                #model.train()
-                for data in dataloader:
-                    data = data.to(device)
-                    optimizer.zero_grad()
-                    recon_loss, kl_class, kl_node = model(data.x, data.edge_index, data.batch, data.num_graphs)
-                    recon_loss_all += recon_loss
-                    kl_class_loss_all += kl_class
-                    kl_node_loss_all += kl_node
-                    optimizer.step()
-
-                    #losses['tot'].append(loss_all/ len(dataloader))
+                print('================')
+                print('lr: {}'.format(lr))
+                print('num_features: {}'.format(dataset_num_features))
+                print('hidden_dim: {}'.format(args.hidden_dim))
+                print('num_gc_layers: {}'.format(args.num_gc_layers))
+                print('================')
 
 
-                    #print('Epoch {}, Total Loss {} '.format(epoch, loss_all/ len(dataloader)))
+                model.train()
 
-                losses['recon'].append(recon_loss_all/ len(dataloader))
-                losses['node_kl'].append(kl_node_loss_all/ len(dataloader))
-                losses['class_kl'].append(kl_class_loss_all/ len(dataloader))
+                best_recon_loss = 10e40
+                best_model = None
 
-                recon_current = recon_loss_all/ len(dataloader)
+                for epoch in range(1, epochs+1):
+                    loss_all = 0
+                    recon_loss_all = 0
+                    kl_class_loss_all = 0
+                    kl_node_loss_all = 0
 
-                '''if recon_current < best_recon_loss:
-                    best_recon_loss = recon_current
-                    torch.save(model.state_dict(), 'model.pkl')
-                    print('current best model saved!')'''
+                    #model.train()
+                    for data in dataloader:
+                        data = data.to(device)
+                        optimizer.zero_grad()
+                        recon_loss, kl_class, kl_node = model(data.x, data.edge_index, data.batch, data.num_graphs)
+                        recon_loss_all += recon_loss
+                        kl_class_loss_all += kl_class
+                        kl_node_loss_all += kl_node
+                        optimizer.step()
+
+                        #losses['tot'].append(loss_all/ len(dataloader))
+
+
+                        #print('Epoch {}, Total Loss {} '.format(epoch, loss_all/ len(dataloader)))
+
+                    losses['recon'].append(recon_loss_all/ len(dataloader))
+                    losses['node_kl'].append(kl_node_loss_all/ len(dataloader))
+                    losses['class_kl'].append(kl_class_loss_all/ len(dataloader))
+
+                    recon_current = recon_loss_all/ len(dataloader)
+
+                    '''if recon_current < best_recon_loss:
+                        best_recon_loss = recon_current
+                        torch.save(model.state_dict(), 'model.pkl')
+                        print('current best model saved!')'''
 
 
 
-                print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(dataloader),
-                                                                                    kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
+                    print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(dataloader),
+                                                                                        kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
 
-            #print('loading best model...')
-            #model.load_state_dict(torch.load('model.pkl'))
-                if epoch in epochs_list:
-                    model.eval()
+                #print('loading best model...')
+                #model.load_state_dict(torch.load('model.pkl'))
 
-                    emb, y = model.get_embeddings(dataloader)
+                model.eval()
 
-                    res = evaluate_embedding(emb, y)
-                    accuracies['svc'].append(res)
-                    print(accuracies)
+                emb, y = model.get_embeddings(dataloader)
+
+                res = evaluate_embedding(emb, y)
+                accuracies['svc'].append(res)
+                print(accuracies)
 
