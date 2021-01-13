@@ -295,8 +295,8 @@ if __name__ == '__main__':
                 accuracies['svc'].append(res)
                 print(accuracies)
 
-                if res['svc'][0] > best_acc:
-                    best_acc = res['svc'][0]
+                if res > best_acc:
+                    best_acc = res
                     torch.save(model.state_dict(), 'ours_best.pkl')
                     print('current best model saved!')
                     best_setup['seed']=seed
