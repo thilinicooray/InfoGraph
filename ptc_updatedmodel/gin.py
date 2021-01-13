@@ -97,7 +97,7 @@ class Decoder(torch.nn.Module):
             ('relu_1', ReLU()),
 
             ('linear_2', torch.nn.Linear(in_features=node_dim, out_features=feat_size, bias=True)),
-            ('relu_final', ReLU()),
+            ('relu_final', Tanh()),
         ]))
 
     def forward(self, node_latent_space, class_latent_space):
