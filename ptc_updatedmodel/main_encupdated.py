@@ -99,7 +99,7 @@ class GLDisen(nn.Module):
         #check input feat first
         #print('recon ', x[0],reconstructed_node[0])
         #reconstruction_error =  0.1*mse_loss(reconstructed_node, x) * num_graphs
-        reconstruction_error =  mse_loss(reconstructed_node, x) + self.recon_loss1(reconstructed_node, edge_index)
+        reconstruction_error =  self.recon_loss1(reconstructed_node, edge_index)#mse_loss(reconstructed_node, x) + self.recon_loss1(reconstructed_node, edge_index)
         #reconstruction_error.backward()
 
         loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error
@@ -184,9 +184,9 @@ if __name__ == '__main__':
 
     #enable entire sets of hyperparameters for the full experiment
 
-    seeds = [32,42,52,62,72]
+    #seeds = [32,42,52,62,72]
 
-    #seeds = [123,132,213,231,312,321] #this set also give similar results
+    seeds = [123,132,213,231,312,321] #this set also give similar results
     epochs_list =[25,50,75,100]
     node_ratio = [0.25,0.5,0.75]
     best_acc = 0

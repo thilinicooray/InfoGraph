@@ -163,11 +163,11 @@ class GLDisen(nn.Module):
                 if x is None:
                     x = torch.ones((batch.shape[0],1)).to(device)
                 node_mu, node_logvar = self.encoder(x, edge_index, batch)
-                '''mean_mu = global_mean_pool(node_mu, batch)
-                mean_logvar = global_mean_pool(node_logvar, batch)'''
-                node_emb = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
-                class_emb = global_mean_pool(node_emb, batch)
-                #class_emb = reparameterize(training=False, mu=mean_mu, logvar=mean_logvar)
+                mean_mu = global_mean_pool(node_mu, batch)
+                mean_logvar = global_mean_pool(node_logvar, batch)
+                #node_emb = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
+                #class_emb = global_mean_pool(node_emb, batch)
+                class_emb = reparameterize(training=False, mu=mean_mu, logvar=mean_logvar)
 
                 ret.append(class_emb.cpu().numpy())
                 y.append(data.y.cpu().numpy())
