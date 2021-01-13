@@ -16,20 +16,20 @@ import sys
 import json
 from torch import optim
 
-from gin_gvae import *
+from gin import *
 from evaluate_embedding import evaluate_embedding
 from utils import imshow_grid, mse_loss, reparameterize, group_wise_reparameterize, accumulate_group_evidence
 
 from arguments import arg_parse
 
 class GLDisen(nn.Module):
-    def __init__(self, hidden_dim, num_gc_layers, node_dim):
+    def __init__(self, hidden_dim, num_gc_layers, node_dim, class_dim):
         super(GLDisen, self).__init__()
 
 
         #self.embedding_dim = mi_units = hidden_dim * num_gc_layers
-        self.encoder = Encoder(dataset_num_features, hidden_dim, num_gc_layers, node_dim)
-        self.decoder = Decoder(hidden_dim, dataset_num_features)
+        self.encoder = Encoder(dataset_num_features, hidden_dim, num_gc_layers, node_dim, class_dim)
+        self.decoder = Decoder(hidden_dim, hidden_dim, dataset_num_features)
 
         #self.proj1 = FF(self.embedding_dim)
         #self.proj2 = FF(self.embedding_dim)
@@ -54,7 +54,7 @@ class GLDisen(nn.Module):
         if x is None:
             x = torch.ones(batch.shape[0]).to(device)
 
-        node_mu, node_logvar = self.encoder(x, edge_index, batch)
+        node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index, batch)
 
 
         # kl-divergence error for style latent space
@@ -72,7 +72,11 @@ class GLDisen(nn.Module):
         '''class_kl_divergence_loss = torch.mean(
             - 0.5 * torch.sum(1 + class_logvar - class_mu.pow(2) - class_logvar.exp())
         )'''
-
+        class_kl_divergence_loss = -0.5 / n_nodes * torch.mean(torch.sum(
+            1 + 2 * class_logvar - class_mu.pow(2) - class_logvar.exp().pow(2), 1))
+        #class_kl_divergence_loss = 0.0000001 * class_kl_divergence_loss * num_graphs
+        class_kl_divergence_loss = class_kl_divergence_loss
+        #class_kl_divergence_loss.backward(retain_graph=True)
 
         # reconstruct samples
         """
@@ -80,27 +84,30 @@ class GLDisen(nn.Module):
         the decoder consider class latent embeddings as random noise and ignore them 
         """
         node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
+        class_latent_embeddings = reparameterize(training=True, mu=class_mu, logvar=class_logvar)
 
+        _, count = torch.unique(batch,  return_counts=True)
+
+        class_latent_embeddings = torch.repeat_interleave(class_latent_embeddings, count, dim=0)
 
         #need to reduce ml between node and class latents
         '''measure='JSD'
         mi_loss = local_global_loss_disen(node_latent_embeddings, class_latent_embeddings, edge_index, batch, measure)
         mi_loss.backward(retain_graph=True)'''
 
-        reconstructed_node = self.decoder(node_latent_embeddings)
-        #reconstructed_node = node_latent_embeddings
+        reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
         #check input feat first
         #print('recon ', x[0],reconstructed_node[0])
         #reconstruction_error =  0.1*mse_loss(reconstructed_node, x) * num_graphs
         reconstruction_error =  self.recon_loss1(reconstructed_node, edge_index)#mse_loss(reconstructed_node, x) + self.recon_loss1(reconstructed_node, edge_index)
         #reconstruction_error.backward()
 
-        loss =  node_kl_divergence_loss + reconstruction_error
+        loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error
 
         loss.backward()
 
 
-        return reconstruction_error.item() , 0.0 , node_kl_divergence_loss.item()
+        return reconstruction_error.item() , class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
 
     def edge_recon(self, z, edge_index, sigmoid=True):
         r"""Decodes the latent variables :obj:`z` into edge probabilities for
@@ -162,12 +169,8 @@ class GLDisen(nn.Module):
                 x, edge_index, batch = data.x, data.edge_index, data.batch
                 if x is None:
                     x = torch.ones((batch.shape[0],1)).to(device)
-                node_mu, node_logvar = self.encoder(x, edge_index, batch)
-                mean_mu = global_mean_pool(node_mu, batch)
-                mean_logvar = global_mean_pool(node_logvar, batch)
-                #node_emb = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
-                #class_emb = global_mean_pool(node_emb, batch)
-                class_emb = reparameterize(training=False, mu=mean_mu, logvar=mean_logvar)
+                __, _, class_mu, class_logvar = self.encoder(x, edge_index, batch)
+                class_emb = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
 
                 ret.append(class_emb.cpu().numpy())
                 y.append(data.y.cpu().numpy())
@@ -181,21 +184,21 @@ if __name__ == '__main__':
 
     #enable entire sets of hyperparameters for the full experiment
 
-    best_acc = 0
-    best_setup = {'seed':0, 'epoch':0, 'node_ratio':0, 'acc':0}
-
     seeds = [32,42,52,62,72]
 
     #seeds = [123,132,213,231,312,321] #this set also give similar results
-    epochs_list =[40,60,80,100]
-    node_ratio = [0.5]
+    epochs_list =[25,50,75,100]
+    node_ratio = [0.25,0.5,0.75]
+    best_acc = 0
+    best_setup = {'seed':0, 'epoch':0, 'node_ratio':0, 'acc':0}
     for seed in seeds:
         for epochs in epochs_list:
             for rat in node_ratio:
 
                 node_dim = int(args.hidden_dim*2*rat)
+                class_dim = int(args.hidden_dim*2 - node_dim)
 
-                print('seed ', seed, 'epochs ', epochs, 'node dim ', node_dim)
+                print('seed ', seed, 'epochs ', epochs, 'node dim ', node_dim, 'class dim ', class_dim)
 
                 random.seed(seed)
                 np.random.seed(seed)
@@ -227,7 +230,7 @@ if __name__ == '__main__':
                 dataloader = DataLoader(dataset, batch_size=batch_size)
 
                 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-                model = GLDisen(args.hidden_dim, args.num_gc_layers, node_dim).to(device)
+                model = GLDisen(args.hidden_dim, args.num_gc_layers, node_dim, class_dim).to(device)
                 optimizer = torch.optim.Adam(model.parameters(), lr=lr)
                 #scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
 
@@ -279,7 +282,7 @@ if __name__ == '__main__':
 
 
                     print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(dataloader),
-                                                                                            kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
+                                                                                        kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
 
                 #print('loading best model...')
                 #model.load_state_dict(torch.load('model.pkl'))
@@ -294,12 +297,14 @@ if __name__ == '__main__':
 
                 if res > best_acc:
                     best_acc = res
-                    torch.save(model.state_dict(), 'gvae_best.pkl')
+                    torch.save(model.state_dict(), 'ours_best.pkl')
                     print('current best model saved!')
                     best_setup['seed']=seed
                     best_setup['epoch']=epochs
                     best_setup['node_ratio']=rat
                     best_setup['acc']=best_acc
-                    with open('gvae_best_setup.json', 'w') as f:
+                    with open('ours_best_setup.json', 'w') as f:
                         json.dump(best_setup, f)
+
+
 
