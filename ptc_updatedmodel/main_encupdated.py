@@ -116,13 +116,15 @@ class GLDisen(nn.Module):
         reconstruction_error =  self.recon_loss1(reconstructed_node, edge_index)#mse_loss(reconstructed_node, x) + self.recon_loss1(reconstructed_node, edge_index)
         #reconstruction_error.backward()
 
+        rank_loss = self.marginal_ranking_loss(edge_index,reconstructed_node,node_latent_embeddings)
 
-        loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error
+
+        loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error + rank_loss
 
         loss.backward()
 
 
-        return reconstruction_error.item() , class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
+        return reconstruction_error.item() , class_kl_divergence_loss.item() , rank_loss.item()
 
     def edge_recon(self, z, edge_index, sigmoid=True):
         r"""Decodes the latent variables :obj:`z` into edge probabilities for
@@ -148,8 +150,11 @@ class GLDisen(nn.Module):
 
         global_local_adj = torch.sigmoid((global_local[edge_index[0]] * local[edge_index[1]]).sum(dim=1))
         local_global_adj = torch.sigmoid((local[edge_index[0]] * global_local[edge_index[1]]).sum(dim=1))
+        margin = global_local_adj + local_global_adj
 
+        rank_loss = torch.mean(torch.max(torch.zeros(global_neg_adj.size(0)).cuda().double(), margin.squeeze() + local_neg_adj.squeeze() - global_neg_adj.squeeze()),0)
 
+        return rank_loss
 
 
     def recon_loss1(self, z, edge_index):
