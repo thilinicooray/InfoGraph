@@ -205,7 +205,7 @@ class GLDisen(nn.Module):
                 new_adj[1] = torch.masked_select(edge_index[1], mask)
 
 
-                node_mu, node_logvar, class_mu, class_logvar = self.encoder(reconstructed_node, new_adj, batch)
+                node_mu, node_logvar, class_mu, class_logvar = self.encoder(reconstructed_node, edge_index, batch)
                 class_emb1 = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
 
 
