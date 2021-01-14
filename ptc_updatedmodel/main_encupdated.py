@@ -195,22 +195,18 @@ class GLDisen(nn.Module):
 
                 reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
 
-                node_mu, node_logvar, class_mu, class_logvar = self.encoder(reconstructed_node, edge_index, batch)
-                class_emb1 = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
-
 
                 recon_adj = self.edge_recon(reconstructed_node, edge_index)
 
-                mask = recon_adj >= 0.7
+                mask = recon_adj >= 0.5
 
                 new_adj = edge_index
                 new_adj[0] = torch.masked_select(edge_index[0], mask)
                 new_adj[1] = torch.masked_select(edge_index[1], mask)
 
 
-                print('mask ', mask, mask.size(), recon_adj.size(), new_adj.size(), recon_adj)
-
-
+                node_mu, node_logvar, class_mu, class_logvar = self.encoder(reconstructed_node, new_adj, batch)
+                class_emb1 = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
 
 
 
