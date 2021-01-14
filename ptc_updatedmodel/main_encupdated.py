@@ -119,7 +119,7 @@ class GLDisen(nn.Module):
         rank_loss = self.marginal_ranking_loss(edge_index,reconstructed_node,node_latent_embeddings)
 
 
-        loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error + rank_loss
+        loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error + 0.1*rank_loss
 
         loss.backward()
 
