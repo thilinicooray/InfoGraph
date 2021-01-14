@@ -152,8 +152,11 @@ class GLDisen(nn.Module):
         node_mu_recon, node_logvar_recon, class_mu_recon, class_logvar_recon = self.encoder(reconstructed_node, edge_index, batch)
 
         class_dist_div = 0.01*self.kl_div_loss(class_mu,class_logvar, class_mu_recon,class_logvar_recon)
+        node_dist_div = 0.01*self.kl_div_loss(node_mu,node_logvar, node_mu_recon,node_logvar_recon)
 
-        class_dist_div.backward()
+        dist_div = class_dist_div + node_dist_div
+
+        dist_div.backward()
         optim_D_gen.step()
 
         self.encoder.train()
