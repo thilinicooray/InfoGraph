@@ -60,7 +60,9 @@ class GLDisen(nn.Module):
                     m.bias.data.fill_(0.0)
 
 
-    def forward(self, x, edge_index, batch, num_graphs):
+    def forward(self, x, edge_index, batch, num_graphs, optimizer, optim_D_gen):
+
+        self.zero_grad()
 
         n_nodes = x.size(0)
 
@@ -121,8 +123,64 @@ class GLDisen(nn.Module):
 
         loss.backward()
 
+        optimizer.step()
 
-        return reconstruction_error.item() , class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
+
+        #knowledge distil
+
+        self.encoder.eval()
+
+        node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index, batch)
+        node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
+        class_latent_embeddings = reparameterize(training=True, mu=class_mu, logvar=class_logvar)
+
+        _, count = torch.unique(batch,  return_counts=True)
+
+        class_latent_embeddings = torch.repeat_interleave(class_latent_embeddings, count, dim=0)
+
+        reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
+
+        recon_adj = self.edge_recon(reconstructed_node, edge_index)
+
+        mask = recon_adj >= 0.5
+
+        new_adj = edge_index
+        new_adj[0] = torch.masked_select(edge_index[0], mask)
+        new_adj[1] = torch.masked_select(edge_index[1], mask)
+
+
+        node_mu_recon, node_logvar_recon, class_mu_recon, class_logvar_recon = self.encoder(reconstructed_node, edge_index, batch)
+
+        class_dist_div = self.kl_div_loss(class_mu,class_logvar, class_mu_recon,class_logvar_recon)
+
+        class_dist_div.backward()
+        optim_D_gen.step()
+
+        self.encoder.train()
+
+
+
+
+
+
+        return reconstruction_error.item() , class_kl_divergence_loss.item() , class_dist_div.item()
+
+
+    def kl_div_loss(self, mu1, logvar1, mu2, logvar2):
+        """Computes the KL loss between the embedding attained from the answers
+        and the categories.
+        KL divergence between two gaussians:
+            log(sigma_2/sigma_1) + (sigma_2^2 + (mu_1 - mu_2)^2)/(2sigma_1^2) - 0.5
+        Args:
+            mu1: Means from first space.
+            logvar1: Log variances from first space.
+            mu2: Means from second space.
+            logvar2: Means from second space.
+        """
+        numerator = logvar1.exp() + torch.pow(mu1 - mu2, 2)
+        fraction = torch.div(numerator, (logvar2.exp() + 1e-8))
+        kl = 0.5 * torch.sum(logvar2 - logvar1 + fraction - 1)
+        return kl / (mu1.size(0) + 1e-8)
 
     def edge_recon(self, z, edge_index, sigmoid=True):
         r"""Decodes the latent variables :obj:`z` into edge probabilities for
@@ -187,7 +245,30 @@ class GLDisen(nn.Module):
                 node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index, batch)
                 class_emb = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
 
-                ret.append((class_emb).cpu().numpy())
+                node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
+
+                _, count = torch.unique(batch,  return_counts=True)
+
+                class_latent_embeddings = torch.repeat_interleave(class_emb, count, dim=0)
+
+                reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
+
+
+                recon_adj = self.edge_recon(reconstructed_node, edge_index)
+
+                mask = recon_adj >= 0.5
+
+                new_adj = edge_index
+                new_adj[0] = torch.masked_select(edge_index[0], mask)
+                new_adj[1] = torch.masked_select(edge_index[1], mask)
+
+
+                node_mu, node_logvar, class_mu, class_logvar = self.encoder(reconstructed_node, edge_index, batch)
+                class_emb1 = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
+
+
+
+                ret.append((class_emb+class_emb1).cpu().numpy())
                 y.append(data.y.cpu().numpy())
         ret = np.concatenate(ret, 0)
         y = np.concatenate(y, 0)
@@ -247,6 +328,7 @@ if __name__ == '__main__':
                 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
                 model = GLDisen(args.hidden_dim, args.num_gc_layers, node_dim, class_dim).to(device)
                 optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+                optim_D_gen = torch.optim.Adam(model.decoder.parameters(), lr=lr*0.5)
                 #scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
 
                 print('================')
@@ -271,12 +353,12 @@ if __name__ == '__main__':
                     #model.train()
                     for data in dataloader:
                         data = data.to(device)
-                        optimizer.zero_grad()
-                        recon_loss, kl_class, kl_node = model(data.x, data.edge_index, data.batch, data.num_graphs)
+                        #optimizer.zero_grad()
+                        recon_loss, kl_class, kl_node = model(data.x, data.edge_index, data.batch, data.num_graphs, optimizer, optim_D_gen)
                         recon_loss_all += recon_loss
                         kl_class_loss_all += kl_class
                         kl_node_loss_all += kl_node
-                        optimizer.step()
+                        #optimizer.step()
 
                         #losses['tot'].append(loss_all/ len(dataloader))
 
@@ -297,7 +379,7 @@ if __name__ == '__main__':
 
 
                     print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(dataloader),
-                                                                                        kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
+                                                                                            kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
 
                 #print('loading best model...')
                 #model.load_state_dict(torch.load('model.pkl'))
