@@ -42,6 +42,7 @@ class GLDisen(nn.Module):
 
         #self.embedding_dim = mi_units = hidden_dim * num_gc_layers
         self.encoder = Encoder(dataset_num_features, hidden_dim, num_gc_layers, node_dim, class_dim)
+        self.encoder1 = Encoder(dataset_num_features, hidden_dim, num_gc_layers, node_dim, class_dim)
         self.decoder = Decoder(hidden_dim, hidden_dim, dataset_num_features)
         self.node_discriminator = Discriminator(hidden_dim, hidden_dim)
 
@@ -149,7 +150,7 @@ class GLDisen(nn.Module):
         new_adj[1] = torch.masked_select(edge_index[1], mask)'''
 
 
-        node_mu_recon, node_logvar_recon, class_mu_recon, class_logvar_recon = self.encoder(reconstructed_node, edge_index, batch)
+        node_mu_recon, node_logvar_recon, class_mu_recon, class_logvar_recon = self.encoder1(reconstructed_node, edge_index, batch)
 
         class_dist_div = 0.01*self.kl_div_loss(class_mu,class_logvar, class_mu_recon,class_logvar_recon)
         node_dist_div = 0.01*self.kl_div_loss(node_mu,node_logvar, node_mu_recon,node_logvar_recon)
@@ -266,7 +267,7 @@ class GLDisen(nn.Module):
                 new_adj[1] = torch.masked_select(edge_index[1], mask)
 
 
-                node_mu, node_logvar, class_mu, class_logvar = self.encoder(reconstructed_node, edge_index, batch)
+                node_mu, node_logvar, class_mu, class_logvar = self.encoder1(reconstructed_node, edge_index, batch)
                 class_emb1 = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
 
 
@@ -331,7 +332,8 @@ if __name__ == '__main__':
                 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
                 model = GLDisen(args.hidden_dim, args.num_gc_layers, node_dim, class_dim).to(device)
                 optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-                optim_D_gen = torch.optim.Adam(model.decoder.parameters(), lr=lr*0.5)
+                optim_D_gen = torch.optim.Adam([{'params': model.decoder.parameters(), 'lr': lr*0.5},
+                                               {'params': model.encoder1.parameters()}], lr=lr)
                 #scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
 
                 print('================')
