@@ -62,6 +62,8 @@ class GLDisen(nn.Module):
 
     def forward(self, x, edge_index, batch, num_graphs):
 
+        print('edge idx', edge_index, edge_index.size())
+
         n_nodes = x.size(0)
 
         # batch_size = data.num_graphs
