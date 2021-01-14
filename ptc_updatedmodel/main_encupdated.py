@@ -42,7 +42,7 @@ class GLDisen(nn.Module):
 
         #self.embedding_dim = mi_units = hidden_dim * num_gc_layers
         self.encoder = Encoder(dataset_num_features, hidden_dim, num_gc_layers, node_dim, class_dim)
-        self.decoder = Decoder(hidden_dim, hidden_dim, dataset_num_features)
+        self.decoder = Decoder(hidden_dim, hidden_dim, hidden_dim)
         self.node_discriminator = Discriminator(hidden_dim, hidden_dim)
 
         #self.proj1 = FF(self.embedding_dim)
@@ -134,13 +134,23 @@ class GLDisen(nn.Module):
                 the logistic sigmoid function to the output.
                 (default: :obj:`True`)
         """
-        value1 = (z[edge_index[0]] * z[edge_index[1]])
-        print('adj', value1.size())
-
-        value = value1.sum(dim=1)
-
-
+        value = (z[edge_index[0]] * z[edge_index[1]]).sum(dim=1)
         return torch.sigmoid(value) if sigmoid else value
+
+    def marginal_ranking_loss(self, edge_index, global_local, local):
+        pos_edge_index, _ = remove_self_loops(edge_index)
+        pos_edge_index, _ = add_self_loops(pos_edge_index)
+
+        neg_edge_index = negative_sampling(pos_edge_index, global_local.size(0)) #random thingggg
+
+        global_neg_adj = self.edge_recon(global_local, neg_edge_index)
+        local_neg_adj = self.edge_recon(local, neg_edge_index)
+
+        global_local_adj = torch.sigmoid((global_local[edge_index[0]] * local[edge_index[1]]).sum(dim=1))
+        local_global_adj = torch.sigmoid((local[edge_index[0]] * global_local[edge_index[1]]).sum(dim=1))
+
+
+
 
     def recon_loss1(self, z, edge_index):
 
