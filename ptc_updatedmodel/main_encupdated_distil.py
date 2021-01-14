@@ -145,9 +145,7 @@ class GLDisen(nn.Module):
 
         mask = recon_adj >= 0.5
 
-        print('sizes ', mask.size(), recon_adj.size(), edge_index.size(), mask.sum())
-
-        new_adj = edge_index
+        new_adj = edge_index[:,: mask.sum()]
         new_adj[0] = torch.masked_select(edge_index[0], mask)
         new_adj[1] = torch.masked_select(edge_index[1], mask)
 
