@@ -219,7 +219,7 @@ if __name__ == '__main__':
     seeds = [32,42,52,62,72]
 
     #seeds = [123,132,213,231,312,321] #this set also give similar results
-    epochs_list =[20,40,60,80,100]
+    epochs_list =[25,50,75,100]
     node_ratio = [0.25,0.5,0.75]
     best_acc = 0
     best_setup = {'seed':0, 'epoch':0, 'node_ratio':0, 'acc':0}
