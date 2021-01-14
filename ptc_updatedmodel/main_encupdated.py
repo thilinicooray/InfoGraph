@@ -22,6 +22,19 @@ from utils import imshow_grid, mse_loss, reparameterize, group_wise_reparameteri
 
 from arguments import arg_parse
 
+class Discriminator(nn.Module):
+    def __init__(self,N,z_dim):
+        super(Discriminator, self).__init__()
+        self.lin1 = nn.Linear(z_dim, N)
+        self.lin2 = nn.Linear(N, N)
+        self.lin3 = nn.Linear(N, 1)
+    def forward(self, x):
+        x = self.lin1(x)
+        '''x = F.relu(x)
+        x = F.dropout(self.lin2(x), p=0.0, training=self.training)'''
+        x = F.relu(x)
+        return torch.sigmoid(self.lin3(x))
+
 class GLDisen(nn.Module):
     def __init__(self, hidden_dim, num_gc_layers, node_dim, class_dim):
         super(GLDisen, self).__init__()
@@ -30,6 +43,7 @@ class GLDisen(nn.Module):
         #self.embedding_dim = mi_units = hidden_dim * num_gc_layers
         self.encoder = Encoder(dataset_num_features, hidden_dim, num_gc_layers, node_dim, class_dim)
         self.decoder = Decoder(hidden_dim, hidden_dim, dataset_num_features)
+        self.node_discriminator = Discriminator(hidden_dim, hidden_dim)
 
         #self.proj1 = FF(self.embedding_dim)
         #self.proj2 = FF(self.embedding_dim)
@@ -102,6 +116,7 @@ class GLDisen(nn.Module):
         reconstruction_error =  self.recon_loss1(reconstructed_node, edge_index)#mse_loss(reconstructed_node, x) + self.recon_loss1(reconstructed_node, edge_index)
         #reconstruction_error.backward()
 
+
         loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error
 
         loss.backward()
@@ -119,7 +134,12 @@ class GLDisen(nn.Module):
                 the logistic sigmoid function to the output.
                 (default: :obj:`True`)
         """
-        value = (z[edge_index[0]] * z[edge_index[1]]).sum(dim=1)
+        value1 = (z[edge_index[0]] * z[edge_index[1]])
+        print('adj', value1.size())
+
+        value = value1.sum(dim=1)
+
+
         return torch.sigmoid(value) if sigmoid else value
 
     def recon_loss1(self, z, edge_index):
@@ -142,7 +162,6 @@ class GLDisen(nn.Module):
 
 
         recon_adj = self.edge_recon(z, edge_index)
-
 
         pos_loss = -torch.log(
             recon_adj + EPS).mean()
