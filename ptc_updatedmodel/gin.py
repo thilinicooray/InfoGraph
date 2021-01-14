@@ -63,7 +63,6 @@ class Encoder(torch.nn.Module):
 
     def forward(self, x, edge_index, batch):
         global_n = None
-        global_weights = None
         if x is None:
             x = torch.ones((batch.shape[0], 1)).to(device)
 
@@ -72,14 +71,6 @@ class Encoder(torch.nn.Module):
 
             x = F.relu(self.convs[i](x, edge_index))
             x = self.bns[i](x)
-
-            global_weights = torch.sigmoid(self.att(x))
-            if i == 0:
-                global_n = global_add_pool(global_weights*x, batch)
-            else:
-                global_n = global_n + global_add_pool(global_weights*x, batch)
-
-            x = (1-global_weights)*x
 
             xs.append(x)
             # if i == 2:

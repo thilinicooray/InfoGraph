@@ -201,10 +201,21 @@ class GLDisen(nn.Module):
                 x, edge_index, batch = data.x, data.edge_index, data.batch
                 if x is None:
                     x = torch.ones((batch.shape[0],1)).to(device)
-                __, _, class_mu, class_logvar = self.encoder(x, edge_index, batch)
+                node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index, batch)
                 class_emb = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
 
-                ret.append(class_emb.cpu().numpy())
+                node_emb = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
+                _, count = torch.unique(batch,  return_counts=True)
+
+                class_latent_embeddings = torch.repeat_interleave(class_emb, count, dim=0)
+                reconstructed_node = self.decoder(node_emb, class_latent_embeddings)
+                node_mu, node_logvar, class_mu, class_logvar = self.encoder(reconstructed_node, edge_index, batch)
+                class_emb2 = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
+
+
+
+
+                ret.append((class_emb+class_emb2).cpu().numpy())
                 y.append(data.y.cpu().numpy())
         ret = np.concatenate(ret, 0)
         y = np.concatenate(y, 0)
