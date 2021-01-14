@@ -148,13 +148,9 @@ class GLDisen(nn.Module):
         global_neg_adj = self.edge_recon(global_local, neg_edge_index)
         local_neg_adj = self.edge_recon(local, neg_edge_index)
 
-        global_local_adj = torch.sigmoid((global_local[edge_index[0]] * local[edge_index[1]]))
-        print('margin part 1', global_local_adj.size())
-
-        local_global_adj = torch.sigmoid((local[edge_index[0]] * global_local[edge_index[1]]).sum(dim=1))
+        global_local_adj = torch.sigmoid((global_local[neg_edge_index[0]] * local[neg_edge_index[1]]).sum(dim=1))
+        local_global_adj = torch.sigmoid((local[neg_edge_index[0]] * global_local[neg_edge_index[1]]).sum(dim=1))
         margin = global_local_adj + local_global_adj
-
-        print('sizes', global_neg_adj.size(), local_neg_adj.size(), margin.size())
 
         rank_loss = torch.mean(torch.max(torch.zeros(global_neg_adj.size(0)).cuda().double(), margin.squeeze() + local_neg_adj.squeeze() - global_neg_adj.squeeze()),0)
 
