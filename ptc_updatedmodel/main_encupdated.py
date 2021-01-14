@@ -201,14 +201,14 @@ class GLDisen(nn.Module):
 
                 recon_adj = self.edge_recon(reconstructed_node, edge_index)
 
-                mask = recon_adj >= 0.5
+                mask = recon_adj >= 0.7
 
                 new_adj = edge_index
                 new_adj[0] = torch.masked_select(edge_index[0], mask)
                 new_adj[1] = torch.masked_select(edge_index[1], mask)
 
 
-                print('mask ', mask, mask.size(), recon_adj.size(), new_adj.size())
+                print('mask ', mask, mask.size(), recon_adj.size(), new_adj.size(), recon_adj)
 
 
 
