@@ -119,7 +119,7 @@ class GLDisen(nn.Module):
         rank_loss = self.marginal_ranking_loss(edge_index,reconstructed_node,node_latent_embeddings)
 
 
-        loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error + 0.1*rank_loss
+        loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error + 0.01*rank_loss
 
         loss.backward()
 
@@ -150,7 +150,7 @@ class GLDisen(nn.Module):
 
         global_local_adj = torch.sigmoid((global_local[neg_edge_index[0]] * local[neg_edge_index[1]]).sum(dim=1))
         local_global_adj = torch.sigmoid((local[neg_edge_index[0]] * global_local[neg_edge_index[1]]).sum(dim=1))
-        margin = (global_local_adj + local_global_adj)/2
+        margin = global_local_adj + local_global_adj
 
         rank_loss = torch.mean(torch.max(torch.zeros(global_neg_adj.size(0)).cuda(), margin.squeeze() + local_neg_adj.squeeze() - global_neg_adj.squeeze()),0)
 
