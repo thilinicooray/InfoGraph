@@ -62,8 +62,6 @@ class GLDisen(nn.Module):
 
     def forward(self, x, edge_index, batch, num_graphs):
 
-        print('edge idx', edge_index, edge_index.size())
-
         n_nodes = x.size(0)
 
         # batch_size = data.num_graphs
@@ -199,6 +197,12 @@ class GLDisen(nn.Module):
 
                 node_mu, node_logvar, class_mu, class_logvar = self.encoder(reconstructed_node, edge_index, batch)
                 class_emb1 = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
+
+
+                recon_adj = self.edge_recon(reconstructed_node, edge_index)
+
+                mask = recon_adj >= 0.5
+                print('mask ', mask, mask.size(), recon_adj.size())
 
 
 
