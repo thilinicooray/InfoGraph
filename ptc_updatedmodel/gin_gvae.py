@@ -41,7 +41,7 @@ class Encoder(torch.nn.Module):
                 nn = Sequential(Linear(num_features, dim), ReLU(), Linear(dim, dim))
                 bn = torch.nn.BatchNorm1d(dim)
             elif i >= num_gc_layers and i < num_gc_layers +2:
-                nn = Sequential(Linear(dim, dim), ReLU(), Linear(dim, node_dim*2))
+                nn = Sequential(Linear(dim*num_gc_layers, dim), ReLU(), Linear(dim, node_dim*2))
                 bn = torch.nn.BatchNorm1d(node_dim*2)
             else:
                 nn = Sequential(Linear(dim, dim), ReLU(), Linear(dim, dim))
@@ -69,6 +69,8 @@ class Encoder(torch.nn.Module):
             # feature_map = x2
 
         j = self.num_gc_layers
+
+        x = torch.cat(xs, 1)
         node_latent_space_mu = self.bns[j](torch.tanh(self.convs[j](x, edge_index)))
         node_latent_space_logvar = self.bns[j+1](torch.tanh(self.convs[j+1](x, edge_index)))
 
