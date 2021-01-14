@@ -262,7 +262,7 @@ if __name__ == '__main__':
                 dataloader = DataLoader(dataset, batch_size=batch_size)
 
                 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-                model = GLDisen(args.hidden_dim, args.num_gc_layers, node_dim, class_dim).to(device)
+                model = GLDisen(args.hidden_dim, args.num_gc_layers, node_dim, class_dim).double().to(device)
                 optimizer = torch.optim.Adam(model.parameters(), lr=lr)
                 #scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
 
