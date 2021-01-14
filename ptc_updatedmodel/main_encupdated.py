@@ -116,15 +116,13 @@ class GLDisen(nn.Module):
         reconstruction_error =  self.recon_loss1(reconstructed_node, edge_index)#mse_loss(reconstructed_node, x) + self.recon_loss1(reconstructed_node, edge_index)
         #reconstruction_error.backward()
 
-        rank_loss = self.marginal_ranking_loss(edge_index,reconstructed_node,node_latent_embeddings)
 
-
-        loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error + rank_loss
+        loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error
 
         loss.backward()
 
 
-        return reconstruction_error.item() , class_kl_divergence_loss.item() , rank_loss.item()
+        return reconstruction_error.item() , class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
 
     def edge_recon(self, z, edge_index, sigmoid=True):
         r"""Decodes the latent variables :obj:`z` into edge probabilities for
@@ -139,7 +137,7 @@ class GLDisen(nn.Module):
         value = (z[edge_index[0]] * z[edge_index[1]]).sum(dim=1)
         return torch.sigmoid(value) if sigmoid else value
 
-    def marginal_ranking_loss(self, edge_index, global_local, local):
+    '''def marginal_ranking_loss(self, edge_index, global_local, local):
         pos_edge_index, _ = remove_self_loops(edge_index)
         pos_edge_index, _ = add_self_loops(pos_edge_index)
 
@@ -154,7 +152,7 @@ class GLDisen(nn.Module):
 
         rank_loss = torch.mean(torch.max(torch.zeros(global_neg_adj.size(0)).cuda(), local_neg_adj.squeeze() - global_neg_adj.squeeze()),0)
 
-        return rank_loss
+        return rank_loss'''
 
 
     def recon_loss1(self, z, edge_index):
@@ -200,7 +198,7 @@ class GLDisen(nn.Module):
         with torch.no_grad():
             for data in loader:
                 data.to(device)
-                x, edge_index, batch = data.x, data.edge_index, data.batch
+                x, edge_index, batch = data.x.double(), data.edge_index, data.batch
                 if x is None:
                     x = torch.ones((batch.shape[0],1)).to(device)
                 __, _, class_mu, class_logvar = self.encoder(x, edge_index, batch)
@@ -291,7 +289,7 @@ if __name__ == '__main__':
                     for data in dataloader:
                         data = data.to(device)
                         optimizer.zero_grad()
-                        recon_loss, kl_class, kl_node = model(data.x, data.edge_index, data.batch, data.num_graphs)
+                        recon_loss, kl_class, kl_node = model(data.x.double(), data.edge_index, data.batch, data.num_graphs)
                         recon_loss_all += recon_loss
                         kl_class_loss_all += kl_class
                         kl_node_loss_all += kl_node
