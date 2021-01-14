@@ -140,18 +140,18 @@ class GLDisen(nn.Module):
 
         reconstructed_node = self.decoder(node_latent_embeddings, class_latent_embeddings)
 
-        recon_adj = self.edge_recon(reconstructed_node, edge_index)
+        '''recon_adj = self.edge_recon(reconstructed_node, edge_index)
 
         mask = recon_adj >= 0.5
 
         new_adj = edge_index
         new_adj[0] = torch.masked_select(edge_index[0], mask)
-        new_adj[1] = torch.masked_select(edge_index[1], mask)
+        new_adj[1] = torch.masked_select(edge_index[1], mask)'''
 
 
         node_mu_recon, node_logvar_recon, class_mu_recon, class_logvar_recon = self.encoder(reconstructed_node, edge_index, batch)
 
-        class_dist_div = self.kl_div_loss(class_mu,class_logvar, class_mu_recon,class_logvar_recon)
+        class_dist_div = 0.01*self.kl_div_loss(class_mu,class_logvar, class_mu_recon,class_logvar_recon)
 
         class_dist_div.backward()
         optim_D_gen.step()
