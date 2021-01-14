@@ -42,7 +42,7 @@ class GLDisen(nn.Module):
 
         #self.embedding_dim = mi_units = hidden_dim * num_gc_layers
         self.encoder = Encoder(dataset_num_features, hidden_dim, num_gc_layers, node_dim, class_dim)
-        self.decoder = Decoder(hidden_dim, hidden_dim, node_dim)
+        self.decoder = Decoder(hidden_dim, hidden_dim, dataset_num_features)
         self.node_discriminator = Discriminator(hidden_dim, hidden_dim)
 
         #self.proj1 = FF(self.embedding_dim)
@@ -198,7 +198,7 @@ class GLDisen(nn.Module):
         with torch.no_grad():
             for data in loader:
                 data.to(device)
-                x, edge_index, batch = data.x.double(), data.edge_index, data.batch
+                x, edge_index, batch = data.x, data.edge_index, data.batch
                 if x is None:
                     x = torch.ones((batch.shape[0],1)).to(device)
                 __, _, class_mu, class_logvar = self.encoder(x, edge_index, batch)
@@ -262,7 +262,7 @@ if __name__ == '__main__':
                 dataloader = DataLoader(dataset, batch_size=batch_size)
 
                 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-                model = GLDisen(args.hidden_dim, args.num_gc_layers, node_dim, class_dim).double().to(device)
+                model = GLDisen(args.hidden_dim, args.num_gc_layers, node_dim, class_dim).to(device)
                 optimizer = torch.optim.Adam(model.parameters(), lr=lr)
                 #scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
 
@@ -289,7 +289,7 @@ if __name__ == '__main__':
                     for data in dataloader:
                         data = data.to(device)
                         optimizer.zero_grad()
-                        recon_loss, kl_class, kl_node = model(data.x.double(), data.edge_index, data.batch, data.num_graphs)
+                        recon_loss, kl_class, kl_node = model(data.x, data.edge_index, data.batch, data.num_graphs)
                         recon_loss_all += recon_loss
                         kl_class_loss_all += kl_class
                         kl_node_loss_all += kl_node
