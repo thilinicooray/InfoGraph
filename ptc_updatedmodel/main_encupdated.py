@@ -152,7 +152,7 @@ class GLDisen(nn.Module):
         local_global_adj = torch.sigmoid((local[neg_edge_index[0]] * global_local[neg_edge_index[1]]).sum(dim=1))
         margin = global_local_adj + local_global_adj
 
-        rank_loss = torch.mean(torch.max(torch.zeros(global_neg_adj.size(0)).cuda().double(), margin.squeeze() + local_neg_adj.squeeze() - global_neg_adj.squeeze()),0)
+        rank_loss = torch.mean(torch.max(torch.zeros(global_neg_adj.size(0)).cuda(), margin.squeeze() + local_neg_adj.squeeze() - global_neg_adj.squeeze()),0)
 
         return rank_loss
 
