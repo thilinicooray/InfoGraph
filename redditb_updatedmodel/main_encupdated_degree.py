@@ -213,7 +213,7 @@ if __name__ == '__main__':
                 losses = {'recon':[], 'node_kl':[], 'class_kl': []}
 
                 log_interval = 1
-                batch_size = 32
+                batch_size = 64
                 lr = args.lr
                 DS = args.DS
                 path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data_degree', DS)
