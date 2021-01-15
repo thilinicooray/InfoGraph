@@ -41,7 +41,7 @@ class Encoder(torch.nn.Module):
                 nn = Sequential(Linear(num_features, dim), ReLU(), Linear(dim, dim))
                 bn = torch.nn.BatchNorm1d(dim)
             elif i >= num_gc_layers and i < num_gc_layers +2:
-                nn = Sequential(Linear(dim, dim), ReLU(), Linear(dim, node_dim))
+                nn = Sequential(Linear(dim*num_gc_layers, dim), ReLU(), Linear(dim, node_dim))
                 bn = torch.nn.BatchNorm1d(node_dim)
             elif i >= num_gc_layers and i >= num_gc_layers +2:
                 nn = Sequential(Linear(dim, dim), ReLU(), Linear(dim, class_dim))
@@ -56,8 +56,8 @@ class Encoder(torch.nn.Module):
 
         self.att = Sequential(Linear(dim*num_gc_layers, dim), ReLU(), Linear(dim, 1))
 
-        self.cls_mu = Sequential(Linear(dim, dim), ReLU(), Linear(dim, class_dim))
-        self.cls_logv = Sequential(Linear(dim, dim), ReLU(), Linear(dim, class_dim))
+        self.cls_mu = Sequential(Linear(dim*num_gc_layers, dim), ReLU(), Linear(dim, class_dim))
+        self.cls_logv = Sequential(Linear(dim*num_gc_layers, dim), ReLU(), Linear(dim, class_dim))
 
 
 
@@ -79,11 +79,11 @@ class Encoder(torch.nn.Module):
         x = torch.cat(xs, 1)
 
         global_weights = torch.sigmoid(self.att(x))
-        global_n = global_add_pool(global_weights*xs[-1], batch)
+        global_n = global_add_pool(global_weights*x, batch)
 
         j = self.num_gc_layers
-        node_latent_space_mu = self.bns[j](torch.tanh(self.convs[j]((1-global_weights)*xs[-1], edge_index)))
-        node_latent_space_logvar = self.bns[j+1](torch.tanh(self.convs[j+1]((1-global_weights)*xs[-1], edge_index)))
+        node_latent_space_mu = self.bns[j](torch.tanh(self.convs[j]((1-global_weights)*x, edge_index)))
+        node_latent_space_logvar = self.bns[j+1](torch.tanh(self.convs[j+1]((1-global_weights)*x, edge_index)))
 
         class_latent_space_mu = self.bns[j+2](torch.tanh(self.cls_mu(global_n)))
         class_latent_space_logvar = self.bns[j+3](torch.tanh(self.cls_logv(global_n)))
