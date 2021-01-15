@@ -41,7 +41,7 @@ class Encoder(torch.nn.Module):
                 nn = Sequential(Linear(num_features, dim), ReLU(), Linear(dim, dim))
                 bn = torch.nn.BatchNorm1d(dim)
             elif i >= num_gc_layers and i < num_gc_layers +2:
-                nn = Sequential(Linear(dim*num_gc_layers, dim), ReLU(), Linear(dim, node_dim))
+                nn = Sequential(Linear(dim, dim), ReLU(), Linear(dim, node_dim))
                 bn = torch.nn.BatchNorm1d(node_dim)
             elif i >= num_gc_layers and i >= num_gc_layers +2:
                 nn = Sequential(Linear(dim, dim), ReLU(), Linear(dim, class_dim))
@@ -56,8 +56,8 @@ class Encoder(torch.nn.Module):
 
         self.att = Sequential(Linear(dim*num_gc_layers, dim), ReLU(), Linear(dim, 1))
 
-        self.cls_mu = Sequential(Linear(dim*num_gc_layers, dim), ReLU(), Linear(dim, class_dim))
-        self.cls_logv = Sequential(Linear(dim*num_gc_layers, dim), ReLU(), Linear(dim, class_dim))
+        self.cls_mu = Sequential(Linear(dim, dim), ReLU(), Linear(dim, class_dim))
+        self.cls_logv = Sequential(Linear(dim, dim), ReLU(), Linear(dim, class_dim))
 
 
 
