@@ -169,7 +169,7 @@ class GLDisen(nn.Module):
                 class_emb = global_mean_pool(node_emb, batch)
                 #class_emb = reparameterize(training=False, mu=mean_mu, logvar=mean_logvar)
 
-                ret.append(class_emb.cpu().numpy())
+                ret.append((class_emb).cpu().numpy())
                 y.append(data.y.cpu().numpy())
         ret = np.concatenate(ret, 0)
         y = np.concatenate(y, 0)
