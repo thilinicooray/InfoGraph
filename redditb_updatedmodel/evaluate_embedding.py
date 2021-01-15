@@ -91,9 +91,11 @@ def logistic_classify(x, y):
     return np.mean(accs)
 
 def svc_classify(x, y, search):
-    tot_acc = []
 
+    tot_acc = None
     for c in [0.001, 0.01,0.1,1,10,100,1000]:
+
+        tot_acc = []
 
         for _ in range(5):
             kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
@@ -116,9 +118,9 @@ def svc_classify(x, y, search):
 
             tot_acc.append(mean)
 
-            print('mean libsvm ',c,  mean, 'std ', std)
+            #print('mean libsvm ',  mean, 'std ', std)
 
-    print('mean of 5 runs', np.mean(tot_acc), np.std(tot_acc))
+        print('mean of 5 runs',c, np.mean(tot_acc), np.std(tot_acc))
 
     return np.mean(tot_acc)
 
