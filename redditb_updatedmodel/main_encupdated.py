@@ -65,7 +65,7 @@ class GLDisen(nn.Module):
             1 + 2 * node_logvar - node_mu.pow(2) - node_logvar.exp().pow(2), 1))
 
         #node_kl_divergence_loss = 0.0000001 * node_kl_divergence_loss *num_graphs
-        node_kl_divergence_loss = node_kl_divergence_loss
+        node_kl_divergence_loss = 1e6*node_kl_divergence_loss
         #node_kl_divergence_loss.backward(retain_graph=True)
 
         # kl-divergence error for class latent space
@@ -75,7 +75,7 @@ class GLDisen(nn.Module):
         class_kl_divergence_loss = -0.5 / n_nodes * torch.mean(torch.sum(
             1 + 2 * class_logvar - class_mu.pow(2) - class_logvar.exp().pow(2), 1))
         #class_kl_divergence_loss = 0.0000001 * class_kl_divergence_loss * num_graphs
-        class_kl_divergence_loss = class_kl_divergence_loss
+        class_kl_divergence_loss = 1e3*class_kl_divergence_loss
         #class_kl_divergence_loss.backward(retain_graph=True)
 
         # reconstruct samples
@@ -168,7 +168,7 @@ class GLDisen(nn.Module):
                 data.to(device)
                 x, edge_index, batch = data.x, data.edge_index, data.batch
                 if not dataset.num_features:
-                    x = torch.ones((data.batch.shape[0], 5)).double().to(device)
+                    x = torch.ones((data.batch.shape[0], 5)).to(device)
                 __, _, class_mu, class_logvar = self.encoder(x, edge_index, batch)
                 class_emb = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
 
@@ -230,7 +230,7 @@ if __name__ == '__main__':
                 dataloader = DataLoader(dataset, batch_size=batch_size)
 
                 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-                model = GLDisen(args.hidden_dim, args.num_gc_layers, node_dim, class_dim).double().to(device)
+                model = GLDisen(args.hidden_dim, args.num_gc_layers, node_dim, class_dim).to(device)
                 optimizer = torch.optim.Adam(model.parameters(), lr=lr)
                 #scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
 
@@ -258,7 +258,7 @@ if __name__ == '__main__':
                         data = data.to(device)
                         optimizer.zero_grad()
                         if not dataset.num_features:
-                            data.x = torch.ones((data.batch.shape[0], 5)).double().to(device)
+                            data.x = torch.ones((data.batch.shape[0], 5)).to(device)
                         recon_loss, kl_class, kl_node = model(data.x, data.edge_index, data.batch, data.num_graphs)
                         recon_loss_all += recon_loss
                         kl_class_loss_all += kl_class
