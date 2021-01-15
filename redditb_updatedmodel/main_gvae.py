@@ -255,7 +255,7 @@ if __name__ == '__main__':
                         data = data.to(device)
                         optimizer.zero_grad()
                         if not dataset.num_features:
-                            data.x = torch.ones((data.batch.shape[0], 5)).to(device)
+                            x = torch.ones((data.batch.shape[0], 5)).to(device)
                         recon_loss, kl_class, kl_node = model(data.x, data.edge_index, data.batch, data.num_graphs)
                         recon_loss_all += recon_loss
                         kl_class_loss_all += kl_class
