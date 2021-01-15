@@ -29,7 +29,7 @@ class GLDisen(nn.Module):
 
         #self.embedding_dim = mi_units = hidden_dim * num_gc_layers
         self.encoder = Encoder(dataset_num_features, hidden_dim, num_gc_layers, node_dim)
-        self.decoder = Decoder(hidden_dim, dataset_num_features)
+        self.decoder = Decoder(node_dim, dataset_num_features)
 
         #self.proj1 = FF(self.embedding_dim)
         #self.proj2 = FF(self.embedding_dim)
@@ -169,7 +169,7 @@ class GLDisen(nn.Module):
                 class_emb = global_mean_pool(node_emb, batch)
                 #class_emb = reparameterize(training=False, mu=mean_mu, logvar=mean_logvar)
 
-                ret.append((class_emb).cpu().numpy())
+                ret.append(class_emb.cpu().numpy())
                 y.append(data.y.cpu().numpy())
         ret = np.concatenate(ret, 0)
         y = np.concatenate(y, 0)
