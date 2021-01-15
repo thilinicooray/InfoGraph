@@ -99,7 +99,7 @@ class GLDisen(nn.Module):
         #check input feat first
         #print('recon ', x[0],reconstructed_node[0])
         #reconstruction_error =  0.1*mse_loss(reconstructed_node, x) * num_graphs
-        reconstruction_error =  self.recon_loss1(reconstructed_node, edge_index)#mse_loss(reconstructed_node, x) + self.recon_loss1(reconstructed_node, edge_index)
+        reconstruction_error =  1e-5*self.recon_loss1(reconstructed_node, edge_index)#mse_loss(reconstructed_node, x) + self.recon_loss1(reconstructed_node, edge_index)
         #reconstruction_error.backward()
 
         loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error
@@ -187,7 +187,7 @@ if __name__ == '__main__':
     seeds = [32,42,52,62,72]
 
     #seeds = [123,132,213,231,312,321] #this set also give similar results
-    epochs_list =[30, 40, 50,100]
+    epochs_list =[25,50,75,100]
     node_ratio = [0.25,0.5,0.75]
     best_acc = 0
     best_setup = {'seed':0, 'epoch':0, 'node_ratio':0, 'acc':0}
