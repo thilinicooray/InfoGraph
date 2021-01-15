@@ -167,8 +167,8 @@ class GLDisen(nn.Module):
             for data in loader:
                 data.to(device)
                 x, edge_index, batch = data.x, data.edge_index, data.batch
-                if x is None:
-                    x = torch.ones((batch.shape[0],5)).to(device)
+                if not dataset.num_features:
+                    data.x = torch.ones((data.batch.shape[0], 5)).double().to(device)
                 __, _, class_mu, class_logvar = self.encoder(x, edge_index, batch)
                 class_emb = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
 
@@ -257,6 +257,8 @@ if __name__ == '__main__':
                     for data in dataloader:
                         data = data.to(device)
                         optimizer.zero_grad()
+                        if not dataset.num_features:
+                            data.x = torch.ones((data.batch.shape[0], 5)).double().to(device)
                         recon_loss, kl_class, kl_node = model(data.x, data.edge_index, data.batch, data.num_graphs)
                         recon_loss_all += recon_loss
                         kl_class_loss_all += kl_class
