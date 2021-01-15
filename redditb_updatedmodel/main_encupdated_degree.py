@@ -30,7 +30,7 @@ class GLDisen(nn.Module):
 
         #self.embedding_dim = mi_units = hidden_dim * num_gc_layers
         self.encoder = Encoder(dataset_num_features, hidden_dim, num_gc_layers, node_dim, class_dim)
-        self.decoder = Decoder(hidden_dim, hidden_dim, 20)
+        self.decoder = Decoder(hidden_dim, hidden_dim, hidden_dim)
 
         #self.proj1 = FF(self.embedding_dim)
         #self.proj2 = FF(self.embedding_dim)
@@ -213,7 +213,7 @@ if __name__ == '__main__':
                 losses = {'recon':[], 'node_kl':[], 'class_kl': []}
 
                 log_interval = 1
-                batch_size = 128
+                batch_size = 32
                 lr = args.lr
                 DS = args.DS
                 path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data_degree', DS)
