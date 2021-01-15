@@ -65,7 +65,7 @@ class Encoder(torch.nn.Module):
     def forward(self, x, edge_index, batch):
         global_n = None
 
-        x = self.shrink(x)
+        #x = self.shrink(x)
 
         xs = []
         for i in range(self.num_gc_layers):
