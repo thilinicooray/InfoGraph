@@ -65,7 +65,7 @@ class GLDisen(nn.Module):
             1 + 2 * node_logvar - node_mu.pow(2) - node_logvar.exp().pow(2), 1))
 
         #node_kl_divergence_loss = 0.0000001 * node_kl_divergence_loss *num_graphs
-        node_kl_divergence_loss = 100*node_kl_divergence_loss
+        node_kl_divergence_loss = node_kl_divergence_loss
         #node_kl_divergence_loss.backward(retain_graph=True)
 
         # kl-divergence error for class latent space
@@ -75,7 +75,7 @@ class GLDisen(nn.Module):
         class_kl_divergence_loss = -0.5 / n_nodes * torch.mean(torch.sum(
             1 + 2 * class_logvar - class_mu.pow(2) - class_logvar.exp().pow(2), 1))
         #class_kl_divergence_loss = 0.0000001 * class_kl_divergence_loss * num_graphs
-        class_kl_divergence_loss = 10000*class_kl_divergence_loss
+        class_kl_divergence_loss = class_kl_divergence_loss
         #class_kl_divergence_loss.backward(retain_graph=True)
 
         # reconstruct samples
@@ -99,7 +99,7 @@ class GLDisen(nn.Module):
         #check input feat first
         #print('recon ', x[0],reconstructed_node[0])
         #reconstruction_error =  0.1*mse_loss(reconstructed_node, x) * num_graphs
-        reconstruction_error =  1e-5*self.recon_loss1(reconstructed_node, edge_index)#mse_loss(reconstructed_node, x) + self.recon_loss1(reconstructed_node, edge_index)
+        reconstruction_error =  self.recon_loss1(reconstructed_node, edge_index)#mse_loss(reconstructed_node, x) + self.recon_loss1(reconstructed_node, edge_index)
         #reconstruction_error.backward()
 
         loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error
