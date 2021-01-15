@@ -93,7 +93,7 @@ def logistic_classify(x, y):
 def svc_classify(x, y, search):
 
     tot_acc = None
-    for c in [0.001, 0.01,0.1,1,10,100,1000]:
+    for c in [10,100,1000, 10000, 100000]:
 
         tot_acc = []
 
