@@ -30,7 +30,7 @@ class GLDisen(nn.Module):
 
         #self.embedding_dim = mi_units = hidden_dim * num_gc_layers
         self.encoder = Encoder(dataset_num_features, hidden_dim, num_gc_layers, node_dim, class_dim)
-        self.decoder = Decoder(hidden_dim, hidden_dim, dataset_num_features)
+        self.decoder = Decoder(hidden_dim, hidden_dim, hidden_dim)
 
         #self.proj1 = FF(self.embedding_dim)
         #self.proj2 = FF(self.embedding_dim)
@@ -219,7 +219,7 @@ if __name__ == '__main__':
                 path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'data_degree', DS)
                 # kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
 
-                dataset = TUDataset(path, name=DS, pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=5000)).shuffle()
+                dataset = TUDataset(path, name=DS, pre_transform = torch_geometric.transforms.OneHotDegree(max_degree=2000)).shuffle()
                 try:
                     dataset_num_features = dataset.num_features
                 except:
