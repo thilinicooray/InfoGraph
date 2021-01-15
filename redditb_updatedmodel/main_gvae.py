@@ -161,7 +161,7 @@ class GLDisen(nn.Module):
                 data.to(device)
                 x, edge_index, batch = data.x, data.edge_index, data.batch
                 if not dataset.num_features:
-                    data.x = torch.ones((data.batch.shape[0], 5)).double().to(device)
+                    data.x = torch.ones((data.batch.shape[0], 5)).to(device)
                 node_mu, node_logvar = self.encoder(x, edge_index, batch)
                 mean_mu = global_mean_pool(node_mu, batch)
                 mean_logvar = global_mean_pool(node_logvar, batch)
@@ -255,7 +255,7 @@ if __name__ == '__main__':
                         data = data.to(device)
                         optimizer.zero_grad()
                         if not dataset.num_features:
-                            data.x = torch.ones((data.batch.shape[0], 5)).double().to(device)
+                            data.x = torch.ones((data.batch.shape[0], 5)).to(device)
                         recon_loss, kl_class, kl_node = model(data.x, data.edge_index, data.batch, data.num_graphs)
                         recon_loss_all += recon_loss
                         kl_class_loss_all += kl_class
