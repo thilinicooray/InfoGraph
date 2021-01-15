@@ -93,28 +93,30 @@ def logistic_classify(x, y):
 def svc_classify(x, y, search):
     tot_acc = []
 
-    for _ in range(5):
-        kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
-        accuracies = []
-        for train_index, test_index in kf.split(x, y):
+    for c in [0.001, 0.01,0.1,1,10,100,1000]:
 
-            x_train, x_test = x[train_index], x[test_index]
-            y_train, y_test = y[train_index], y[test_index]
-            # x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.1)#to find best c
-            if search:
-                params = {'C':[0.001, 0.01,0.1,1,10,100,1000]}
-                classifier = GridSearchCV(SVC(), params, cv=5, scoring='accuracy', verbose=0)
-            else:
-                classifier = SVC(C=1000)
-            classifier.fit(x_train, y_train)
-            accuracies.append(accuracy_score(y_test, classifier.predict(x_test)))
+        for _ in range(5):
+            kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
+            accuracies = []
+            for train_index, test_index in kf.split(x, y):
 
-        mean = np.mean(accuracies)
-        std = np.std(accuracies)
+                x_train, x_test = x[train_index], x[test_index]
+                y_train, y_test = y[train_index], y[test_index]
+                # x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.1)#to find best c
+                if search:
+                    params = {'C':[0.001, 0.01,0.1,1,10,100,1000]}
+                    classifier = GridSearchCV(SVC(), params, cv=5, scoring='accuracy', verbose=0)
+                else:
+                    classifier = SVC(C=c)
+                classifier.fit(x_train, y_train)
+                accuracies.append(accuracy_score(y_test, classifier.predict(x_test)))
 
-        tot_acc.append(mean)
+            mean = np.mean(accuracies)
+            std = np.std(accuracies)
 
-        print('mean libsvm ', mean, 'std ', std)
+            tot_acc.append(mean)
+
+            print('mean libsvm ',c,  mean, 'std ', std)
 
     print('mean of 5 runs', np.mean(tot_acc), np.std(tot_acc))
 
