@@ -75,7 +75,7 @@ class GLDisen(nn.Module):
         class_kl_divergence_loss = -0.5 / n_nodes * torch.mean(torch.sum(
             1 + 2 * class_logvar - class_mu.pow(2) - class_logvar.exp().pow(2), 1))
         #class_kl_divergence_loss = 0.0000001 * class_kl_divergence_loss * num_graphs
-        class_kl_divergence_loss = class_kl_divergence_loss
+        class_kl_divergence_loss = 10*class_kl_divergence_loss
         #class_kl_divergence_loss.backward(retain_graph=True)
 
         # reconstruct samples
