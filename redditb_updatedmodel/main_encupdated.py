@@ -65,7 +65,7 @@ class GLDisen(nn.Module):
             1 + 2 * node_logvar - node_mu.pow(2) - node_logvar.exp().pow(2), 1))
 
         #node_kl_divergence_loss = 0.0000001 * node_kl_divergence_loss *num_graphs
-        node_kl_divergence_loss = node_kl_divergence_loss
+        node_kl_divergence_loss = 1e3*node_kl_divergence_loss
         #node_kl_divergence_loss.backward(retain_graph=True)
 
         # kl-divergence error for class latent space
