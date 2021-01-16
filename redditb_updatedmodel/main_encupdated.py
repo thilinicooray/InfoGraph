@@ -185,7 +185,7 @@ if __name__ == '__main__':
     #enable entire sets of hyperparameters for the full experiment
 
     #seeds = [32,42,52,62,72]
-    seeds = [32, 42]
+    seeds = [32, 42,52,62,72]
 
     #seeds = [123,132,213,231,312,321] #this set also give similar results
     epochs_list =[25,50,75,100]
