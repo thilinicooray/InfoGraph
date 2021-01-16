@@ -29,7 +29,7 @@ class GLDisen(nn.Module):
 
         #self.embedding_dim = mi_units = hidden_dim * num_gc_layers
         self.encoder = Encoder(dataset_num_features, hidden_dim, num_gc_layers, node_dim, class_dim)
-        self.decoder = Decoder(hidden_dim, hidden_dim, 64)
+        self.decoder = Decoder(hidden_dim, hidden_dim, 32)
 
         #self.proj1 = FF(self.embedding_dim)
         #self.proj2 = FF(self.embedding_dim)

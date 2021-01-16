@@ -42,7 +42,7 @@ class Encoder(torch.nn.Module):
                 nn = Sequential(Linear(num_features, dim), ReLU(), Linear(dim, dim))
                 bn = torch.nn.BatchNorm1d(dim)
             elif i >= num_gc_layers and i < num_gc_layers +2:
-                nn = Sequential(Linear(dim, dim), ReLU(), Linear(dim, node_dim))
+                nn = Sequential(Linear(dim*num_gc_layers, dim), ReLU(), Linear(dim, node_dim))
                 bn = torch.nn.BatchNorm1d(node_dim)
             elif i >= num_gc_layers and i >= num_gc_layers +2:
                 nn = Sequential(Linear(dim, dim), ReLU(), Linear(dim, class_dim))
@@ -55,10 +55,10 @@ class Encoder(torch.nn.Module):
             self.convs.append(conv)
             self.bns.append(bn)
 
-        self.att = Sequential(Linear(dim, dim), ReLU(), Linear(dim, 1))
+        self.att = Sequential(Linear(dim*num_gc_layers, dim), ReLU(), Linear(dim, 1))
 
-        self.cls_mu = Sequential(Linear(dim, dim), ReLU(), Linear(dim, class_dim))
-        self.cls_logv = Sequential(Linear(dim, dim), ReLU(), Linear(dim, class_dim))
+        self.cls_mu = Sequential(Linear(dim*num_gc_layers, dim), ReLU(), Linear(dim, class_dim))
+        self.cls_logv = Sequential(Linear(dim*num_gc_layers, dim), ReLU(), Linear(dim, class_dim))
 
 
 
@@ -76,6 +76,8 @@ class Encoder(torch.nn.Module):
             xs.append(x)
             # if i == 2:
                 # feature_map = x2
+
+        x = torch.cat(xs, 1)
         global_weights = torch.sigmoid(self.att(x))
         global_n = global_add_pool(global_weights*x, batch)
 
