@@ -29,7 +29,7 @@ class GLDisen(nn.Module):
 
         #self.embedding_dim = mi_units = hidden_dim * num_gc_layers
         self.encoder = Encoder(dataset_num_features, hidden_dim, num_gc_layers, node_dim)
-        self.decoder = Decoder(hidden_dim, 32)
+        self.decoder = Decoder(hidden_dim, 5)
 
         #self.proj1 = FF(self.embedding_dim)
         #self.proj2 = FF(self.embedding_dim)
@@ -187,7 +187,7 @@ if __name__ == '__main__':
     seeds = [32,42,52,62,72]
 
     #seeds = [123,132,213,231,312,321] #this set also give similar results
-    epochs_list =[25, 50, 75, 100]
+    epochs_list =[1000, 50, 75, 100]
     node_ratio = [0.5]
     for seed in seeds:
         for epochs in epochs_list:
