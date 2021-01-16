@@ -42,7 +42,7 @@ class Encoder(torch.nn.Module):
                 nn = Sequential(Linear(num_features, dim), ReLU(), Linear(dim, dim))
                 bn = torch.nn.BatchNorm1d(dim)
             elif i >= num_gc_layers and i < num_gc_layers +2:
-                nn = Sequential(Linear(dim, dim), ReLU(), Linear(dim, node_dim))
+                nn = Sequential(Linear(dim*num_gc_layers, dim), ReLU(), Linear(dim, node_dim))
                 bn = torch.nn.BatchNorm1d(node_dim)
             elif i >= num_gc_layers and i >= num_gc_layers +2:
                 nn = Sequential(Linear(dim, dim), ReLU(), Linear(dim, class_dim))
@@ -55,10 +55,10 @@ class Encoder(torch.nn.Module):
             self.convs.append(conv)
             self.bns.append(bn)
 
-        self.att = Sequential(Linear(dim, dim), ReLU(), Linear(dim, 1))
+        self.att = Sequential(Linear(dim*num_gc_layers, dim), ReLU(), Linear(dim, 1))
 
-        self.cls_mu = Sequential(Linear(dim, dim), ReLU(), Linear(dim, class_dim))
-        self.cls_logv = Sequential(Linear(dim, dim), ReLU(), Linear(dim, class_dim))
+        self.cls_mu = Sequential(Linear(dim*num_gc_layers, dim), ReLU(), Linear(dim, class_dim))
+        self.cls_logv = Sequential(Linear(dim*num_gc_layers, dim), ReLU(), Linear(dim, class_dim))
 
 
 
@@ -77,11 +77,7 @@ class Encoder(torch.nn.Module):
             # if i == 2:
                 # feature_map = x2
 
-        #x = torch.cat(xs, 1)
-
-        x = x[edge_index[0]] * x[edge_index[1]]
-
-
+        x = torch.cat(xs, 1)
         global_weights = torch.sigmoid(self.att(x))
         global_n = global_add_pool(global_weights*x, batch)
 
@@ -102,8 +98,10 @@ class Decoder(torch.nn.Module):
         self.linear_model = torch.nn.Sequential(OrderedDict([
             ('linear_1', torch.nn.Linear(in_features=node_dim + class_dim, out_features=node_dim, bias=True)),
             ('relu_1', ReLU()),
+            ('linear_3', torch.nn.Linear(in_features=node_dim, out_features=node_dim, bias=True)),
+            ('relu_3', ReLU()),
             ('linear_2', torch.nn.Linear(in_features=node_dim, out_features=feat_size, bias=True)),
-            ('relu_final', Tanh()),
+            ('relu_final', ReLU()),
         ]))
 
     def forward(self, node_latent_space, class_latent_space):

@@ -119,8 +119,7 @@ class GLDisen(nn.Module):
                 the logistic sigmoid function to the output.
                 (default: :obj:`True`)
         """
-        #value = (z[edge_index[0]] * z[edge_index[1]]).sum(dim=1)
-        value = z.sum(dim=1)
+        value = (z[edge_index[0]] * z[edge_index[1]]).sum(dim=1)
         return torch.sigmoid(value) if sigmoid else value
 
     def recon_loss1(self, z, edge_index):
