@@ -56,6 +56,7 @@ class Encoder(torch.nn.Module):
             self.bns.append(bn)
 
         self.att = Sequential(Linear(dim, dim), ReLU(), Linear(dim, 1))
+        self.node_edge = Sequential(Linear(dim*2, dim), ReLU())
 
         self.cls_mu = Sequential(Linear(dim, dim), ReLU(), Linear(dim, class_dim))
         self.cls_logv = Sequential(Linear(dim, dim), ReLU(), Linear(dim, class_dim))
@@ -80,7 +81,7 @@ class Encoder(torch.nn.Module):
         edge_feat = x[edge_index[0]] * x[edge_index[1]]
         edge_feat_tot = global_mean_pool(edge_feat, edge_index[0])
 
-        x = edge_feat_tot + x
+        x = self.node_edge(torch.cat([edge_feat_tot, x],-1))
 
         #x = torch.cat(xs, 1)
         global_weights = torch.sigmoid(self.att(x))
