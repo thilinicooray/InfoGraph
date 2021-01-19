@@ -164,11 +164,11 @@ class GLDisen(nn.Module):
                     #x = torch.ones((data.batch.shape[0], 5)).to(device)
                     nb_digits = 20
                     # Dummy input that HAS to be 2D for the scatter (you can use view(-1,1) if needed)
-                    y = torch.LongTensor(data.batch.shape[0],1).random_().to(device) % nb_digits
+                    y_oh = torch.LongTensor(data.batch.shape[0],1).random_().to(device) % nb_digits
                     # One hot encoding buffer that you create out of the loop and just keep reusing
                     y_onehot = torch.FloatTensor(data.batch.shape[0], nb_digits).to(device)
                     y_onehot.zero_()
-                    y_onehot.scatter_(1, y, 1)
+                    y_onehot.scatter_(1, y_oh, 1)
                     x = y_onehot
                 node_mu, node_logvar = self.encoder(x, edge_index, batch)
                 mean_mu = global_mean_pool(node_mu, batch)
