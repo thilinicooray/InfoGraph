@@ -89,6 +89,9 @@ class Encoder(torch.nn.Module):
 
         #x = torch.cat(xs, 1)
         glob = global_mean_pool(x,batch)
+        _, count = torch.unique(batch,  return_counts=True)
+
+        glob = torch.repeat_interleave(glob, count, dim=0)
         global_weights = torch.sigmoid(self.att(torch.cat([x,glob],-1)))
         global_n = global_add_pool(global_weights*x, batch)
 
