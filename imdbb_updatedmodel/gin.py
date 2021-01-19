@@ -61,6 +61,9 @@ class Encoder(torch.nn.Module):
         self.cls_mu = Sequential(Linear(dim, dim), ReLU(), Linear(dim, class_dim))
         self.cls_logv = Sequential(Linear(dim, dim), ReLU(), Linear(dim, class_dim))
 
+        self.node_mu = Sequential(Linear(dim, dim), ReLU(), Linear(dim, node_dim))
+        self.node_logv = Sequential(Linear(dim, dim), ReLU(), Linear(dim, node_dim))
+
 
 
     def forward(self, x, edge_index, batch):
@@ -78,19 +81,19 @@ class Encoder(torch.nn.Module):
             # if i == 2:
                 # feature_map = x2
 
-        edge_feat = x[edge_index[0]] * x[edge_index[1]]
-        edge_feat_tot = global_mean_pool(edge_feat, edge_index[0])
+        #edge_feat = x[edge_index[0]] * x[edge_index[1]]
+        #edge_feat_tot = global_mean_pool(edge_feat, edge_index[0])
 
         #x = self.node_edge(torch.cat([edge_feat_tot, x],-1))
-        x = x + edge_feat_tot
+        #x = x + edge_feat_tot
 
         #x = torch.cat(xs, 1)
         global_weights = torch.sigmoid(self.att(x))
         global_n = global_add_pool(global_weights*x, batch)
 
         j = self.num_gc_layers
-        node_latent_space_mu = self.bns[j](torch.tanh(self.convs[j]((1-global_weights)*x, edge_index)))
-        node_latent_space_logvar = self.bns[j+1](torch.tanh(self.convs[j+1]((1-global_weights)*x, edge_index)))
+        node_latent_space_mu = self.bns[j](torch.tanh(self.node_mu((1-global_weights)*x)))
+        node_latent_space_logvar = self.bns[j+1](torch.tanh(self.node_logv((1-global_weights)*x)))
 
         class_latent_space_mu = self.bns[j+2](torch.tanh(self.cls_mu(global_n)))
         class_latent_space_logvar = self.bns[j+3](torch.tanh(self.cls_logv(global_n)))
