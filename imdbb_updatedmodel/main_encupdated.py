@@ -252,6 +252,7 @@ if __name__ == '__main__':
 
                 best_clskl_loss = 10e40
                 best_model_curr = None
+                best_epoch = 0
 
                 for epoch in range(1, epochs+1):
                     loss_all = 0
@@ -285,14 +286,14 @@ if __name__ == '__main__':
                     if clskl_current < best_clskl_loss:
                         best_clskl_loss = clskl_current
                         torch.save(model.state_dict(), 'model_epoch.pkl')
-                        print('current best model saved!')
+                        best_epoch = epoch
 
 
 
                     print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(dataloader),
                                                                                         kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
 
-                print('loading best model for this setup...')
+                print('loading best model for this setup from epoch ', best_epoch)
                 model.load_state_dict(torch.load('model_epoch.pkl'))
 
                 model.eval()
