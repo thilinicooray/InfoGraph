@@ -78,7 +78,7 @@ class Encoder(torch.nn.Module):
                 # feature_map = x2
 
         edge_feat = x[edge_index[0]] * x[edge_index[1]]
-        edge_feat_tot = global_add_pool(edge_feat, edge_index[0])
+        edge_feat_tot = global_mean_pool(edge_feat, edge_index[0])
 
         x = edge_feat_tot
 
