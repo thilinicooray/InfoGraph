@@ -51,6 +51,9 @@ class Encoder(torch.nn.Module):
             self.convs.append(conv)
             self.bns.append(bn)
 
+        self.node_mu = Sequential(Linear(dim, dim), ReLU(), Linear(dim, node_dim*2))
+        self.node_logv = Sequential(Linear(dim, dim), ReLU(), Linear(dim, node_dim*2))
+
 
 
     def forward(self, x, edge_index, batch):
@@ -71,8 +74,8 @@ class Encoder(torch.nn.Module):
         #x = torch.cat(xs, 1)
 
         j = self.num_gc_layers
-        node_latent_space_mu = self.bns[j](torch.tanh(self.convs[j](x, edge_index)))
-        node_latent_space_logvar = self.bns[j+1](torch.tanh(self.convs[j+1](x, edge_index)))
+        node_latent_space_mu = self.bns[j](torch.tanh(self.node_mu(x)))
+        node_latent_space_logvar = self.bns[j+1](torch.tanh(self.node_logv(x)))
 
 
         return node_latent_space_mu, node_latent_space_logvar
