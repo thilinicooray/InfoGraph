@@ -16,7 +16,7 @@ import sys
 import json
 from torch import optim
 
-from gin_new import *
+from gin import *
 from evaluate_embedding import evaluate_embedding
 from utils import imshow_grid, mse_loss, reparameterize, group_wise_reparameterize, accumulate_group_evidence
 

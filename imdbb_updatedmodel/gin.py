@@ -55,7 +55,7 @@ class Encoder(torch.nn.Module):
             self.convs.append(conv)
             self.bns.append(bn)
 
-        self.att = Sequential(Linear(dim, dim), ReLU(), Linear(dim, 1))
+        self.att = Sequential(Linear(dim*2, dim), ReLU(), Linear(dim, 1))
         self.node_edge = Sequential(Linear(dim*2, dim), ReLU())
 
         self.cls_mu = Sequential(Linear(dim, dim), ReLU(), Linear(dim, class_dim))
@@ -88,7 +88,8 @@ class Encoder(torch.nn.Module):
         #x = x + edge_feat_tot
 
         #x = torch.cat(xs, 1)
-        global_weights = torch.sigmoid(self.att(x))
+        glob = global_mean_pool(x,batch)
+        global_weights = torch.sigmoid(self.att(torch.cat([x,glob],-1)))
         global_n = global_add_pool(global_weights*x, batch)
 
         j = self.num_gc_layers
