@@ -55,17 +55,19 @@ class Encoder(torch.nn.Module):
         self.att = Sequential(Linear(dim, dim), ReLU(), Linear(dim, 1))
         self.node_edge = Sequential(Linear(dim*2, dim), ReLU())
 
+        self.node_mu = Sequential(Linear(dim, dim), ReLU(), Linear(dim, node_dim))
+        self.node_logv = Sequential(Linear(dim, dim), ReLU(), Linear(dim, node_dim))
+
+        self.bns.append(torch.nn.BatchNorm1d(node_dim))
+        self.bns.append(torch.nn.BatchNorm1d(node_dim))
+
         self.cls_mu = Sequential(Linear(dim, dim), ReLU(), Linear(dim, class_dim))
         self.cls_logv = Sequential(Linear(dim, dim), ReLU(), Linear(dim, class_dim))
 
         self.bns.append(torch.nn.BatchNorm1d(class_dim))
         self.bns.append(torch.nn.BatchNorm1d(class_dim))
 
-        self.node_mu = Sequential(Linear(dim, dim), ReLU(), Linear(dim, node_dim))
-        self.node_logv = Sequential(Linear(dim, dim), ReLU(), Linear(dim, node_dim))
 
-        self.bns.append(torch.nn.BatchNorm1d(node_dim))
-        self.bns.append(torch.nn.BatchNorm1d(node_dim))
 
 
 
