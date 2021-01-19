@@ -168,7 +168,15 @@ class GLDisen(nn.Module):
                 data.to(device)
                 x, edge_index, batch = data.x, data.edge_index, data.batch
                 if not dataset.num_features:
-                    x = torch.ones((data.batch.shape[0], 5)).to(device)
+                    #x = torch.ones((data.batch.shape[0], 5)).to(device)
+                    nb_digits = 20
+                    # Dummy input that HAS to be 2D for the scatter (you can use view(-1,1) if needed)
+                    y_oh = torch.LongTensor(data.batch.shape[0],1).random_().to(device) % nb_digits
+                    # One hot encoding buffer that you create out of the loop and just keep reusing
+                    y_onehot = torch.FloatTensor(data.batch.shape[0], nb_digits).to(device)
+                    y_onehot.zero_()
+                    y_onehot.scatter_(1, y_oh, 1)
+                    x = y_onehot
                 node_mu, node_logvar , class_mu, class_logvar = self.encoder(x, edge_index, batch)
                 #class_emb = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
                 mean_mu = global_mean_pool(node_mu, batch)
@@ -231,7 +239,7 @@ if __name__ == '__main__':
                     dataset_num_features = 1
 
                 if not dataset_num_features:
-                    dataset_num_features = 5
+                    dataset_num_features = 20
 
                 dataloader = DataLoader(dataset, batch_size=batch_size)
 
@@ -264,7 +272,15 @@ if __name__ == '__main__':
                         data = data.to(device)
                         optimizer.zero_grad()
                         if not dataset.num_features:
-                            data.x = torch.ones((data.batch.shape[0], 5)).to(device)
+                            #data.x = torch.ones((data.batch.shape[0], 5)).to(device)
+                            nb_digits = 20
+                            # Dummy input that HAS to be 2D for the scatter (you can use view(-1,1) if needed)
+                            y = torch.LongTensor(data.batch.shape[0],1).random_().to(device) % nb_digits
+                            # One hot encoding buffer that you create out of the loop and just keep reusing
+                            y_onehot = torch.FloatTensor(data.batch.shape[0], nb_digits).to(device)
+                            y_onehot.zero_()
+                            y_onehot.scatter_(1, y, 1)
+                            data.x = y_onehot
                         recon_loss, kl_class, kl_node = model(data.x, data.edge_index, data.batch, data.num_graphs)
                         recon_loss_all += recon_loss
                         kl_class_loss_all += kl_class
