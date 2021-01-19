@@ -164,9 +164,9 @@ class GLDisen(nn.Module):
                     #x = torch.ones((data.batch.shape[0], 5)).to(device)
                     nb_digits = 20
                     # Dummy input that HAS to be 2D for the scatter (you can use view(-1,1) if needed)
-                    y = torch.LongTensor(data.batch.shape[0],1).random_() % nb_digits
+                    y = torch.LongTensor(data.batch.shape[0],1).random_().to(device) % nb_digits
                     # One hot encoding buffer that you create out of the loop and just keep reusing
-                    y_onehot = torch.FloatTensor(data.batch.shape[0], nb_digits)
+                    y_onehot = torch.FloatTensor(data.batch.shape[0], nb_digits).to(device)
                     y_onehot.zero_()
                     y_onehot.scatter_(1, y, 1)
                     x = y_onehot
@@ -267,9 +267,9 @@ if __name__ == '__main__':
                             #data.x = torch.ones((data.batch.shape[0], 5)).to(device)
                             nb_digits = 20
                             # Dummy input that HAS to be 2D for the scatter (you can use view(-1,1) if needed)
-                            y = torch.LongTensor(data.batch.shape[0],1).random_() % nb_digits
+                            y = torch.LongTensor(data.batch.shape[0],1).random_().to(device) % nb_digits
                             # One hot encoding buffer that you create out of the loop and just keep reusing
-                            y_onehot = torch.FloatTensor(data.batch.shape[0], nb_digits)
+                            y_onehot = torch.FloatTensor(data.batch.shape[0], nb_digits).to(device)
                             y_onehot.zero_()
                             y_onehot.scatter_(1, y, 1)
                             data.x = y_onehot
