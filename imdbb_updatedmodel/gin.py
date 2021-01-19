@@ -81,7 +81,8 @@ class Encoder(torch.nn.Module):
         edge_feat = x[edge_index[0]] * x[edge_index[1]]
         edge_feat_tot = global_mean_pool(edge_feat, edge_index[0])
 
-        x = self.node_edge(torch.cat([edge_feat_tot, x],-1))
+        #x = self.node_edge(torch.cat([edge_feat_tot, x],-1))
+        x = edge_feat_tot
 
         #x = torch.cat(xs, 1)
         global_weights = torch.sigmoid(self.att(x))
