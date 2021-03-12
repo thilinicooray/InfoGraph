@@ -170,7 +170,8 @@ class GLDisen(nn.Module):
                 if not dataset.num_features:
                     x = torch.ones((data.batch.shape[0], 5)).to(device)
                 node_mu , class_mu = self.encoder(x, edge_index, batch)
-                class_emb = class_mu
+                #class_emb = class_mu
+                class_emb = global_mean_pool(node_mu, batch)
                 #class_emb = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
                 #mean_mu = global_mean_pool(node_mu, batch)
                 #mean_logvar = global_mean_pool(node_logvar, batch)
