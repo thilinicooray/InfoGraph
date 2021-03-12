@@ -58,9 +58,8 @@ class SlotAttention(nn.Module):
             attn = dots.softmax(dim=1) + self.eps
             attn = attn / attn.sum(dim=-1, keepdim=True)
 
-            print('current sizes ', v.size(), attn.size())
 
-            updates = torch.einsum('bjd,bij->bid', v, attn)
+            updates = torch.einsum('bjd,bij->bid', v.unsqueeze(0), attn)
 
             slots = self.gru(
                 updates.reshape(-1, d),
@@ -69,6 +68,8 @@ class SlotAttention(nn.Module):
 
             slots = slots.reshape(b, -1, d)
             slots = slots + self.mlp(self.norm_pre_ff(slots))
+
+        print('slots', slots.size())
 
         return slots
 
