@@ -97,7 +97,7 @@ class GLDisen(nn.Module):
 
         g_emb = (current_g_att * slots).sum(1)
 
-        class_latent_embeddings = g_emb * class_mu
+        class_latent_embeddings = g_emb + class_mu
 
         _, count = torch.unique(batch,  return_counts=True)
 
@@ -191,7 +191,7 @@ class GLDisen(nn.Module):
 
                 g_emb = (current_g_att * slots).sum(1)
 
-                class_emb = g_emb * class_mu
+                class_emb = g_emb + class_mu
 
                 #class_emb = class_mu
                 #class_emb = global_mean_pool(node_mu, batch)
