@@ -184,17 +184,19 @@ class GLDisen(nn.Module):
                     x = torch.ones((data.batch.shape[0], 5)).to(device)
                 node_mu , class_mu = self.encoder(x, edge_index, batch)
 
-                '''slots = self.slot_attention(class_mu)
+                slots = self.slot_attention(class_mu)
                 slots = slots.expand(class_mu.size(0), slots.size(0), slots.size(1))
 
                 current_g_att = self.attention(slots, class_mu)
 
                 g_emb = (current_g_att * slots).sum(1)
 
-                class_emb = g_emb + class_mu'''
+                print('att ', current_g_att.size(), slots.size(), g_emb.size())
+
+                class_emb = g_emb
 
                 #class_emb = class_mu
-                class_emb = global_mean_pool(node_mu, batch)
+                #class_emb = global_mean_pool(node_mu, batch)
                 #class_emb = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
                 #mean_mu = global_mean_pool(node_mu, batch)
                 #mean_logvar = global_mean_pool(node_logvar, batch)
