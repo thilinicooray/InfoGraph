@@ -16,7 +16,7 @@ import sys
 import json
 from torch import optim
 
-from gin import *
+from gin_ae import *
 from evaluate_embedding import evaluate_embedding
 from utils import imshow_grid, mse_loss, reparameterize, group_wise_reparameterize, accumulate_group_evidence
 
@@ -54,28 +54,26 @@ class GLDisen(nn.Module):
         if x is None:
             x = torch.ones(batch.shape[0]).to(device)
 
-        node_mu, node_logvar, class_mu, class_logvar = self.encoder(x, edge_index, batch)
+        node_mu, class_mu = self.encoder(x, edge_index, batch)
 
 
         # kl-divergence error for style latent space
         '''node_kl_divergence_loss = torch.mean(
             - 0.5 * torch.sum(1 + node_logvar - node_mu.pow(2) - node_logvar.exp())
         )'''
-        node_kl_divergence_loss = -0.5 / n_nodes * torch.mean(torch.sum(
-            1 + 2 * node_logvar - node_mu.pow(2) - node_logvar.exp().pow(2), 1))
+
 
         #node_kl_divergence_loss = 0.0000001 * node_kl_divergence_loss *num_graphs
-        node_kl_divergence_loss = node_kl_divergence_loss
         #node_kl_divergence_loss.backward(retain_graph=True)
 
         # kl-divergence error for class latent space
         '''class_kl_divergence_loss = torch.mean(
             - 0.5 * torch.sum(1 + class_logvar - class_mu.pow(2) - class_logvar.exp())
         )'''
-        class_kl_divergence_loss = -0.5 / n_nodes * torch.mean(torch.sum(
+        '''class_kl_divergence_loss = -0.5 / n_nodes * torch.mean(torch.sum(
             1 + 2 * class_logvar - class_mu.pow(2) - class_logvar.exp().pow(2), 1))
         #class_kl_divergence_loss = 0.0000001 * class_kl_divergence_loss * num_graphs
-        class_kl_divergence_loss = class_kl_divergence_loss
+        class_kl_divergence_loss = class_kl_divergence_loss'''
         #class_kl_divergence_loss.backward(retain_graph=True)
 
         # reconstruct samples
@@ -83,8 +81,10 @@ class GLDisen(nn.Module):
         sampling from group mu and logvar for each graph in mini-batch differently makes
         the decoder consider class latent embeddings as random noise and ignore them 
         """
-        node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
-        class_latent_embeddings = reparameterize(training=True, mu=class_mu, logvar=class_logvar)
+        #node_latent_embeddings = reparameterize(training=True, mu=node_mu, logvar=node_logvar)
+        #class_latent_embeddings = reparameterize(training=True, mu=class_mu, logvar=class_logvar)
+        node_latent_embeddings =node_mu
+        class_latent_embeddings = class_mu
 
         _, count = torch.unique(batch,  return_counts=True)
 
@@ -102,12 +102,12 @@ class GLDisen(nn.Module):
         reconstruction_error =  self.recon_loss1(reconstructed_node, edge_index)#mse_loss(reconstructed_node, x) + self.recon_loss1(reconstructed_node, edge_index)
         #reconstruction_error.backward()
 
-        loss =  class_kl_divergence_loss + node_kl_divergence_loss + reconstruction_error
+        loss =  0 + 0 + reconstruction_error
 
         loss.backward()
 
 
-        return reconstruction_error.item() , class_kl_divergence_loss.item() , node_kl_divergence_loss.item()
+        return reconstruction_error.item() , 0 , 0
 
     def edge_recon(self, z, edge_index, sigmoid=True):
         r"""Decodes the latent variables :obj:`z` into edge probabilities for
@@ -169,8 +169,9 @@ class GLDisen(nn.Module):
                 x, edge_index, batch = data.x, data.edge_index, data.batch
                 if not dataset.num_features:
                     x = torch.ones((data.batch.shape[0], 5)).to(device)
-                node_mu, node_logvar , class_mu, class_logvar = self.encoder(x, edge_index, batch)
-                class_emb = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
+                node_mu , class_mu = self.encoder(x, edge_index, batch)
+                class_emb = class_mu
+                #class_emb = reparameterize(training=False, mu=class_mu, logvar=class_logvar)
                 #mean_mu = global_mean_pool(node_mu, batch)
                 #mean_logvar = global_mean_pool(node_logvar, batch)
                 #node_emb = reparameterize(training=False, mu=node_mu, logvar=node_logvar)
@@ -291,7 +292,7 @@ if __name__ == '__main__':
 
 
                     print('Epoch {}, Recon Loss {} KL class Loss {} KL node Loss {}'.format(epoch, recon_loss_all / len(dataloader),
-                                                                                        kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
+                                                                                            kl_class_loss_all / len(dataloader), kl_node_loss_all / len(dataloader)))
 
                 #print('loading best model for this setup from epoch ', best_epoch)
                 #model.load_state_dict(torch.load('model_epoch.pkl'))
