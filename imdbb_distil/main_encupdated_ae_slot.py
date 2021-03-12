@@ -191,9 +191,9 @@ class GLDisen(nn.Module):
 
                 g_emb = (current_g_att * slots).sum(1)
 
-                print('att ', current_g_att.size(), slots.size(), g_emb.size())
+                print('att val ', current_g_att.size(), current_g_att[:5])
 
-                class_emb = g_emb
+                class_emb = g_emb + class_mu
 
                 #class_emb = class_mu
                 #class_emb = global_mean_pool(node_mu, batch)
