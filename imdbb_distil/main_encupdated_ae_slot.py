@@ -91,6 +91,8 @@ class GLDisen(nn.Module):
 
         slots = self.slot_attention(class_mu)
 
+        slots = slots.expand(class_mu.size(0), slots.size(0), slots.size(1))
+
         current_g_att = self.attention(slots, class_mu)
 
         g_emb = (current_g_att * class_mu).sum(1)
@@ -183,6 +185,7 @@ class GLDisen(nn.Module):
                 node_mu , class_mu = self.encoder(x, edge_index, batch)
 
                 slots = self.slot_attention(class_mu)
+                slots = slots.expand(class_mu.size(0), slots.size(0), slots.size(1))
 
                 current_g_att = self.attention(slots, class_mu)
 

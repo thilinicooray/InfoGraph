@@ -69,8 +69,6 @@ class SlotAttention(nn.Module):
             slots = slots.reshape(-1, d)
             slots = slots + self.mlp(self.norm_pre_ff(slots))
 
-        print('slots', slots.size())
-
         return slots
 
 
