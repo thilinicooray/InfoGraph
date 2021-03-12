@@ -189,7 +189,7 @@ class GLDisen(nn.Module):
 
                 current_g_att = self.attention(slots, class_mu)
 
-                g_emb = (current_g_att * class_mu).sum(1)
+                g_emb = (current_g_att * slots).sum(1)
 
                 class_emb = g_emb
 
